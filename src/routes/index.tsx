@@ -36,7 +36,7 @@ type BlogPost = {
   slug: string;
   excerpt: string | null;
   cover_image_url: string | null;
-  created_at: string;
+  created_at: string | null;
 };
 
 function LandingPage() {
