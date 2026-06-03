@@ -296,8 +296,8 @@ function TaxonomyPreview() {
           {display.slice(0, 8).map((o, i) => (
             <Link
               key={o.id}
-              to="/gallery/$order/$family"
-              params={{ order: o.order_name, family: "all" }}
+              to="/gallery/$order"
+              params={{ order: o.order_name }}
               className="group relative block aspect-[3/4] overflow-hidden rounded-sm bg-surface"
             >
               {o.coverImage ? (
