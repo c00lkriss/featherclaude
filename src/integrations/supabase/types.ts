@@ -14,7 +14,147 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      blog_posts: {
+        Row: {
+          content: string | null
+          cover_image_url: string | null
+          created_at: string | null
+          excerpt: string | null
+          id: string
+          published: boolean | null
+          slug: string
+          tags: string[] | null
+          title: string
+        }
+        Insert: {
+          content?: string | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          excerpt?: string | null
+          id?: string
+          published?: boolean | null
+          slug: string
+          tags?: string[] | null
+          title: string
+        }
+        Update: {
+          content?: string | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          excerpt?: string | null
+          id?: string
+          published?: boolean | null
+          slug?: string
+          tags?: string[] | null
+          title?: string
+        }
+        Relationships: []
+      }
+      photos: {
+        Row: {
+          aperture: string | null
+          camera: string | null
+          common_name: string | null
+          created_at: string | null
+          date_taken: string | null
+          description: string | null
+          family_name: string
+          focal_length: string | null
+          genus: string | null
+          id: string
+          image_url: string
+          is_featured: boolean | null
+          iso: number | null
+          latitude: number | null
+          lens: string | null
+          location: string | null
+          longitude: number | null
+          order_name: string
+          shutter_speed: string | null
+          species_name: string
+          species_slug: string
+          tags: string[] | null
+          thumbnail_url: string | null
+          title: string
+        }
+        Insert: {
+          aperture?: string | null
+          camera?: string | null
+          common_name?: string | null
+          created_at?: string | null
+          date_taken?: string | null
+          description?: string | null
+          family_name: string
+          focal_length?: string | null
+          genus?: string | null
+          id?: string
+          image_url: string
+          is_featured?: boolean | null
+          iso?: number | null
+          latitude?: number | null
+          lens?: string | null
+          location?: string | null
+          longitude?: number | null
+          order_name: string
+          shutter_speed?: string | null
+          species_name: string
+          species_slug: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title: string
+        }
+        Update: {
+          aperture?: string | null
+          camera?: string | null
+          common_name?: string | null
+          created_at?: string | null
+          date_taken?: string | null
+          description?: string | null
+          family_name?: string
+          focal_length?: string | null
+          genus?: string | null
+          id?: string
+          image_url?: string
+          is_featured?: boolean | null
+          iso?: number | null
+          latitude?: number | null
+          lens?: string | null
+          location?: string | null
+          longitude?: number | null
+          order_name?: string
+          shutter_speed?: string | null
+          species_name?: string
+          species_slug?: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      taxonomy_orders: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon_url: string | null
+          id: string
+          order_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon_url?: string | null
+          id?: string
+          order_name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon_url?: string | null
+          id?: string
+          order_name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
