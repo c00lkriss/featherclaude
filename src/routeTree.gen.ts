@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -22,6 +23,11 @@ import { Route as GalleryOrderFamilyRouteImport } from './routes/gallery.$order.
 import { Route as AuthenticatedAdminUploadRouteImport } from './routes/_authenticated/admin.upload'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GalleryRoute = GalleryRouteImport.update({
   id: '/gallery',
   path: '/gallery',
@@ -89,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/blog': typeof BlogRouteWithChildren
   '/gallery': typeof GalleryRouteWithChildren
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/species/$slug': typeof SpeciesSlugRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/blog': typeof BlogRouteWithChildren
   '/gallery': typeof GalleryRouteWithChildren
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/species/$slug': typeof SpeciesSlugRoute
@@ -117,6 +125,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/blog': typeof BlogRouteWithChildren
   '/gallery': typeof GalleryRouteWithChildren
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/species/$slug': typeof SpeciesSlugRoute
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/blog'
     | '/gallery'
+    | '/sitemap.xml'
     | '/admin'
     | '/blog/$slug'
     | '/species/$slug'
@@ -145,6 +155,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/blog'
     | '/gallery'
+    | '/sitemap.xml'
     | '/admin'
     | '/blog/$slug'
     | '/species/$slug'
@@ -159,6 +170,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/blog'
     | '/gallery'
+    | '/sitemap.xml'
     | '/_authenticated/admin'
     | '/blog/$slug'
     | '/species/$slug'
@@ -174,11 +186,19 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BlogRoute: typeof BlogRouteWithChildren
   GalleryRoute: typeof GalleryRouteWithChildren
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SpeciesSlugRoute: typeof SpeciesSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/gallery': {
       id: '/gallery'
       path: '/gallery'
@@ -318,6 +338,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BlogRoute: BlogRouteWithChildren,
   GalleryRoute: GalleryRouteWithChildren,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   SpeciesSlugRoute: SpeciesSlugRoute,
 }
 export const routeTree = rootRouteImport
