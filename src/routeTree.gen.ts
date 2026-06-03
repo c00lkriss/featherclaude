@@ -9,38 +9,191 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as GalleryRouteImport } from './routes/gallery'
+import { Route as BlogRouteImport } from './routes/blog'
+import { Route as AboutBirdsRouteImport } from './routes/about-birds'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SpeciesSlugRouteImport } from './routes/species.$slug'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as GalleryOrderFamilyRouteImport } from './routes/gallery.$order.$family'
+import { Route as AuthenticatedAdminUploadRouteImport } from './routes/_authenticated/admin.upload'
+import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
 
+const GalleryRoute = GalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutBirdsRoute = AboutBirdsRouteImport.update({
+  id: '/about-birds',
+  path: '/about-birds',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SpeciesSlugRoute = SpeciesSlugRouteImport.update({
+  id: '/species/$slug',
+  path: '/species/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => BlogRoute,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const GalleryOrderFamilyRoute = GalleryOrderFamilyRouteImport.update({
+  id: '/$order/$family',
+  path: '/$order/$family',
+  getParentRoute: () => GalleryRoute,
+} as any)
+const AuthenticatedAdminUploadRoute =
+  AuthenticatedAdminUploadRouteImport.update({
+    id: '/upload',
+    path: '/upload',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminBlogRoute = AuthenticatedAdminBlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about-birds': typeof AboutBirdsRoute
+  '/blog': typeof BlogRouteWithChildren
+  '/gallery': typeof GalleryRouteWithChildren
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/blog/$slug': typeof BlogSlugRoute
+  '/species/$slug': typeof SpeciesSlugRoute
+  '/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/admin/upload': typeof AuthenticatedAdminUploadRoute
+  '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about-birds': typeof AboutBirdsRoute
+  '/blog': typeof BlogRouteWithChildren
+  '/gallery': typeof GalleryRouteWithChildren
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/blog/$slug': typeof BlogSlugRoute
+  '/species/$slug': typeof SpeciesSlugRoute
+  '/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/admin/upload': typeof AuthenticatedAdminUploadRoute
+  '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/about-birds': typeof AboutBirdsRoute
+  '/blog': typeof BlogRouteWithChildren
+  '/gallery': typeof GalleryRouteWithChildren
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/blog/$slug': typeof BlogSlugRoute
+  '/species/$slug': typeof SpeciesSlugRoute
+  '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/_authenticated/admin/upload': typeof AuthenticatedAdminUploadRoute
+  '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/about-birds'
+    | '/blog'
+    | '/gallery'
+    | '/admin'
+    | '/blog/$slug'
+    | '/species/$slug'
+    | '/admin/blog'
+    | '/admin/upload'
+    | '/gallery/$order/$family'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/about-birds'
+    | '/blog'
+    | '/gallery'
+    | '/admin'
+    | '/blog/$slug'
+    | '/species/$slug'
+    | '/admin/blog'
+    | '/admin/upload'
+    | '/gallery/$order/$family'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/about-birds'
+    | '/blog'
+    | '/gallery'
+    | '/_authenticated/admin'
+    | '/blog/$slug'
+    | '/species/$slug'
+    | '/_authenticated/admin/blog'
+    | '/_authenticated/admin/upload'
+    | '/gallery/$order/$family'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AboutBirdsRoute: typeof AboutBirdsRoute
+  BlogRoute: typeof BlogRouteWithChildren
+  GalleryRoute: typeof GalleryRouteWithChildren
+  SpeciesSlugRoute: typeof SpeciesSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/gallery': {
+      id: '/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about-birds': {
+      id: '/about-birds'
+      path: '/about-birds'
+      fullPath: '/about-birds'
+      preLoaderRoute: typeof AboutBirdsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,12 +201,114 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/species/$slug': {
+      id: '/species/$slug'
+      path: '/species/$slug'
+      fullPath: '/species/$slug'
+      preLoaderRoute: typeof SpeciesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof BlogRoute
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/gallery/$order/$family': {
+      id: '/gallery/$order/$family'
+      path: '/$order/$family'
+      fullPath: '/gallery/$order/$family'
+      preLoaderRoute: typeof GalleryOrderFamilyRouteImport
+      parentRoute: typeof GalleryRoute
+    }
+    '/_authenticated/admin/upload': {
+      id: '/_authenticated/admin/upload'
+      path: '/upload'
+      fullPath: '/admin/upload'
+      preLoaderRoute: typeof AuthenticatedAdminUploadRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/blog': {
+      id: '/_authenticated/admin/blog'
+      path: '/blog'
+      fullPath: '/admin/blog'
+      preLoaderRoute: typeof AuthenticatedAdminBlogRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
+  AuthenticatedAdminUploadRoute: typeof AuthenticatedAdminUploadRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
+  AuthenticatedAdminUploadRoute: AuthenticatedAdminUploadRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
+interface BlogRouteChildren {
+  BlogSlugRoute: typeof BlogSlugRoute
+}
+
+const BlogRouteChildren: BlogRouteChildren = {
+  BlogSlugRoute: BlogSlugRoute,
+}
+
+const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
+
+interface GalleryRouteChildren {
+  GalleryOrderFamilyRoute: typeof GalleryOrderFamilyRoute
+}
+
+const GalleryRouteChildren: GalleryRouteChildren = {
+  GalleryOrderFamilyRoute: GalleryOrderFamilyRoute,
+}
+
+const GalleryRouteWithChildren =
+  GalleryRoute._addFileChildren(GalleryRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AboutBirdsRoute: AboutBirdsRoute,
+  BlogRoute: BlogRouteWithChildren,
+  GalleryRoute: GalleryRouteWithChildren,
+  SpeciesSlugRoute: SpeciesSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
