@@ -22,6 +22,7 @@ import { Route as GalleryOrderRouteImport } from './routes/gallery.$order'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as GalleryOrderFamilyRouteImport } from './routes/gallery.$order.$family'
 import { Route as AuthenticatedAdminUploadRouteImport } from './routes/_authenticated/admin.upload'
+import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authenticated/admin.dashboard'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -89,6 +90,12 @@ const AuthenticatedAdminUploadRoute =
     path: '/admin/upload',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminDashboardRoute =
+  AuthenticatedAdminDashboardRouteImport.update({
+    id: '/admin/dashboard',
+    path: '/admin/dashboard',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminBlogRoute = AuthenticatedAdminBlogRouteImport.update({
   id: '/admin/blog',
   path: '/admin/blog',
@@ -107,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/gallery/$order': typeof GalleryOrderRouteWithChildren
   '/species/$slug': typeof SpeciesSlugRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
 }
@@ -122,6 +130,7 @@ export interface FileRoutesByTo {
   '/gallery/$order': typeof GalleryOrderRouteWithChildren
   '/species/$slug': typeof SpeciesSlugRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
 }
@@ -139,6 +148,7 @@ export interface FileRoutesById {
   '/gallery/$order': typeof GalleryOrderRouteWithChildren
   '/species/$slug': typeof SpeciesSlugRoute
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/_authenticated/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/_authenticated/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
 }
@@ -156,6 +166,7 @@ export interface FileRouteTypes {
     | '/gallery/$order'
     | '/species/$slug'
     | '/admin/blog'
+    | '/admin/dashboard'
     | '/admin/upload'
     | '/gallery/$order/$family'
   fileRoutesByTo: FileRoutesByTo
@@ -171,6 +182,7 @@ export interface FileRouteTypes {
     | '/gallery/$order'
     | '/species/$slug'
     | '/admin/blog'
+    | '/admin/dashboard'
     | '/admin/upload'
     | '/gallery/$order/$family'
   id:
@@ -187,6 +199,7 @@ export interface FileRouteTypes {
     | '/gallery/$order'
     | '/species/$slug'
     | '/_authenticated/admin/blog'
+    | '/_authenticated/admin/dashboard'
     | '/_authenticated/admin/upload'
     | '/gallery/$order/$family'
   fileRoutesById: FileRoutesById
@@ -296,6 +309,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUploadRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/dashboard': {
+      id: '/_authenticated/admin/dashboard'
+      path: '/admin/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AuthenticatedAdminDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/blog': {
       id: '/_authenticated/admin/blog'
       path: '/admin/blog'
@@ -308,11 +328,13 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
+  AuthenticatedAdminDashboardRoute: typeof AuthenticatedAdminDashboardRoute
   AuthenticatedAdminUploadRoute: typeof AuthenticatedAdminUploadRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
+  AuthenticatedAdminDashboardRoute: AuthenticatedAdminDashboardRoute,
   AuthenticatedAdminUploadRoute: AuthenticatedAdminUploadRoute,
 }
 
