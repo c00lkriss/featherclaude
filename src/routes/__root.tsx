@@ -197,7 +197,7 @@ function Header({ user }: { user: { id: string; email?: string } | null }) {
           {user ? (
             <div className="flex items-center gap-3">
               <Link
-                to="/admin"
+                to="/admin/dashboard"
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
               >
                 Admin
