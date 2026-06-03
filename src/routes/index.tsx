@@ -404,7 +404,7 @@ function LatestBlog() {
                 )}
               </div>
               <p className="mb-2 text-[11px] font-light uppercase tracking-[0.25em] text-muted-foreground">
-                {new Date(post.created_at).toLocaleDateString("en-US", {
+                {new Date(post.created_at ?? Date.now()).toLocaleDateString("en-US", {
                   month: "long",
                   day: "numeric",
                   year: "numeric",
