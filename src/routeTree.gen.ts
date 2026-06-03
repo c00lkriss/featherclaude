@@ -17,6 +17,7 @@ import { Route as AboutBirdsRouteImport } from './routes/about-birds'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SpeciesSlugRouteImport } from './routes/species.$slug'
+import { Route as GalleryOrderRouteImport } from './routes/gallery.$order'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as GalleryOrderFamilyRouteImport } from './routes/gallery.$order.$family'
@@ -62,6 +63,11 @@ const SpeciesSlugRoute = SpeciesSlugRouteImport.update({
   path: '/species/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GalleryOrderRoute = GalleryOrderRouteImport.update({
+  id: '/$order',
+  path: '/$order',
+  getParentRoute: () => GalleryRoute,
+} as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -73,9 +79,9 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const GalleryOrderFamilyRoute = GalleryOrderFamilyRouteImport.update({
-  id: '/$order/$family',
-  path: '/$order/$family',
-  getParentRoute: () => GalleryRoute,
+  id: '/$family',
+  path: '/$family',
+  getParentRoute: () => GalleryOrderRoute,
 } as any)
 const AuthenticatedAdminUploadRoute =
   AuthenticatedAdminUploadRouteImport.update({
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
+  '/gallery/$order': typeof GalleryOrderRouteWithChildren
   '/species/$slug': typeof SpeciesSlugRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/upload': typeof AuthenticatedAdminUploadRoute
@@ -112,6 +119,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
+  '/gallery/$order': typeof GalleryOrderRouteWithChildren
   '/species/$slug': typeof SpeciesSlugRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/upload': typeof AuthenticatedAdminUploadRoute
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
+  '/gallery/$order': typeof GalleryOrderRouteWithChildren
   '/species/$slug': typeof SpeciesSlugRoute
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/_authenticated/admin/upload': typeof AuthenticatedAdminUploadRoute
@@ -144,6 +153,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/admin'
     | '/blog/$slug'
+    | '/gallery/$order'
     | '/species/$slug'
     | '/admin/blog'
     | '/admin/upload'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/admin'
     | '/blog/$slug'
+    | '/gallery/$order'
     | '/species/$slug'
     | '/admin/blog'
     | '/admin/upload'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/_authenticated/admin'
     | '/blog/$slug'
+    | '/gallery/$order'
     | '/species/$slug'
     | '/_authenticated/admin/blog'
     | '/_authenticated/admin/upload'
@@ -248,6 +260,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SpeciesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/gallery/$order': {
+      id: '/gallery/$order'
+      path: '/$order'
+      fullPath: '/gallery/$order'
+      preLoaderRoute: typeof GalleryOrderRouteImport
+      parentRoute: typeof GalleryRoute
+    }
     '/blog/$slug': {
       id: '/blog/$slug'
       path: '/$slug'
@@ -264,10 +283,10 @@ declare module '@tanstack/react-router' {
     }
     '/gallery/$order/$family': {
       id: '/gallery/$order/$family'
-      path: '/$order/$family'
+      path: '/$family'
       fullPath: '/gallery/$order/$family'
       preLoaderRoute: typeof GalleryOrderFamilyRouteImport
-      parentRoute: typeof GalleryRoute
+      parentRoute: typeof GalleryOrderRoute
     }
     '/_authenticated/admin/upload': {
       id: '/_authenticated/admin/upload'
@@ -320,12 +339,24 @@ const BlogRouteChildren: BlogRouteChildren = {
 
 const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
 
-interface GalleryRouteChildren {
+interface GalleryOrderRouteChildren {
   GalleryOrderFamilyRoute: typeof GalleryOrderFamilyRoute
 }
 
-const GalleryRouteChildren: GalleryRouteChildren = {
+const GalleryOrderRouteChildren: GalleryOrderRouteChildren = {
   GalleryOrderFamilyRoute: GalleryOrderFamilyRoute,
+}
+
+const GalleryOrderRouteWithChildren = GalleryOrderRoute._addFileChildren(
+  GalleryOrderRouteChildren,
+)
+
+interface GalleryRouteChildren {
+  GalleryOrderRoute: typeof GalleryOrderRouteWithChildren
+}
+
+const GalleryRouteChildren: GalleryRouteChildren = {
+  GalleryOrderRoute: GalleryOrderRouteWithChildren,
 }
 
 const GalleryRouteWithChildren =
