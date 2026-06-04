@@ -55,6 +55,7 @@ export type Database = {
           aperture: string | null
           camera: string | null
           common_name: string | null
+          country: string | null
           created_at: string | null
           date_taken: string | null
           description: string | null
@@ -81,6 +82,7 @@ export type Database = {
           aperture?: string | null
           camera?: string | null
           common_name?: string | null
+          country?: string | null
           created_at?: string | null
           date_taken?: string | null
           description?: string | null
@@ -107,6 +109,7 @@ export type Database = {
           aperture?: string | null
           camera?: string | null
           common_name?: string | null
+          country?: string | null
           created_at?: string | null
           date_taken?: string | null
           description?: string | null
@@ -131,6 +134,24 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
       taxonomy_orders: {
         Row: {
           created_at: string | null
@@ -138,6 +159,7 @@ export type Database = {
           icon_url: string | null
           id: string
           order_name: string
+          photo_count: number | null
         }
         Insert: {
           created_at?: string | null
@@ -145,6 +167,7 @@ export type Database = {
           icon_url?: string | null
           id?: string
           order_name: string
+          photo_count?: number | null
         }
         Update: {
           created_at?: string | null
@@ -152,6 +175,7 @@ export type Database = {
           icon_url?: string | null
           id?: string
           order_name?: string
+          photo_count?: number | null
         }
         Relationships: []
       }
@@ -170,6 +194,24 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      waitlist: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
         }
         Relationships: []
       }
