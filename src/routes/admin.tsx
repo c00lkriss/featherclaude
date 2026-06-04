@@ -23,7 +23,7 @@ function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
-  const [adminExists, setAdminExists] = useState<boolean | null>(null);
+  const [adminExists, setAdminExists] = useState<boolean>(false);
 
   // Redirect away if already signed in as admin; detect if any admin exists.
   useEffect(() => {
