@@ -184,7 +184,7 @@ function AdminLoginPage() {
             {loading ? "Please wait…" : mode === "signin" ? "Sign In" : "Create Admin Account"}
           </button>
 
-          {mode === "signin" && adminExists === false && (
+          {mode === "signin" && !adminExists && (
             <p className="text-center text-xs font-light text-muted-foreground">
               No admin yet?{" "}
               <button
