@@ -1,6 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin")({
@@ -21,52 +20,94 @@ function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
+  const [adminExists, setAdminExists] = useState<boolean>(false);
 
-  // If already signed in as admin, jump straight to dashboard
+  // Redirect away if already signed in as admin; detect if any admin exists.
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
+      console.log("[admin] checking existing session…");
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        console.log("[admin] existing user:", userData.user.id);
         const { data: ok } = await supabase.rpc("bootstrap_admin");
         if (ok) {
           navigate({ to: "/admin/dashboard", replace: true });
           return;
         }
       }
+      // Check if any admin role exists (publicly readable: no, but count via signed-out
+      // we can't read user_roles. So we infer from a flag: try to call bootstrap_admin
+      // only after sign-in. For now assume signup is allowed; we'll hide it after success.)
       setChecking(false);
     })();
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setInfo(null);
     setLoading(true);
+
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        console.log("[admin] signing up:", email);
+        const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: { emailRedirectTo: `${window.location.origin}/admin` },
         });
-        if (error) throw error;
-        toast.success("Check your email to confirm your account, then sign in.");
-        setMode("signin");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        if (signUpError) {
+          console.error("[admin] signUp error:", signUpError);
+          throw signUpError;
+        }
+        console.log("[admin] signUp result:", { user: data.user?.id, session: !!data.session });
 
+        if (data.session) {
+          // Auto-confirm enabled → session present. Trigger has already created
+          // profile + admin role for the first user.
+          console.log("[admin] session present, verifying admin role…");
+          const { data: ok, error: rpcErr } = await supabase.rpc("bootstrap_admin");
+          if (rpcErr) {
+            console.error("[admin] bootstrap_admin error:", rpcErr);
+            throw rpcErr;
+          }
+          if (!ok) {
+            await supabase.auth.signOut();
+            throw new Error("This account is not authorized for admin access.");
+          }
+          console.log("[admin] redirecting to dashboard");
+          setAdminExists(true);
+          navigate({ to: "/admin/dashboard", replace: true });
+        } else {
+          setInfo("Check your email to confirm your account, then sign in.");
+          setMode("signin");
+        }
+      } else {
+        console.log("[admin] signing in:", email);
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (signInError) {
+          console.error("[admin] signIn error:", signInError);
+          throw signInError;
+        }
+
+        console.log("[admin] sign-in success, checking admin role…");
         const { data: ok, error: rpcErr } = await supabase.rpc("bootstrap_admin");
         if (rpcErr) throw rpcErr;
         if (!ok) {
           await supabase.auth.signOut();
           throw new Error("This account is not authorized for admin access.");
         }
-
-        toast.success("Welcome back.");
+        console.log("[admin] redirecting to dashboard");
         navigate({ to: "/admin/dashboard", replace: true });
       }
     } catch (err: any) {
-      toast.error(err.message || "Authentication failed");
+      setError(err?.message || "Authentication failed.");
     } finally {
       setLoading(false);
     }
@@ -98,6 +139,17 @@ function AdminLoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {error && (
+            <div className="rounded-sm border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+          {info && (
+            <div className="rounded-sm border border-primary/40 bg-primary/10 px-4 py-3 text-sm text-primary">
+              {info}
+            </div>
+          )}
+
           <div>
             <label className="mb-2 block text-[10px] font-light uppercase tracking-[0.25em] text-muted-foreground">
               Email
@@ -129,19 +181,41 @@ function AdminLoginPage() {
             disabled={loading}
             className="w-full rounded-none border border-primary bg-primary/90 px-6 py-3 text-xs font-medium uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary disabled:opacity-50"
           >
-            {loading ? "Please wait…" : mode === "signin" ? "Sign In" : "Create Account"}
+            {loading ? "Please wait…" : mode === "signin" ? "Sign In" : "Create Admin Account"}
           </button>
 
-          <p className="text-center text-xs font-light text-muted-foreground">
-            {mode === "signin" ? "Need to set up the admin account?" : "Already have an account?"}{" "}
-            <button
-              type="button"
-              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-              className="text-primary hover:underline"
-            >
-              {mode === "signin" ? "Create one" : "Sign in"}
-            </button>
-          </p>
+          {mode === "signin" && !adminExists && (
+            <p className="text-center text-xs font-light text-muted-foreground">
+              No admin yet?{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("signup");
+                  setError(null);
+                  setInfo(null);
+                }}
+                className="text-primary hover:underline"
+              >
+                Create the admin account
+              </button>
+            </p>
+          )}
+          {mode === "signup" && (
+            <p className="text-center text-xs font-light text-muted-foreground">
+              Already set up?{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("signin");
+                  setError(null);
+                  setInfo(null);
+                }}
+                className="text-primary hover:underline"
+              >
+                Sign in
+              </button>
+            </p>
+          )}
         </form>
       </div>
     </div>
