@@ -271,19 +271,38 @@ function TaxonomyPreview() {
         supabase.from("taxonomy_orders").select("*"),
         supabase.from("photos").select("order_name, image_url"),
       ]);
-      const counts = new Map<string, { count: number; image: string | null }>();
+      const grouped = new Map<string, string[]>();
       (photosData ?? []).forEach((p) => {
-        const cur = counts.get(p.order_name) ?? { count: 0, image: null };
-        counts.set(p.order_name, {
-          count: cur.count + 1,
-          image: cur.image ?? p.image_url,
-        });
+        const arr = grouped.get(p.order_name) ?? [];
+        arr.push(p.image_url);
+        grouped.set(p.order_name, arr);
       });
-      return (ordersData ?? []).map((o: TaxonomyOrder) => ({
-        ...o,
-        count: counts.get(o.order_name)?.count ?? 0,
-        coverImage: o.icon_url ?? counts.get(o.order_name)?.image ?? null,
-      }));
+      const pickRandom = (arr: string[] | undefined) =>
+        arr && arr.length ? arr[Math.floor(Math.random() * arr.length)] : null;
+
+      // Start with the taxonomy_orders table, then add any orders that have
+      // photos but aren't registered in taxonomy_orders.
+      const seen = new Set<string>();
+      const base = (ordersData ?? []).map((o: TaxonomyOrder) => {
+        seen.add(o.order_name);
+        const imgs = grouped.get(o.order_name);
+        return {
+          ...o,
+          count: imgs?.length ?? 0,
+          coverImage: o.icon_url ?? pickRandom(imgs),
+        };
+      });
+      const extras = Array.from(grouped.entries())
+        .filter(([name]) => !seen.has(name))
+        .map(([name, imgs]) => ({
+          id: `derived-${name}`,
+          order_name: name,
+          description: null,
+          icon_url: null,
+          count: imgs.length,
+          coverImage: pickRandom(imgs),
+        }));
+      return [...base, ...extras].sort((a, b) => b.count - a.count);
     },
   });
 
