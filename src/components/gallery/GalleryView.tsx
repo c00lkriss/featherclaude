@@ -309,18 +309,19 @@ function PhotoGrid({
   family?: string;
   q: string;
 }) {
-  const searchTerm = q.trim().length >= 3 ? q.trim() : "";
+  const searchTerm = q.trim().length >= 2 ? q.trim() : "";
 
   const query = useInfiniteQuery({
     queryKey: ["photos", { order, family, searchTerm }],
     initialPageParam: 0,
-    queryFn: async ({ pageParam }): Promise<Photo[]> => {
+    queryFn: async ({ pageParam }): Promise<{ rows: Photo[]; total: number | null }> => {
       const from = pageParam * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
       let req = supabase
         .from("photos")
         .select(
           "id, title, common_name, species_name, species_slug, order_name, family_name, image_url, thumbnail_url, tags",
+          { count: searchTerm ? "exact" : undefined },
         )
         .order("created_at", { ascending: false })
         .range(from, to);
@@ -328,23 +329,24 @@ function PhotoGrid({
       if (order) req = req.eq("order_name", order);
       if (family) req = req.eq("family_name", family);
       if (searchTerm) {
-        const safe = searchTerm.replace(/[%,]/g, " ");
+        const safe = searchTerm.replace(/[%,()]/g, " ");
         req = req.or(
-          `common_name.ilike.%${safe}%,species_name.ilike.%${safe}%,tags.cs.{${safe}}`,
+          `common_name.ilike.%${safe}%,species_name.ilike.%${safe}%,order_name.ilike.%${safe}%,family_name.ilike.%${safe}%,tags.cs.{${safe}}`,
         );
       }
-      const { data, error } = await req;
+      const { data, error, count } = await req;
       if (error) throw error;
-      return (data ?? []) as Photo[];
+      return { rows: (data ?? []) as Photo[], total: count ?? null };
     },
     getNextPageParam: (last, all) =>
-      last.length < PAGE_SIZE ? undefined : all.length,
+      last.rows.length < PAGE_SIZE ? undefined : all.length,
   });
 
   const photos = useMemo(
-    () => query.data?.pages.flat() ?? [],
+    () => query.data?.pages.flatMap((p) => p.rows) ?? [],
     [query.data],
   );
+  const total = query.data?.pages[0]?.total ?? null;
 
   if (query.isLoading) {
     return (
@@ -363,11 +365,19 @@ function PhotoGrid({
   if (photos.length === 0) {
     return (
       <div className="rounded-sm border border-dashed border-border bg-surface/50 p-16 text-center">
-        <p className="font-display text-2xl text-foreground">No photographs yet</p>
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 64 64"
+          className="mx-auto mb-5 h-14 w-14 text-muted-foreground"
+          fill="currentColor"
+        >
+          <path d="M52 14c-4 0-7 2-9 5l-9 1c-7 1-13 5-16 11-2 4-2 9 0 13l-6 6c-1 1 0 3 1 3l9-2c5 3 11 3 16 1 7-3 11-9 12-16l5-9c2-3 3-6 3-9 0-2-2-4-4-4-1 0-2 0-2 1zm-4 6a2 2 0 110 4 2 2 0 010-4z"/>
+        </svg>
+        <p className="font-display text-2xl text-foreground">
+          {q ? `No birds found for "${q}"` : "No photographs yet"}
+        </p>
         <p className="mt-2 text-sm font-light text-muted-foreground">
-          {q
-            ? "Try a different search term."
-            : "Photographs in this section will appear here once uploaded."}
+          {q ? "Try another name, order or family." : "Photographs in this section will appear here once uploaded."}
         </p>
       </div>
     );
@@ -375,6 +385,11 @@ function PhotoGrid({
 
   return (
     <>
+      {searchTerm && (
+        <p className="mb-6 text-xs font-light uppercase tracking-[0.2em] text-muted-foreground">
+          Showing {total ?? photos.length} result{(total ?? photos.length) === 1 ? "" : "s"} for &ldquo;{q}&rdquo;
+        </p>
+      )}
       <div className="columns-1 gap-4 md:columns-2 lg:columns-3">
         {photos.map((p) => (
           <PhotoCard key={p.id} photo={p} />
