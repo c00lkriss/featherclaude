@@ -222,6 +222,7 @@ function UploadPage() {
         longitude: form.longitude ? parseFloat(form.longitude) : null,
         tags,
         is_featured: form.is_featured,
+        iucn_status: form.iucn_status || null,
       });
       if (insErr) throw insErr;
 
