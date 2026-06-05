@@ -74,6 +74,7 @@ type FormState = {
   // settings
   tags: string;
   is_featured: boolean;
+  iucn_status: string;
 };
 
 const EMPTY: FormState = {
@@ -82,8 +83,18 @@ const EMPTY: FormState = {
   title: "", description: "", date_taken: "",
   camera: "", lens: "", iso: "", aperture: "", shutter_speed: "", focal_length: "",
   location: "", latitude: "", longitude: "", region: "", country: "",
-  tags: "", is_featured: false,
+  tags: "", is_featured: false, iucn_status: "",
 };
+
+const IUCN_OPTIONS = [
+  "Least Concern",
+  "Near Threatened",
+  "Vulnerable",
+  "Endangered",
+  "Critically Endangered",
+  "Data Deficient",
+  "Not Evaluated",
+];
 
 const slugify = (s: string) =>
   s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-");
