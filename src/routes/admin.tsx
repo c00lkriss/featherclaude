@@ -32,7 +32,10 @@ function AdminLoginPage() {
       const { data: userData } = await supabase.auth.getUser();
       if (userData.user) {
         console.log("[admin] existing user:", userData.user.id);
-        const { data: ok } = await supabase.rpc("bootstrap_admin");
+        const { data: ok } = await supabase.rpc("has_role", {
+          _user_id: userData.user.id,
+          _role: "admin",
+        });
         if (ok) {
           navigate({ to: "/admin/dashboard", replace: true });
           return;
