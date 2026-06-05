@@ -22,7 +22,9 @@ import { Route as GalleryOrderRouteImport } from './routes/gallery.$order'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as GalleryOrderFamilyRouteImport } from './routes/gallery.$order.$family'
 import { Route as AuthenticatedAdminUploadRouteImport } from './routes/_authenticated/admin.upload'
+import { Route as AuthenticatedAdminManageRouteImport } from './routes/_authenticated/admin.manage'
 import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authenticated/admin.dashboard'
+import { Route as AuthenticatedAdminBulkUploadRouteImport } from './routes/_authenticated/admin.bulk-upload'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -90,10 +92,22 @@ const AuthenticatedAdminUploadRoute =
     path: '/admin/upload',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminManageRoute =
+  AuthenticatedAdminManageRouteImport.update({
+    id: '/admin/manage',
+    path: '/admin/manage',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminDashboardRoute =
   AuthenticatedAdminDashboardRouteImport.update({
     id: '/admin/dashboard',
     path: '/admin/dashboard',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminBulkUploadRoute =
+  AuthenticatedAdminBulkUploadRouteImport.update({
+    id: '/admin/bulk-upload',
+    path: '/admin/bulk-upload',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminBlogRoute = AuthenticatedAdminBlogRouteImport.update({
@@ -114,7 +128,9 @@ export interface FileRoutesByFullPath {
   '/gallery/$order': typeof GalleryOrderRouteWithChildren
   '/species/$slug': typeof SpeciesSlugRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/admin/bulk-upload': typeof AuthenticatedAdminBulkUploadRoute
   '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/admin/manage': typeof AuthenticatedAdminManageRoute
   '/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
 }
@@ -130,7 +146,9 @@ export interface FileRoutesByTo {
   '/gallery/$order': typeof GalleryOrderRouteWithChildren
   '/species/$slug': typeof SpeciesSlugRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/admin/bulk-upload': typeof AuthenticatedAdminBulkUploadRoute
   '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/admin/manage': typeof AuthenticatedAdminManageRoute
   '/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
 }
@@ -148,7 +166,9 @@ export interface FileRoutesById {
   '/gallery/$order': typeof GalleryOrderRouteWithChildren
   '/species/$slug': typeof SpeciesSlugRoute
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/_authenticated/admin/bulk-upload': typeof AuthenticatedAdminBulkUploadRoute
   '/_authenticated/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/_authenticated/admin/manage': typeof AuthenticatedAdminManageRoute
   '/_authenticated/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
 }
@@ -166,7 +186,9 @@ export interface FileRouteTypes {
     | '/gallery/$order'
     | '/species/$slug'
     | '/admin/blog'
+    | '/admin/bulk-upload'
     | '/admin/dashboard'
+    | '/admin/manage'
     | '/admin/upload'
     | '/gallery/$order/$family'
   fileRoutesByTo: FileRoutesByTo
@@ -182,7 +204,9 @@ export interface FileRouteTypes {
     | '/gallery/$order'
     | '/species/$slug'
     | '/admin/blog'
+    | '/admin/bulk-upload'
     | '/admin/dashboard'
+    | '/admin/manage'
     | '/admin/upload'
     | '/gallery/$order/$family'
   id:
@@ -199,7 +223,9 @@ export interface FileRouteTypes {
     | '/gallery/$order'
     | '/species/$slug'
     | '/_authenticated/admin/blog'
+    | '/_authenticated/admin/bulk-upload'
     | '/_authenticated/admin/dashboard'
+    | '/_authenticated/admin/manage'
     | '/_authenticated/admin/upload'
     | '/gallery/$order/$family'
   fileRoutesById: FileRoutesById
@@ -309,11 +335,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUploadRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/manage': {
+      id: '/_authenticated/admin/manage'
+      path: '/admin/manage'
+      fullPath: '/admin/manage'
+      preLoaderRoute: typeof AuthenticatedAdminManageRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/dashboard': {
       id: '/_authenticated/admin/dashboard'
       path: '/admin/dashboard'
       fullPath: '/admin/dashboard'
       preLoaderRoute: typeof AuthenticatedAdminDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/bulk-upload': {
+      id: '/_authenticated/admin/bulk-upload'
+      path: '/admin/bulk-upload'
+      fullPath: '/admin/bulk-upload'
+      preLoaderRoute: typeof AuthenticatedAdminBulkUploadRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/blog': {
@@ -328,13 +368,17 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
+  AuthenticatedAdminBulkUploadRoute: typeof AuthenticatedAdminBulkUploadRoute
   AuthenticatedAdminDashboardRoute: typeof AuthenticatedAdminDashboardRoute
+  AuthenticatedAdminManageRoute: typeof AuthenticatedAdminManageRoute
   AuthenticatedAdminUploadRoute: typeof AuthenticatedAdminUploadRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
+  AuthenticatedAdminBulkUploadRoute: AuthenticatedAdminBulkUploadRoute,
   AuthenticatedAdminDashboardRoute: AuthenticatedAdminDashboardRoute,
+  AuthenticatedAdminManageRoute: AuthenticatedAdminManageRoute,
   AuthenticatedAdminUploadRoute: AuthenticatedAdminUploadRoute,
 }
 
@@ -388,3 +432,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
