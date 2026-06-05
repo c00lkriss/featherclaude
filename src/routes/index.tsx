@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +21,7 @@ type Photo = {
   image_url: string;
   thumbnail_url: string | null;
   order_name: string;
+  species_slug?: string;
 };
 
 type TaxonomyOrder = {
@@ -53,18 +54,24 @@ function LandingPage() {
 /* ----------------------------- HERO ----------------------------- */
 
 function Hero() {
+  const navigate = useNavigate();
   const { data: featured } = useQuery({
     queryKey: ["featured-photos"],
     queryFn: async (): Promise<Photo[]> => {
       const { data, error } = await supabase
         .from("photos")
-        .select("id, title, image_url, thumbnail_url, order_name")
+        .select("id, title, image_url, thumbnail_url, order_name, species_slug")
         .eq("is_featured", true)
         .limit(6);
       if (error) throw error;
       return data ?? [];
     },
   });
+  const goToPhoto = (slug?: string) => {
+    if (!slug) return;
+    sessionStorage.setItem("gallery:lastPath", "/gallery");
+    navigate({ to: "/species/$slug", params: { slug } });
+  };
 
   const slides = featured && featured.length > 0 ? featured : null;
   const count = slides?.length ?? 4;
@@ -115,10 +122,21 @@ function Hero() {
       </div>
 
       {/* Dark gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background/90" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background/90 pointer-events-none" />
+
+      {/* Clickable layer to open current slide */}
+      {slides && slides[idx] && (
+        <button
+          type="button"
+          aria-label={`View ${slides[idx].title}`}
+          onClick={() => goToPhoto(slides[idx].species_slug)}
+          className="absolute inset-0 z-[5] cursor-pointer"
+        />
+      )}
 
       {/* Overlay text */}
-      <div className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center">
+      <div className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center pointer-events-none">
+        <div className="pointer-events-auto flex flex-col items-center">
         <p className="mb-6 text-xs font-light uppercase tracking-[0.4em] text-primary animate-fade-in-slow">
           Bird Photography · India
         </p>
@@ -156,6 +174,7 @@ function Hero() {
             />
           ))}
         </div>
+        </div>
       </div>
     </section>
   );
@@ -164,12 +183,13 @@ function Hero() {
 /* ------------------------ PHOTO STRIP ------------------------ */
 
 function PhotoStrip() {
+  const navigate = useNavigate();
   const { data } = useQuery({
     queryKey: ["strip-photos"],
     queryFn: async (): Promise<Photo[]> => {
       const { data, error } = await supabase
         .from("photos")
-        .select("id, title, image_url, thumbnail_url, order_name")
+        .select("id, title, image_url, thumbnail_url, order_name, species_slug")
         .order("created_at", { ascending: false })
         .limit(24);
       if (error) throw error;
@@ -189,16 +209,22 @@ function PhotoStrip() {
   const row1 = photos.slice(0, half);
   const row2 = photos.slice(half).length > 0 ? photos.slice(half) : photos.slice(0, half);
 
+  const onPick = (slug?: string) => {
+    if (!slug) return;
+    sessionStorage.setItem("gallery:lastPath", "/gallery");
+    navigate({ to: "/species/$slug", params: { slug } });
+  };
+
   return (
     <section className="border-y border-border/30 bg-surface py-12 overflow-hidden">
-      <StripRow photos={row1} direction="left" />
+      <StripRow photos={row1} direction="left" onPick={onPick} />
       <div className="h-4" />
-      <StripRow photos={row2} direction="right" />
+      <StripRow photos={row2} direction="right" onPick={onPick} />
     </section>
   );
 }
 
-function StripRow({ photos, direction }: { photos: Photo[]; direction: "left" | "right" }) {
+function StripRow({ photos, direction, onPick }: { photos: Photo[]; direction: "left" | "right"; onPick: (slug?: string) => void }) {
   const repeated = [...photos, ...photos];
   return (
     <div className="marquee-wrap overflow-hidden">
@@ -206,9 +232,12 @@ function StripRow({ photos, direction }: { photos: Photo[]; direction: "left" | 
         className={`flex w-max gap-3 ${direction === "left" ? "marquee-track-left" : "marquee-track-right"}`}
       >
         {repeated.map((p, i) => (
-          <div
+          <button
+            type="button"
             key={`${p.id}-${i}`}
-            className="group relative h-40 w-40 flex-shrink-0 -mx-1 overflow-hidden rounded-sm bg-muted shadow-md transition-all duration-300 hover:z-10 hover:-translate-y-2 hover:scale-105 hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.7)]"
+            onClick={() => onPick(p.species_slug)}
+            disabled={!p.species_slug}
+            className="group relative h-40 w-40 flex-shrink-0 -mx-1 overflow-hidden rounded-sm bg-muted shadow-md transition-all duration-300 hover:z-10 hover:-translate-y-2 hover:scale-105 hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.7)] disabled:cursor-default"
           >
             {p.image_url ? (
               <img
@@ -225,7 +254,7 @@ function StripRow({ photos, direction }: { photos: Photo[]; direction: "left" | 
                 }}
               />
             )}
-          </div>
+          </button>
         ))}
       </div>
     </div>
@@ -242,19 +271,38 @@ function TaxonomyPreview() {
         supabase.from("taxonomy_orders").select("*"),
         supabase.from("photos").select("order_name, image_url"),
       ]);
-      const counts = new Map<string, { count: number; image: string | null }>();
+      const grouped = new Map<string, string[]>();
       (photosData ?? []).forEach((p) => {
-        const cur = counts.get(p.order_name) ?? { count: 0, image: null };
-        counts.set(p.order_name, {
-          count: cur.count + 1,
-          image: cur.image ?? p.image_url,
-        });
+        const arr = grouped.get(p.order_name) ?? [];
+        arr.push(p.image_url);
+        grouped.set(p.order_name, arr);
       });
-      return (ordersData ?? []).map((o: TaxonomyOrder) => ({
-        ...o,
-        count: counts.get(o.order_name)?.count ?? 0,
-        coverImage: o.icon_url ?? counts.get(o.order_name)?.image ?? null,
-      }));
+      const pickRandom = (arr: string[] | undefined) =>
+        arr && arr.length ? arr[Math.floor(Math.random() * arr.length)] : null;
+
+      // Start with the taxonomy_orders table, then add any orders that have
+      // photos but aren't registered in taxonomy_orders.
+      const seen = new Set<string>();
+      const base = (ordersData ?? []).map((o: TaxonomyOrder) => {
+        seen.add(o.order_name);
+        const imgs = grouped.get(o.order_name);
+        return {
+          ...o,
+          count: imgs?.length ?? 0,
+          coverImage: o.icon_url ?? pickRandom(imgs),
+        };
+      });
+      const extras = Array.from(grouped.entries())
+        .filter(([name]) => !seen.has(name))
+        .map(([name, imgs]) => ({
+          id: `derived-${name}`,
+          order_name: name,
+          description: null,
+          icon_url: null,
+          count: imgs.length,
+          coverImage: pickRandom(imgs),
+        }));
+      return [...base, ...extras].sort((a, b) => b.count - a.count);
     },
   });
 

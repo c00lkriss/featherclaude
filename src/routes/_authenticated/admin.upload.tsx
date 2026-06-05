@@ -74,6 +74,7 @@ type FormState = {
   // settings
   tags: string;
   is_featured: boolean;
+  iucn_status: string;
 };
 
 const EMPTY: FormState = {
@@ -82,8 +83,18 @@ const EMPTY: FormState = {
   title: "", description: "", date_taken: "",
   camera: "", lens: "", iso: "", aperture: "", shutter_speed: "", focal_length: "",
   location: "", latitude: "", longitude: "", region: "", country: "",
-  tags: "", is_featured: false,
+  tags: "", is_featured: false, iucn_status: "",
 };
+
+const IUCN_OPTIONS = [
+  "Least Concern",
+  "Near Threatened",
+  "Vulnerable",
+  "Endangered",
+  "Critically Endangered",
+  "Data Deficient",
+  "Not Evaluated",
+];
 
 const slugify = (s: string) =>
   s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-");
@@ -211,6 +222,7 @@ function UploadPage() {
         longitude: form.longitude ? parseFloat(form.longitude) : null,
         tags,
         is_featured: form.is_featured,
+        iucn_status: form.iucn_status || null,
       });
       if (insErr) throw insErr;
 
@@ -334,6 +346,20 @@ function UploadPage() {
               />
             </Field>
           </Grid>
+        </Section>
+
+        {/* 2b. Conservation */}
+        <Section title="Conservation" number="2b" hint="IUCN Red List status">
+          <Field label="IUCN Status">
+            <select
+              value={form.iucn_status}
+              onChange={(e) => set("iucn_status", e.target.value)}
+              className={selectCls}
+            >
+              <option value="">Select a status…</option>
+              {IUCN_OPTIONS.map((s) => <option key={s}>{s}</option>)}
+            </select>
+          </Field>
         </Section>
 
         {/* 3. Photo details */}
