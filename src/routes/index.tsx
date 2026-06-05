@@ -122,10 +122,21 @@ function Hero() {
       </div>
 
       {/* Dark gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background/90" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background/90 pointer-events-none" />
+
+      {/* Clickable layer to open current slide */}
+      {slides && slides[idx] && (
+        <button
+          type="button"
+          aria-label={`View ${slides[idx].title}`}
+          onClick={() => goToPhoto(slides[idx].species_slug)}
+          className="absolute inset-0 z-[5] cursor-pointer"
+        />
+      )}
 
       {/* Overlay text */}
-      <div className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center">
+      <div className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center pointer-events-none">
+        <div className="pointer-events-auto flex flex-col items-center">
         <p className="mb-6 text-xs font-light uppercase tracking-[0.4em] text-primary animate-fade-in-slow">
           Bird Photography · India
         </p>
