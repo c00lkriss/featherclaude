@@ -65,13 +65,13 @@ export function GalleryView({ order, family, q = "" }: Props) {
           )}
         </header>
 
-        <div className="relative mb-10">
+        <div className="relative mb-6">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search by species, e.g. Common Hawk-Cuckoo..."
+            placeholder="Search birds by name, species, order or family..."
             className="w-full rounded-sm border border-border bg-surface px-12 py-4 text-sm text-foreground placeholder:font-light placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-0"
           />
           {searchInput && (
