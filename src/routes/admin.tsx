@@ -32,7 +32,10 @@ function AdminLoginPage() {
       const { data: userData } = await supabase.auth.getUser();
       if (userData.user) {
         console.log("[admin] existing user:", userData.user.id);
-        const { data: ok } = await supabase.rpc("bootstrap_admin");
+        const { data: ok } = await supabase.rpc("has_role", {
+          _user_id: userData.user.id,
+          _role: "admin",
+        });
         if (ok) {
           navigate({ to: "/admin/dashboard", replace: true });
           return;
@@ -69,9 +72,12 @@ function AdminLoginPage() {
           // Auto-confirm enabled → session present. Trigger has already created
           // profile + admin role for the first user.
           console.log("[admin] session present, verifying admin role…");
-          const { data: ok, error: rpcErr } = await supabase.rpc("bootstrap_admin");
+          const { data: ok, error: rpcErr } = await supabase.rpc("has_role", {
+            _user_id: data.user!.id,
+            _role: "admin",
+          });
           if (rpcErr) {
-            console.error("[admin] bootstrap_admin error:", rpcErr);
+            console.error("[admin] has_role error:", rpcErr);
             throw rpcErr;
           }
           if (!ok) {
@@ -97,7 +103,11 @@ function AdminLoginPage() {
         }
 
         console.log("[admin] sign-in success, checking admin role…");
-        const { data: ok, error: rpcErr } = await supabase.rpc("bootstrap_admin");
+        const { data: signedIn } = await supabase.auth.getUser();
+        const { data: ok, error: rpcErr } = await supabase.rpc("has_role", {
+          _user_id: signedIn.user!.id,
+          _role: "admin",
+        });
         if (rpcErr) throw rpcErr;
         if (!ok) {
           await supabase.auth.signOut();

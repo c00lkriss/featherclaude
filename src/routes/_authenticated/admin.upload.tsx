@@ -239,17 +239,26 @@ function UploadPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-16">
-      <header className="mb-12">
+      <header className="mb-12 flex items-end justify-between gap-4">
+        <div>
+          <Link
+            to="/admin/dashboard"
+            className="text-xs font-light uppercase tracking-[0.25em] text-muted-foreground hover:text-primary"
+          >
+            ← Dashboard
+          </Link>
+          <h1 className="font-display mt-4 text-4xl font-semibold text-foreground md:text-5xl">
+            Upload Photograph
+          </h1>
+        </div>
         <Link
-          to="/admin/dashboard"
-          className="text-xs font-light uppercase tracking-[0.25em] text-muted-foreground hover:text-primary"
+          to="/admin/bulk-upload"
+          className="inline-flex items-center gap-2 rounded-sm border border-primary/40 bg-surface px-4 py-2 text-xs font-medium uppercase tracking-widest text-primary transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground"
         >
-          ← Dashboard
+          Bulk Upload →
         </Link>
-        <h1 className="font-display mt-4 text-4xl font-semibold text-foreground md:text-5xl">
-          Upload Photograph
-        </h1>
       </header>
+
 
       <form onSubmit={handleSubmit} className="space-y-12">
         {/* 1. Image */}

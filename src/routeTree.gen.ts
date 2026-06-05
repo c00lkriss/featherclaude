@@ -22,8 +22,11 @@ import { Route as GalleryOrderRouteImport } from './routes/gallery.$order'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as GalleryOrderFamilyRouteImport } from './routes/gallery.$order.$family'
 import { Route as AuthenticatedAdminUploadRouteImport } from './routes/_authenticated/admin.upload'
+import { Route as AuthenticatedAdminManageRouteImport } from './routes/_authenticated/admin.manage'
 import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authenticated/admin.dashboard'
+import { Route as AuthenticatedAdminBulkUploadRouteImport } from './routes/_authenticated/admin.bulk-upload'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
+import { Route as AuthenticatedAdminEditIdRouteImport } from './routes/_authenticated/admin.edit.$id'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -90,10 +93,22 @@ const AuthenticatedAdminUploadRoute =
     path: '/admin/upload',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminManageRoute =
+  AuthenticatedAdminManageRouteImport.update({
+    id: '/admin/manage',
+    path: '/admin/manage',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminDashboardRoute =
   AuthenticatedAdminDashboardRouteImport.update({
     id: '/admin/dashboard',
     path: '/admin/dashboard',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminBulkUploadRoute =
+  AuthenticatedAdminBulkUploadRouteImport.update({
+    id: '/admin/bulk-upload',
+    path: '/admin/bulk-upload',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminBlogRoute = AuthenticatedAdminBlogRouteImport.update({
@@ -101,6 +116,12 @@ const AuthenticatedAdminBlogRoute = AuthenticatedAdminBlogRouteImport.update({
   path: '/admin/blog',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminEditIdRoute =
+  AuthenticatedAdminEditIdRouteImport.update({
+    id: '/admin/edit/$id',
+    path: '/admin/edit/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -114,9 +135,12 @@ export interface FileRoutesByFullPath {
   '/gallery/$order': typeof GalleryOrderRouteWithChildren
   '/species/$slug': typeof SpeciesSlugRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/admin/bulk-upload': typeof AuthenticatedAdminBulkUploadRoute
   '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/admin/manage': typeof AuthenticatedAdminManageRoute
   '/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
+  '/admin/edit/$id': typeof AuthenticatedAdminEditIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -130,9 +154,12 @@ export interface FileRoutesByTo {
   '/gallery/$order': typeof GalleryOrderRouteWithChildren
   '/species/$slug': typeof SpeciesSlugRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/admin/bulk-upload': typeof AuthenticatedAdminBulkUploadRoute
   '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/admin/manage': typeof AuthenticatedAdminManageRoute
   '/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
+  '/admin/edit/$id': typeof AuthenticatedAdminEditIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -148,9 +175,12 @@ export interface FileRoutesById {
   '/gallery/$order': typeof GalleryOrderRouteWithChildren
   '/species/$slug': typeof SpeciesSlugRoute
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/_authenticated/admin/bulk-upload': typeof AuthenticatedAdminBulkUploadRoute
   '/_authenticated/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/_authenticated/admin/manage': typeof AuthenticatedAdminManageRoute
   '/_authenticated/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
+  '/_authenticated/admin/edit/$id': typeof AuthenticatedAdminEditIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -166,9 +196,12 @@ export interface FileRouteTypes {
     | '/gallery/$order'
     | '/species/$slug'
     | '/admin/blog'
+    | '/admin/bulk-upload'
     | '/admin/dashboard'
+    | '/admin/manage'
     | '/admin/upload'
     | '/gallery/$order/$family'
+    | '/admin/edit/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -182,9 +215,12 @@ export interface FileRouteTypes {
     | '/gallery/$order'
     | '/species/$slug'
     | '/admin/blog'
+    | '/admin/bulk-upload'
     | '/admin/dashboard'
+    | '/admin/manage'
     | '/admin/upload'
     | '/gallery/$order/$family'
+    | '/admin/edit/$id'
   id:
     | '__root__'
     | '/'
@@ -199,9 +235,12 @@ export interface FileRouteTypes {
     | '/gallery/$order'
     | '/species/$slug'
     | '/_authenticated/admin/blog'
+    | '/_authenticated/admin/bulk-upload'
     | '/_authenticated/admin/dashboard'
+    | '/_authenticated/admin/manage'
     | '/_authenticated/admin/upload'
     | '/gallery/$order/$family'
+    | '/_authenticated/admin/edit/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -309,11 +348,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUploadRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/manage': {
+      id: '/_authenticated/admin/manage'
+      path: '/admin/manage'
+      fullPath: '/admin/manage'
+      preLoaderRoute: typeof AuthenticatedAdminManageRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/dashboard': {
       id: '/_authenticated/admin/dashboard'
       path: '/admin/dashboard'
       fullPath: '/admin/dashboard'
       preLoaderRoute: typeof AuthenticatedAdminDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/bulk-upload': {
+      id: '/_authenticated/admin/bulk-upload'
+      path: '/admin/bulk-upload'
+      fullPath: '/admin/bulk-upload'
+      preLoaderRoute: typeof AuthenticatedAdminBulkUploadRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/blog': {
@@ -323,19 +376,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminBlogRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/edit/$id': {
+      id: '/_authenticated/admin/edit/$id'
+      path: '/admin/edit/$id'
+      fullPath: '/admin/edit/$id'
+      preLoaderRoute: typeof AuthenticatedAdminEditIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
+  AuthenticatedAdminBulkUploadRoute: typeof AuthenticatedAdminBulkUploadRoute
   AuthenticatedAdminDashboardRoute: typeof AuthenticatedAdminDashboardRoute
+  AuthenticatedAdminManageRoute: typeof AuthenticatedAdminManageRoute
   AuthenticatedAdminUploadRoute: typeof AuthenticatedAdminUploadRoute
+  AuthenticatedAdminEditIdRoute: typeof AuthenticatedAdminEditIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
+  AuthenticatedAdminBulkUploadRoute: AuthenticatedAdminBulkUploadRoute,
   AuthenticatedAdminDashboardRoute: AuthenticatedAdminDashboardRoute,
+  AuthenticatedAdminManageRoute: AuthenticatedAdminManageRoute,
   AuthenticatedAdminUploadRoute: AuthenticatedAdminUploadRoute,
+  AuthenticatedAdminEditIdRoute: AuthenticatedAdminEditIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -388,13 +454,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
