@@ -34,16 +34,16 @@ export function GalleryView({ order, family, q = "" }: Props) {
     setSearchInput(q);
   }, [q]);
 
-  // Debounce search → URL
+  // Debounce search → URL (trigger after 2 characters)
   useEffect(() => {
     const t = setTimeout(() => {
       if (searchInput === q) return;
-      if (searchInput.length > 0 && searchInput.length < 3) return;
+      if (searchInput.length > 0 && searchInput.length < 2) return;
       navigate({
         to: "/gallery",
         search: searchInput ? { q: searchInput } : {},
       });
-    }, 350);
+    }, 300);
     return () => clearTimeout(t);
   }, [searchInput, q, navigate]);
 
