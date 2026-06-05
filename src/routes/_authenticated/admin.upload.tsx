@@ -348,6 +348,20 @@ function UploadPage() {
           </Grid>
         </Section>
 
+        {/* 2b. Conservation */}
+        <Section title="Conservation" number="2b" hint="IUCN Red List status">
+          <Field label="IUCN Status">
+            <select
+              value={form.iucn_status}
+              onChange={(e) => set("iucn_status", e.target.value)}
+              className={selectCls}
+            >
+              <option value="">Select a status…</option>
+              {IUCN_OPTIONS.map((s) => <option key={s}>{s}</option>)}
+            </select>
+          </Field>
+        </Section>
+
         {/* 3. Photo details */}
         <Section title="Photograph" number="03">
           <Grid>
