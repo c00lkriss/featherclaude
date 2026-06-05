@@ -54,18 +54,24 @@ function LandingPage() {
 /* ----------------------------- HERO ----------------------------- */
 
 function Hero() {
+  const navigate = useNavigate();
   const { data: featured } = useQuery({
     queryKey: ["featured-photos"],
     queryFn: async (): Promise<Photo[]> => {
       const { data, error } = await supabase
         .from("photos")
-        .select("id, title, image_url, thumbnail_url, order_name")
+        .select("id, title, image_url, thumbnail_url, order_name, species_slug")
         .eq("is_featured", true)
         .limit(6);
       if (error) throw error;
       return data ?? [];
     },
   });
+  const goToPhoto = (slug?: string) => {
+    if (!slug) return;
+    sessionStorage.setItem("gallery:lastPath", "/gallery");
+    navigate({ to: "/species/$slug", params: { slug } });
+  };
 
   const slides = featured && featured.length > 0 ? featured : null;
   const count = slides?.length ?? 4;
