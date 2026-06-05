@@ -401,6 +401,11 @@ function PhotoCard({ photo }: { photo: Photo }) {
     <Link
       to="/species/$slug"
       params={{ slug: photo.species_slug }}
+      onClick={() => {
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("gallery:lastPath", window.location.pathname + window.location.search);
+        }
+      }}
       className="group mb-4 block break-inside-avoid overflow-hidden rounded-sm bg-surface transition-shadow duration-300 hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)]"
     >
       <div className="relative overflow-hidden">
