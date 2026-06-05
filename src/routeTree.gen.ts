@@ -26,6 +26,7 @@ import { Route as AuthenticatedAdminManageRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authenticated/admin.dashboard'
 import { Route as AuthenticatedAdminBulkUploadRouteImport } from './routes/_authenticated/admin.bulk-upload'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
+import { Route as AuthenticatedAdminEditIdRouteImport } from './routes/_authenticated/admin.edit.$id'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -115,6 +116,12 @@ const AuthenticatedAdminBlogRoute = AuthenticatedAdminBlogRouteImport.update({
   path: '/admin/blog',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminEditIdRoute =
+  AuthenticatedAdminEditIdRouteImport.update({
+    id: '/admin/edit/$id',
+    path: '/admin/edit/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -133,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/admin/manage': typeof AuthenticatedAdminManageRoute
   '/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
+  '/admin/edit/$id': typeof AuthenticatedAdminEditIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -151,6 +159,7 @@ export interface FileRoutesByTo {
   '/admin/manage': typeof AuthenticatedAdminManageRoute
   '/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
+  '/admin/edit/$id': typeof AuthenticatedAdminEditIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -171,6 +180,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/manage': typeof AuthenticatedAdminManageRoute
   '/_authenticated/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
+  '/_authenticated/admin/edit/$id': typeof AuthenticatedAdminEditIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -191,6 +201,7 @@ export interface FileRouteTypes {
     | '/admin/manage'
     | '/admin/upload'
     | '/gallery/$order/$family'
+    | '/admin/edit/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -209,6 +220,7 @@ export interface FileRouteTypes {
     | '/admin/manage'
     | '/admin/upload'
     | '/gallery/$order/$family'
+    | '/admin/edit/$id'
   id:
     | '__root__'
     | '/'
@@ -228,6 +240,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/manage'
     | '/_authenticated/admin/upload'
     | '/gallery/$order/$family'
+    | '/_authenticated/admin/edit/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -363,6 +376,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminBlogRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/edit/$id': {
+      id: '/_authenticated/admin/edit/$id'
+      path: '/admin/edit/$id'
+      fullPath: '/admin/edit/$id'
+      preLoaderRoute: typeof AuthenticatedAdminEditIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -372,6 +392,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminDashboardRoute: typeof AuthenticatedAdminDashboardRoute
   AuthenticatedAdminManageRoute: typeof AuthenticatedAdminManageRoute
   AuthenticatedAdminUploadRoute: typeof AuthenticatedAdminUploadRoute
+  AuthenticatedAdminEditIdRoute: typeof AuthenticatedAdminEditIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -380,6 +401,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminDashboardRoute: AuthenticatedAdminDashboardRoute,
   AuthenticatedAdminManageRoute: AuthenticatedAdminManageRoute,
   AuthenticatedAdminUploadRoute: AuthenticatedAdminUploadRoute,
+  AuthenticatedAdminEditIdRoute: AuthenticatedAdminEditIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
