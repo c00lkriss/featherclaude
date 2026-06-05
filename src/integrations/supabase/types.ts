@@ -66,6 +66,7 @@ export type Database = {
           image_url: string
           is_featured: boolean | null
           iso: number | null
+          iucn_status: string | null
           latitude: number | null
           lens: string | null
           location: string | null
@@ -93,6 +94,7 @@ export type Database = {
           image_url: string
           is_featured?: boolean | null
           iso?: number | null
+          iucn_status?: string | null
           latitude?: number | null
           lens?: string | null
           location?: string | null
@@ -120,6 +122,7 @@ export type Database = {
           image_url?: string
           is_featured?: boolean | null
           iso?: number | null
+          iucn_status?: string | null
           latitude?: number | null
           lens?: string | null
           location?: string | null
