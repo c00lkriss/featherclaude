@@ -6,7 +6,7 @@ import exifr from "exifr";
 import { CheckCircle2, ImagePlus, Loader2, Pencil, Save, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { fileToDownscaledDataURL, formatShutter, slugify } from "@/lib/bird-constants";
+import { buildPhotoSlug, fileToDownscaledDataURL, formatShutter, slugify } from "@/lib/bird-constants";
 import { identifyBird } from "@/lib/identify-bird.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/bulk-upload")({
@@ -179,9 +179,10 @@ function BulkUploadPage() {
       updateItem(item.id, { status: "saving" });
       try {
         const ext = item.file.name.split(".").pop()?.toLowerCase() || "jpg";
-        const slug = slugify(item.common_name || item.species_name || "bird");
+        const identifier = slugify(item.common_name || item.species_name || "bird");
+        const photoSlug = buildPhotoSlug(identifier);
         const orderFolder = item.order_name || "Unknown";
-        const path = `${orderFolder}/${slug}-${Date.now()}.${ext}`;
+        const path = `${orderFolder}/${photoSlug}.${ext}`;
         const { error: upErr } = await supabase.storage
           .from("photos")
           .upload(path, item.file, { contentType: item.file.type, upsert: false });
@@ -197,7 +198,8 @@ function BulkUploadPage() {
           genus: item.genus || null,
           species_name: item.species_name || "Unknown",
           common_name: item.common_name || null,
-          species_slug: slug,
+          species_identifier: identifier,
+          species_slug: photoSlug,
           image_url,
           thumbnail_url: image_url,
           date_taken: item.date_taken || null,

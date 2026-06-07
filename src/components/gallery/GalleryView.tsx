@@ -13,6 +13,7 @@ type Photo = {
   common_name: string | null;
   species_name: string;
   species_slug: string;
+  species_identifier: string;
   order_name: string;
   family_name: string;
   image_url: string;
@@ -320,7 +321,7 @@ function PhotoGrid({
       let req = supabase
         .from("photos")
         .select(
-          "id, title, common_name, species_name, species_slug, order_name, family_name, image_url, thumbnail_url, tags",
+          "id, title, common_name, species_name, species_slug, species_identifier, order_name, family_name, image_url, thumbnail_url, tags",
           { count: searchTerm ? "exact" : undefined },
         )
         .order("created_at", { ascending: false })
@@ -415,7 +416,8 @@ function PhotoCard({ photo }: { photo: Photo }) {
   return (
     <Link
       to="/species/$slug"
-      params={{ slug: photo.species_slug }}
+      params={{ slug: photo.species_identifier || photo.species_slug }}
+      search={{ p: photo.id }}
       onClick={() => {
         if (typeof window !== "undefined") {
           sessionStorage.setItem("gallery:lastPath", window.location.pathname + window.location.search);

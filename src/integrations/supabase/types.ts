@@ -73,6 +73,7 @@ export type Database = {
           longitude: number | null
           order_name: string
           shutter_speed: string | null
+          species_identifier: string
           species_name: string
           species_slug: string
           tags: string[] | null
@@ -101,6 +102,7 @@ export type Database = {
           longitude?: number | null
           order_name: string
           shutter_speed?: string | null
+          species_identifier: string
           species_name: string
           species_slug: string
           tags?: string[] | null
@@ -129,6 +131,7 @@ export type Database = {
           longitude?: number | null
           order_name?: string
           shutter_speed?: string | null
+          species_identifier?: string
           species_name?: string
           species_slug?: string
           tags?: string[] | null

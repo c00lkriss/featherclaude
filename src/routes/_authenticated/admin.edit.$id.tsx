@@ -22,7 +22,7 @@ type Form = {
   genus: string;
   species_name: string;
   common_name: string;
-  species_slug: string;
+  species_identifier: string;
   title: string;
   description: string;
   date_taken: string;
@@ -69,7 +69,7 @@ function EditPage() {
       genus: data.genus ?? "",
       species_name: data.species_name ?? "",
       common_name: data.common_name ?? "",
-      species_slug: data.species_slug ?? "",
+      species_identifier: (data as { species_identifier?: string }).species_identifier ?? data.species_slug ?? "",
       title: data.title ?? "",
       description: data.description ?? "",
       date_taken: data.date_taken ?? "",
@@ -127,7 +127,7 @@ function EditPage() {
           genus: form.genus || null,
           species_name: form.species_name,
           common_name: form.common_name || null,
-          species_slug: form.species_slug || slugify(form.common_name || form.species_name),
+          species_identifier: form.species_identifier || slugify(form.common_name || form.species_name),
           date_taken: form.date_taken || null,
           camera: form.camera || null,
           lens: form.lens || null,
@@ -195,8 +195,8 @@ function EditPage() {
             <Field label="Common name">
               <input value={form.common_name} onChange={(e) => set("common_name", e.target.value)} className={inputCls} />
             </Field>
-            <Field label="Slug">
-              <input value={form.species_slug} onChange={(e) => set("species_slug", slugify(e.target.value))} className={inputCls} />
+            <Field label="Species identifier">
+              <input value={form.species_identifier} onChange={(e) => set("species_identifier", slugify(e.target.value))} className={inputCls} />
             </Field>
           </Grid>
         </Section>

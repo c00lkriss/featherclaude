@@ -5,7 +5,12 @@ import { ChevronLeft, ChevronRight, Info, MapPin, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
+type SpeciesSearch = { p?: string };
+
 export const Route = createFileRoute("/species/$slug")({
+  validateSearch: (search: Record<string, unknown>): SpeciesSearch => ({
+    p: typeof search.p === "string" && search.p.length > 0 ? search.p : undefined,
+  }),
   head: ({ params }) => ({
     meta: [
       { title: `${params.slug.replace(/-/g, " ")} — Coolkriss` },
@@ -22,6 +27,7 @@ type Photo = {
   common_name: string | null;
   species_name: string;
   species_slug: string;
+  species_identifier: string;
   order_name: string;
   family_name: string;
   genus: string | null;
@@ -52,9 +58,9 @@ const IUCN_COLORS: Record<string, string> = {
 
 function SpeciesPage() {
   const { slug } = Route.useParams();
+  const { p: pSearch } = Route.useSearch();
   const router = useRouter();
   const navigate = useNavigate();
-  // Info overlay visible by default
   const [infoOpen, setInfoOpen] = useState(true);
   const [chromeVisible, setChromeVisible] = useState(true);
 
@@ -72,29 +78,44 @@ function SpeciesPage() {
       const { data, error } = await supabase
         .from("photos")
         .select(
-          "id, title, description, common_name, species_name, species_slug, order_name, family_name, genus, image_url, thumbnail_url, location, latitude, longitude, date_taken, camera, lens, iso, aperture, shutter_speed, focal_length, iucn_status",
+          "id, title, description, common_name, species_name, species_slug, species_identifier, order_name, family_name, genus, image_url, thumbnail_url, location, latitude, longitude, date_taken, camera, lens, iso, aperture, shutter_speed, focal_length, iucn_status",
         )
         .order("created_at", { ascending: false });
       if (error) throw error;
-      const seen = new Set<string>();
-      return (data ?? []).filter((p) => {
-        if (seen.has(p.species_slug)) return false;
-        seen.add(p.species_slug);
-        return true;
-      }) as Photo[];
+      // Group: keep order of first appearance of each species_identifier, then
+      // place all photos of that species consecutively.
+      const groups = new Map<string, Photo[]>();
+      for (const row of (data ?? []) as Photo[]) {
+        const key = row.species_identifier || row.species_slug;
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key)!.push(row);
+      }
+      const ordered: Photo[] = [];
+      groups.forEach((arr) => ordered.push(...arr));
+      return ordered;
     },
   });
 
-  const index = useMemo(
-    () => photos?.findIndex((p) => p.species_slug === slug) ?? -1,
-    [photos, slug],
-  );
+  const index = useMemo(() => {
+    if (!photos) return -1;
+    if (pSearch) {
+      const i = photos.findIndex((p) => p.id === pSearch && p.species_identifier === slug);
+      if (i >= 0) return i;
+    }
+    return photos.findIndex((p) => p.species_identifier === slug);
+  }, [photos, slug, pSearch]);
 
   const current = index >= 0 ? photos![index] : null;
   const prev = index > 0 ? photos![index - 1] : null;
   const next = photos && index >= 0 && index < photos.length - 1 ? photos[index + 1] : null;
 
-  const goTo = (to: string) => router.navigate({ to });
+  const goPhoto = (target: Photo) => {
+    router.navigate({
+      to: "/species/$slug",
+      params: { slug: target.species_identifier },
+      search: { p: target.id },
+    });
+  };
 
   const handleBackToGallery = () => {
     let target = "/gallery";
@@ -107,8 +128,8 @@ function SpeciesPage() {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft" && prev) goTo(`/species/${prev.species_slug}`);
-      else if (e.key === "ArrowRight" && next) goTo(`/species/${next.species_slug}`);
+      if (e.key === "ArrowLeft" && prev) goPhoto(prev);
+      else if (e.key === "ArrowRight" && next) goPhoto(next);
       else if (e.key === "i" || e.key === "I") setInfoOpen((v) => !v);
       else if (e.key === "Escape") handleBackToGallery();
     };
@@ -137,7 +158,6 @@ function SpeciesPage() {
         </div>
       )}
 
-      {/* Top bar */}
       <div
         className={cn(
           "absolute inset-x-0 top-0 z-20 flex items-center justify-between bg-gradient-to-b from-background/80 to-transparent px-6 py-5 transition-opacity duration-300",
@@ -163,7 +183,7 @@ function SpeciesPage() {
 
       {prev && (
         <button
-          onClick={() => goTo(`/species/${prev.species_slug}`)}
+          onClick={() => goPhoto(prev)}
           aria-label="Previous"
           className={cn(
             "absolute left-6 top-1/2 z-20 -translate-y-1/2 rounded-full bg-background/60 p-3 text-foreground backdrop-blur-md transition-all duration-300 hover:bg-background/80 hover:text-primary",
@@ -175,7 +195,7 @@ function SpeciesPage() {
       )}
       {next && (
         <button
-          onClick={() => goTo(`/species/${next.species_slug}`)}
+          onClick={() => goPhoto(next)}
           aria-label="Next"
           className={cn(
             "absolute right-6 top-1/2 z-20 -translate-y-1/2 rounded-full bg-background/60 p-3 text-foreground backdrop-blur-md transition-all duration-300 hover:bg-background/80 hover:text-primary",
@@ -186,7 +206,6 @@ function SpeciesPage() {
         </button>
       )}
 
-      {/* Info button — amber gold, glows when overlay active */}
       <button
         onClick={() => setInfoOpen((v) => !v)}
         aria-label="Toggle info"
@@ -204,7 +223,6 @@ function SpeciesPage() {
         {infoOpen ? <X className="h-5 w-5" /> : <Info className="h-5 w-5" />}
       </button>
 
-      {/* Info overlay */}
       {current && (
         <div
           style={{
@@ -264,38 +282,31 @@ function InfoPanel({ photo }: { photo: Photo }) {
 
   return (
     <div className="mx-auto max-w-5xl text-white" style={{ textShadow: TEXT_SHADOW }}>
-      {/* Common name */}
       <h2 className="font-display text-4xl font-semibold leading-tight md:text-5xl">
         {photo.common_name || photo.species_name}
       </h2>
-      {/* Scientific name */}
       <p className="mt-2 font-body text-lg font-light italic text-white/80">
         {photo.species_name}
       </p>
 
-      {/* IUCN badge — prominent */}
       {photo.iucn_status && (
         <div className="mt-5" style={{ textShadow: "none" }}>
           <IucnBadge status={photo.iucn_status} />
         </div>
       )}
 
-      {/* Taxonomy line */}
       <p className="mt-6 text-xs font-light uppercase tracking-[0.3em] text-white/85">
         {tax}
       </p>
 
-      {/* Description */}
       {photo.description && (
         <p className="mt-5 max-w-prose text-sm font-light leading-relaxed text-white/90">
           {photo.description}
         </p>
       )}
 
-      {/* Divider */}
       <div className="my-8 h-px w-full bg-white/20" />
 
-      {/* EXIF grid */}
       <dl className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3 md:grid-cols-6">
         {exif.map((row) => (
           <div key={row.label} className="border-l-2 border-white/30 pl-3">
@@ -309,7 +320,6 @@ function InfoPanel({ photo }: { photo: Photo }) {
         ))}
       </dl>
 
-      {/* Location + date */}
       {(photo.location || date) && (
         <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-light text-white/85">
           {photo.location && (

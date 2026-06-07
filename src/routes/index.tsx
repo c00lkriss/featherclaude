@@ -22,6 +22,7 @@ type Photo = {
   thumbnail_url: string | null;
   order_name: string;
   species_slug?: string;
+  species_identifier?: string;
 };
 
 type TaxonomyOrder = {
@@ -41,6 +42,13 @@ type BlogPost = {
 };
 
 function LandingPage() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.location.hostname === "admin.coolkriss.in" && window.location.pathname === "/") {
+      navigate({ to: "/admin", replace: true });
+    }
+  }, [navigate]);
   return (
     <div className="flex flex-col">
       <Hero />
@@ -60,17 +68,19 @@ function Hero() {
     queryFn: async (): Promise<Photo[]> => {
       const { data, error } = await supabase
         .from("photos")
-        .select("id, title, image_url, thumbnail_url, order_name, species_slug")
+        .select("id, title, image_url, thumbnail_url, order_name, species_slug, species_identifier")
         .eq("is_featured", true)
         .limit(6);
       if (error) throw error;
       return data ?? [];
     },
   });
-  const goToPhoto = (slug?: string) => {
+  const goToPhoto = (photo?: Photo) => {
+    if (!photo) return;
+    const slug = photo.species_identifier || photo.species_slug;
     if (!slug) return;
     sessionStorage.setItem("gallery:lastPath", "/gallery");
-    navigate({ to: "/species/$slug", params: { slug } });
+    navigate({ to: "/species/$slug", params: { slug }, search: { p: photo.id } });
   };
 
   const slides = featured && featured.length > 0 ? featured : null;
@@ -129,7 +139,7 @@ function Hero() {
         <button
           type="button"
           aria-label={`View ${slides[idx].title}`}
-          onClick={() => goToPhoto(slides[idx].species_slug)}
+          onClick={() => goToPhoto(slides[idx])}
           className="absolute inset-0 z-[5] cursor-pointer"
         />
       )}
@@ -146,6 +156,36 @@ function Hero() {
         <p className="mt-8 max-w-xl text-base font-light leading-relaxed text-muted-foreground md:text-lg animate-fade-in-slow">
           Quiet moments in the wild — a visual archive of birds across the Indian subcontinent.
         </p>
+
+        {/* Social row */}
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-5 animate-fade-in-slow">
+          <a
+            href="https://www.instagram.com/coolkriss/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center gap-2 text-white/90 transition-all duration-200 hover:scale-105 hover:text-white"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+            <span className="text-xs font-light tracking-widest">@coolkriss</span>
+          </a>
+          <a
+            href="https://www.youtube.com/watch?v=5WxexOSekdM"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Watch latest video"
+            className="group relative flex h-14 w-24 items-center justify-center overflow-hidden rounded-sm border border-white/20 bg-black/40 backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:border-white/50"
+          >
+            <img
+              src="https://img.youtube.com/vi/5WxexOSekdM/mqdefault.jpg"
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
+              loading="lazy"
+            />
+            <span className="relative z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/95 text-black shadow-lg">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </span>
+          </a>
+        </div>
         <div className="mt-12 flex items-center gap-6 animate-fade-in-slow">
           <Link
             to="/gallery"
@@ -189,7 +229,7 @@ function PhotoStrip() {
     queryFn: async (): Promise<Photo[]> => {
       const { data, error } = await supabase
         .from("photos")
-        .select("id, title, image_url, thumbnail_url, order_name, species_slug")
+        .select("id, title, image_url, thumbnail_url, order_name, species_slug, species_identifier")
         .order("created_at", { ascending: false })
         .limit(24);
       if (error) throw error;
@@ -209,10 +249,11 @@ function PhotoStrip() {
   const row1 = photos.slice(0, half);
   const row2 = photos.slice(half).length > 0 ? photos.slice(half) : photos.slice(0, half);
 
-  const onPick = (slug?: string) => {
+  const onPick = (photo: Photo) => {
+    const slug = photo.species_identifier || photo.species_slug;
     if (!slug) return;
     sessionStorage.setItem("gallery:lastPath", "/gallery");
-    navigate({ to: "/species/$slug", params: { slug } });
+    navigate({ to: "/species/$slug", params: { slug }, search: { p: photo.id } });
   };
 
   return (
@@ -224,7 +265,7 @@ function PhotoStrip() {
   );
 }
 
-function StripRow({ photos, direction, onPick }: { photos: Photo[]; direction: "left" | "right"; onPick: (slug?: string) => void }) {
+function StripRow({ photos, direction, onPick }: { photos: Photo[]; direction: "left" | "right"; onPick: (photo: Photo) => void }) {
   const repeated = [...photos, ...photos];
   return (
     <div className="marquee-wrap overflow-hidden">
@@ -235,8 +276,8 @@ function StripRow({ photos, direction, onPick }: { photos: Photo[]; direction: "
           <button
             type="button"
             key={`${p.id}-${i}`}
-            onClick={() => onPick(p.species_slug)}
-            disabled={!p.species_slug}
+            onClick={() => onPick(p)}
+            disabled={!(p.species_identifier || p.species_slug)}
             className="group relative h-40 w-40 flex-shrink-0 -mx-1 overflow-hidden rounded-sm bg-muted shadow-md transition-all duration-300 hover:z-10 hover:-translate-y-2 hover:scale-105 hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.7)] disabled:cursor-default"
           >
             {p.image_url ? (
