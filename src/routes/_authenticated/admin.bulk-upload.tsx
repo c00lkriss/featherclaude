@@ -179,9 +179,10 @@ function BulkUploadPage() {
       updateItem(item.id, { status: "saving" });
       try {
         const ext = item.file.name.split(".").pop()?.toLowerCase() || "jpg";
-        const slug = slugify(item.common_name || item.species_name || "bird");
+        const identifier = slugify(item.common_name || item.species_name || "bird");
+        const photoSlug = buildPhotoSlug(identifier);
         const orderFolder = item.order_name || "Unknown";
-        const path = `${orderFolder}/${slug}-${Date.now()}.${ext}`;
+        const path = `${orderFolder}/${photoSlug}.${ext}`;
         const { error: upErr } = await supabase.storage
           .from("photos")
           .upload(path, item.file, { contentType: item.file.type, upsert: false });
@@ -197,7 +198,8 @@ function BulkUploadPage() {
           genus: item.genus || null,
           species_name: item.species_name || "Unknown",
           common_name: item.common_name || null,
-          species_slug: slug,
+          species_identifier: identifier,
+          species_slug: photoSlug,
           image_url,
           thumbnail_url: image_url,
           date_taken: item.date_taken || null,
