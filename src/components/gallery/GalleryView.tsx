@@ -321,7 +321,7 @@ function PhotoGrid({
       let req = supabase
         .from("photos")
         .select(
-          "id, title, common_name, species_name, species_slug, order_name, family_name, image_url, thumbnail_url, tags",
+          "id, title, common_name, species_name, species_slug, species_identifier, order_name, family_name, image_url, thumbnail_url, tags",
           { count: searchTerm ? "exact" : undefined },
         )
         .order("created_at", { ascending: false })
