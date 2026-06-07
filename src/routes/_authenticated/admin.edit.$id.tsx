@@ -127,7 +127,7 @@ function EditPage() {
           genus: form.genus || null,
           species_name: form.species_name,
           common_name: form.common_name || null,
-          species_slug: form.species_slug || slugify(form.common_name || form.species_name),
+          species_identifier: form.species_identifier || slugify(form.common_name || form.species_name),
           date_taken: form.date_taken || null,
           camera: form.camera || null,
           lens: form.lens || null,
