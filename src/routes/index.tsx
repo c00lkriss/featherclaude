@@ -132,7 +132,7 @@ function Hero() {
         <button
           type="button"
           aria-label={`View ${slides[idx].title}`}
-          onClick={() => goToPhoto(slides[idx].species_slug)}
+          onClick={() => goToPhoto(slides[idx])}
           className="absolute inset-0 z-[5] cursor-pointer"
         />
       )}
