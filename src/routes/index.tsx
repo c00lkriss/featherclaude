@@ -228,7 +228,7 @@ function PhotoStrip() {
   );
 }
 
-function StripRow({ photos, direction, onPick }: { photos: Photo[]; direction: "left" | "right"; onPick: (slug?: string) => void }) {
+function StripRow({ photos, direction, onPick }: { photos: Photo[]; direction: "left" | "right"; onPick: (photo: Photo) => void }) {
   const repeated = [...photos, ...photos];
   return (
     <div className="marquee-wrap overflow-hidden">
@@ -239,8 +239,8 @@ function StripRow({ photos, direction, onPick }: { photos: Photo[]; direction: "
           <button
             type="button"
             key={`${p.id}-${i}`}
-            onClick={() => onPick(p.species_slug)}
-            disabled={!p.species_slug}
+            onClick={() => onPick(p)}
+            disabled={!(p.species_identifier || p.species_slug)}
             className="group relative h-40 w-40 flex-shrink-0 -mx-1 overflow-hidden rounded-sm bg-muted shadow-md transition-all duration-300 hover:z-10 hover:-translate-y-2 hover:scale-105 hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.7)] disabled:cursor-default"
           >
             {p.image_url ? (
