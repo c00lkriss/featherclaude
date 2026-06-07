@@ -6,7 +6,7 @@ import exifr from "exifr";
 import { CheckCircle2, ImagePlus, Loader2, Pencil, Save, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { fileToDownscaledDataURL, formatShutter, slugify } from "@/lib/bird-constants";
+import { buildPhotoSlug, fileToDownscaledDataURL, formatShutter, slugify } from "@/lib/bird-constants";
 import { identifyBird } from "@/lib/identify-bird.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/bulk-upload")({
