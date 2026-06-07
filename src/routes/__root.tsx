@@ -228,6 +228,8 @@ function Header({ user }: { user: { id: string; email?: string } | null }) {
 }
 
 function Footer() {
+  const socialCls =
+    "transition-all duration-200 hover:scale-110 hover:brightness-125";
   return (
     <footer className="w-full border-t border-border/40 bg-surface">
       <div className="mx-auto max-w-7xl px-6 py-8">
@@ -248,6 +250,34 @@ function Footer() {
             <Link to="/about-birds" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               About
             </Link>
+            <a
+              href="mailto:hello@coolkriss.in"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              hello@coolkriss.in
+            </a>
+            <div className="flex items-center gap-3">
+              <a
+                href="https://www.instagram.com/coolkriss/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                style={{ color: "#c9a84c" }}
+                className={socialCls}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+              </a>
+              <a
+                href="https://www.youtube.com/@CoolKrissGokul"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="YouTube"
+                style={{ color: "#c9a84c" }}
+                className={socialCls}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.8 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg>
+              </a>
+            </div>
           </div>
         </div>
       </div>
