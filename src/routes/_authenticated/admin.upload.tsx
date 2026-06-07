@@ -183,7 +183,9 @@ function UploadPage() {
     try {
       // Upload to storage
       const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const path = `${form.order_name}/${form.species_slug || crypto.randomUUID()}-${Date.now()}.${ext}`;
+      const identifier = slugify(form.common_name || form.species_name || "bird");
+      const photoSlug = (await import("@/lib/bird-constants")).buildPhotoSlug(identifier);
+      const path = `${form.order_name}/${photoSlug}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from("photos")
         .upload(path, file, { contentType: file.type, upsert: false });
@@ -207,7 +209,8 @@ function UploadPage() {
         genus: form.genus || null,
         species_name: form.species_name,
         common_name: form.common_name || null,
-        species_slug: form.species_slug || slugify(form.common_name || form.species_name),
+        species_identifier: identifier,
+        species_slug: photoSlug,
         image_url,
         thumbnail_url: image_url,
         date_taken: form.date_taken || null,
