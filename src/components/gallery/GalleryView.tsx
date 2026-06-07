@@ -13,6 +13,7 @@ type Photo = {
   common_name: string | null;
   species_name: string;
   species_slug: string;
+  species_identifier: string;
   order_name: string;
   family_name: string;
   image_url: string;
