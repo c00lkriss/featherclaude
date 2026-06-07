@@ -22,6 +22,7 @@ type Photo = {
   thumbnail_url: string | null;
   order_name: string;
   species_slug?: string;
+  species_identifier?: string;
 };
 
 type TaxonomyOrder = {
