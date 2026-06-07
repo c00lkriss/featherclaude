@@ -212,10 +212,11 @@ function PhotoStrip() {
   const row1 = photos.slice(0, half);
   const row2 = photos.slice(half).length > 0 ? photos.slice(half) : photos.slice(0, half);
 
-  const onPick = (slug?: string) => {
+  const onPick = (photo: Photo) => {
+    const slug = photo.species_identifier || photo.species_slug;
     if (!slug) return;
     sessionStorage.setItem("gallery:lastPath", "/gallery");
-    navigate({ to: "/species/$slug", params: { slug } });
+    navigate({ to: "/species/$slug", params: { slug }, search: { p: photo.id } });
   };
 
   return (
