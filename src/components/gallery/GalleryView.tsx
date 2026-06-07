@@ -416,7 +416,7 @@ function PhotoCard({ photo }: { photo: Photo }) {
   return (
     <Link
       to="/species/$slug"
-      params={{ slug: photo.species_slug }}
+      params={{ slug: photo.species_identifier || photo.species_slug }}
       onClick={() => {
         if (typeof window !== "undefined") {
           sessionStorage.setItem("gallery:lastPath", window.location.pathname + window.location.search);
