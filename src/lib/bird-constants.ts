@@ -42,6 +42,18 @@ export const MAX_FEATURED = 5;
 export const slugify = (s: string) =>
   s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-");
 
+// Generate a 4-char alphanumeric suffix (lowercase) for per-photo slugs.
+export const randomSlugSuffix = (len = 4) => {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let out = "";
+  for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * chars.length)];
+  return out;
+};
+
+// Build a per-photo unique slug from a species identifier base.
+export const buildPhotoSlug = (identifier: string) =>
+  `${identifier || "bird"}-${randomSlugSuffix()}`;
+
 export const formatShutter = (t: number | undefined | null): string => {
   if (t == null) return "";
   if (t >= 1) return `${t}s`;
