@@ -195,8 +195,8 @@ function EditPage() {
             <Field label="Common name">
               <input value={form.common_name} onChange={(e) => set("common_name", e.target.value)} className={inputCls} />
             </Field>
-            <Field label="Slug">
-              <input value={form.species_slug} onChange={(e) => set("species_slug", slugify(e.target.value))} className={inputCls} />
+            <Field label="Species identifier">
+              <input value={form.species_identifier} onChange={(e) => set("species_identifier", slugify(e.target.value))} className={inputCls} />
             </Field>
           </Grid>
         </Section>
