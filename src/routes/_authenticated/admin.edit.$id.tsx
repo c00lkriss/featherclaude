@@ -69,7 +69,7 @@ function EditPage() {
       genus: data.genus ?? "",
       species_name: data.species_name ?? "",
       common_name: data.common_name ?? "",
-      species_slug: data.species_slug ?? "",
+      species_identifier: (data as { species_identifier?: string }).species_identifier ?? data.species_slug ?? "",
       title: data.title ?? "",
       description: data.description ?? "",
       date_taken: data.date_taken ?? "",
