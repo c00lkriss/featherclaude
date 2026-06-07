@@ -22,7 +22,7 @@ type Form = {
   genus: string;
   species_name: string;
   common_name: string;
-  species_slug: string;
+  species_identifier: string;
   title: string;
   description: string;
   date_taken: string;
