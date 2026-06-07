@@ -156,6 +156,36 @@ function Hero() {
         <p className="mt-8 max-w-xl text-base font-light leading-relaxed text-muted-foreground md:text-lg animate-fade-in-slow">
           Quiet moments in the wild — a visual archive of birds across the Indian subcontinent.
         </p>
+
+        {/* Social row */}
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-5 animate-fade-in-slow">
+          <a
+            href="https://www.instagram.com/coolkriss/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center gap-2 text-white/90 transition-all duration-200 hover:scale-105 hover:text-white"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+            <span className="text-xs font-light tracking-widest">@coolkriss</span>
+          </a>
+          <a
+            href="https://www.youtube.com/watch?v=5WxexOSekdM"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Watch latest video"
+            className="group relative flex h-14 w-24 items-center justify-center overflow-hidden rounded-sm border border-white/20 bg-black/40 backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:border-white/50"
+          >
+            <img
+              src="https://img.youtube.com/vi/5WxexOSekdM/mqdefault.jpg"
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
+              loading="lazy"
+            />
+            <span className="relative z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/95 text-black shadow-lg">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </span>
+          </a>
+        </div>
         <div className="mt-12 flex items-center gap-6 animate-fade-in-slow">
           <Link
             to="/gallery"
