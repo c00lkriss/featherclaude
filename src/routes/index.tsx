@@ -192,7 +192,7 @@ function PhotoStrip() {
     queryFn: async (): Promise<Photo[]> => {
       const { data, error } = await supabase
         .from("photos")
-        .select("id, title, image_url, thumbnail_url, order_name, species_slug")
+        .select("id, title, image_url, thumbnail_url, order_name, species_slug, species_identifier")
         .order("created_at", { ascending: false })
         .limit(24);
       if (error) throw error;
