@@ -42,6 +42,13 @@ type BlogPost = {
 };
 
 function LandingPage() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.location.hostname === "admin.coolkriss.in" && window.location.pathname === "/") {
+      navigate({ to: "/admin", replace: true });
+    }
+  }, [navigate]);
   return (
     <div className="flex flex-col">
       <Hero />
