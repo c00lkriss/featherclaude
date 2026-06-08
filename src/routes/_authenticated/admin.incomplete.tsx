@@ -169,8 +169,8 @@ function IncompletePage() {
               const inEbird = ebirdSci?.has(row.species_name.toLowerCase()) ?? false;
               const isEditing = editing === row.id;
               return (
-                <>
-                  <tr key={row.id} className="border-t border-border/60 text-foreground">
+                <Fragment key={row.id}>
+                  <tr className="border-t border-border/60 text-foreground">
                     <td className="px-4 py-3">
                       <img
                         src={row.thumbnail_url || row.image_url}
