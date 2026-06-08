@@ -472,9 +472,29 @@ function UploadPage() {
 
         {/* 5. Location */}
         <Section title="Location" number="05">
+          <div className="mb-5 space-y-2">
+            <EBirdSuggestionCard
+              suggestion={ebirdSuggestion}
+              loading={ebirdLoading}
+              onAccept={acceptEbirdLocation}
+            />
+            {locationMapped && (
+              <p className="text-[11px] font-light text-emerald-400">
+                ✓ Location mapped
+              </p>
+            )}
+          </div>
           <Grid>
             <Field label="Place name" full>
-              <input value={form.location} onChange={(e) => set("location", e.target.value)} className={inputCls} placeholder="e.g. Keoladeo National Park" />
+              <input
+                value={form.location}
+                onChange={(e) => {
+                  set("location", e.target.value);
+                  setLocationMapped(false);
+                }}
+                className={inputCls}
+                placeholder="e.g. Keoladeo National Park"
+              />
             </Field>
             <Field label="Latitude"><input value={form.latitude} onChange={(e) => set("latitude", e.target.value)} className={inputCls} /></Field>
             <Field label="Longitude"><input value={form.longitude} onChange={(e) => set("longitude", e.target.value)} className={inputCls} /></Field>
