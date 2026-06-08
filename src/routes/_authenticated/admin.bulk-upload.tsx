@@ -355,6 +355,14 @@ function BulkUploadPage() {
         </div>
       )}
 
+      {/* eBird summary banner */}
+      {allDone && (autoSuggested > 0 || needLocation > 0) && (
+        <div className="mt-6 rounded-sm border border-primary/40 bg-primary/10 px-5 py-3 text-sm text-primary">
+          📍 {autoSuggested} location{autoSuggested === 1 ? "" : "s"} auto-suggested from your eBird list ·{" "}
+          {needLocation} need manual location entry
+        </div>
+      )}
+
       {/* Queue grid */}
       {items.length > 0 && (
         <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
