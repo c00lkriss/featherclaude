@@ -99,7 +99,7 @@ export function GalleryView({ order, family, q = "", location }: Props) {
           )}
         </div>
 
-        <PhotoGrid order={order} family={family} q={q} />
+        <PhotoGrid order={order} family={family} q={q} location={location} />
       </main>
     </div>
   );
