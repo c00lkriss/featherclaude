@@ -165,6 +165,10 @@ function rowsToRecords(rows: string[][]): ParsedRow[] {
       checklist_id: get(map.subid) || null,
       exotic: get(map.exotic) || null,
       countable: get(map.countable) === "1" ? 1 : 0,
+      ...(() => {
+        const c = extractCoords(get(map.loc) || null);
+        return { ebird_lat: c.lat, ebird_long: c.long };
+      })(),
     });
   }
   return out;
