@@ -5,6 +5,12 @@ import exifr from "exifr";
 import { Upload, X, ImagePlus, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import {
+  geteBirdLocationSuggestion,
+  geocodeWithNominatim,
+  type EbirdSuggestion,
+} from "@/lib/ebird-suggestion";
+import { EBirdSuggestionCard } from "@/components/EBirdSuggestionCard";
 
 export const Route = createFileRoute("/_authenticated/admin/upload")({
   head: () => ({
