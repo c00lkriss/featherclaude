@@ -25,9 +25,10 @@ type Props = {
   order?: string;
   family?: string;
   q?: string;
+  location?: string;
 };
 
-export function GalleryView({ order, family, q = "" }: Props) {
+export function GalleryView({ order, family, q = "", location }: Props) {
   const navigate = useNavigate();
   const [searchInput, setSearchInput] = useState(q);
 
