@@ -3,11 +3,17 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import exifr from "exifr";
-import { CheckCircle2, ImagePlus, Loader2, Pencil, Save, Trash2, X } from "lucide-react";
+import { CheckCircle2, ImagePlus, Loader2, MapPin, Pencil, Save, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { buildPhotoSlug, fileToDownscaledDataURL, formatShutter, slugify } from "@/lib/bird-constants";
 import { identifyBird } from "@/lib/identify-bird.functions";
+import {
+  geteBirdLocationSuggestion,
+  geocodeWithNominatim,
+  type EbirdSuggestion,
+} from "@/lib/ebird-suggestion";
+import { EBirdSuggestionCard } from "@/components/EBirdSuggestionCard";
 
 export const Route = createFileRoute("/_authenticated/admin/bulk-upload")({
   head: () => ({
