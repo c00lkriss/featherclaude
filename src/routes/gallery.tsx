@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { GalleryView } from "@/components/gallery/GalleryView";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 type GallerySearch = { q?: string };
 
@@ -15,10 +14,5 @@ export const Route = createFileRoute("/gallery")({
       { property: "og:description", content: "Browse bird photography by taxonomy across the Indian subcontinent." },
     ],
   }),
-  component: GalleryPage,
+  component: () => <Outlet />,
 });
-
-function GalleryPage() {
-  const { q } = Route.useSearch();
-  return <GalleryView q={q} />;
-}
