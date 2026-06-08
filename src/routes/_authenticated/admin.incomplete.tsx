@@ -267,7 +267,7 @@ function IncompletePage() {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               );
             })}
           </tbody>
