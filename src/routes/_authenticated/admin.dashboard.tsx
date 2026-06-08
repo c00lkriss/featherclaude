@@ -82,6 +82,7 @@ function AdminDashboard() {
           <ActionCard to="/admin/bulk-upload" icon={<Images className="h-5 w-5" />} label="Bulk Upload" />
           <ActionCard to="/admin/manage" icon={<Star className="h-5 w-5" />} label="Manage Photos" />
           <ActionCard to="/admin/ebird" icon={<ListChecks className="h-5 w-5" />} label="eBird List" />
+          <ActionCard to="/admin/incomplete" icon={<AlertCircle className="h-5 w-5" />} label="Incomplete" />
           <ActionCard to="/admin/blog" icon={<FileText className="h-5 w-5" />} label="New Blog Post" />
         </div>
       </section>
