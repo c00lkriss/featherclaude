@@ -113,6 +113,9 @@ function UploadPage() {
   const [submitting, setSubmitting] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [commonNameTouched, setCommonNameTouched] = useState(false);
+  const [ebirdSuggestion, setEbirdSuggestion] = useState<EbirdSuggestion | null>(null);
+  const [ebirdLoading, setEbirdLoading] = useState(false);
+  const [locationMapped, setLocationMapped] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
