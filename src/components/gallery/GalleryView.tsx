@@ -318,15 +318,17 @@ function PhotoGrid({
   order,
   family,
   q,
+  location,
 }: {
   order?: string;
   family?: string;
   q: string;
+  location?: string;
 }) {
   const searchTerm = q.trim().length >= 2 ? q.trim() : "";
 
   const query = useInfiniteQuery({
-    queryKey: ["photos", { order, family, searchTerm }],
+    queryKey: ["photos", { order, family, searchTerm, location }],
     initialPageParam: 0,
     queryFn: async ({ pageParam }): Promise<{ rows: Photo[]; total: number | null }> => {
       const from = pageParam * PAGE_SIZE;
@@ -335,13 +337,14 @@ function PhotoGrid({
         .from("photos")
         .select(
           "id, title, common_name, species_name, species_slug, species_identifier, order_name, family_name, image_url, thumbnail_url, tags",
-          { count: searchTerm ? "exact" : undefined },
+          { count: searchTerm || location ? "exact" : undefined },
         )
         .order("created_at", { ascending: false })
         .range(from, to);
 
       if (order) req = req.eq("order_name", order);
       if (family) req = req.eq("family_name", family);
+      if (location) req = req.ilike("location", `%${location}%`);
       if (searchTerm) {
         const safe = searchTerm.replace(/[%,()]/g, " ");
         req = req.or(
