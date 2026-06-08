@@ -485,6 +485,7 @@ function QueueCard({
           </p>
         )}
         {item.status === "ready" && <ConfidenceBadge value={item.confidence} />}
+        {item.status === "ready" && <EbirdLocPill item={item} />}
         {item.errorMsg && <p className="text-[10px] text-destructive">{item.errorMsg}</p>}
       </div>
     </div>
