@@ -492,6 +492,30 @@ function QueueCard({
   );
 }
 
+function EbirdLocPill({ item }: { item: Item }) {
+  const sug = item.ebirdSuggestion;
+  if (!sug) return null;
+  if (sug.tier === "high" && item.location) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-400">
+        <MapPin className="h-3 w-3" /> {item.location.split(",")[0]}
+      </span>
+    );
+  }
+  if (sug.tier === "good" && item.location) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-400">
+        <MapPin className="h-3 w-3" /> {item.location.split(",")[0]}?
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 text-[11px] font-light text-muted-foreground">
+      <MapPin className="h-3 w-3" /> Location needed
+    </span>
+  );
+}
+
 /* -------- Edit Drawer -------- */
 
 function EditDrawer({
