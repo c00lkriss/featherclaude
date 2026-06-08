@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as MapRouteImport } from './routes/map'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -24,6 +25,7 @@ import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as GalleryOrderFamilyRouteImport } from './routes/gallery.$order.$family'
 import { Route as AuthenticatedAdminUploadRouteImport } from './routes/_authenticated/admin.upload'
 import { Route as AuthenticatedAdminManageRouteImport } from './routes/_authenticated/admin.manage'
+import { Route as AuthenticatedAdminEbirdRouteImport } from './routes/_authenticated/admin.ebird'
 import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authenticated/admin.dashboard'
 import { Route as AuthenticatedAdminBulkUploadRouteImport } from './routes/_authenticated/admin.bulk-upload'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
@@ -32,6 +34,11 @@ import { Route as AuthenticatedAdminEditIdRouteImport } from './routes/_authenti
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapRoute = MapRouteImport.update({
+  id: '/map',
+  path: '/map',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GalleryRoute = GalleryRouteImport.update({
@@ -105,6 +112,11 @@ const AuthenticatedAdminManageRoute =
     path: '/admin/manage',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminEbirdRoute = AuthenticatedAdminEbirdRouteImport.update({
+  id: '/admin/ebird',
+  path: '/admin/ebird',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAdminDashboardRoute =
   AuthenticatedAdminDashboardRouteImport.update({
     id: '/admin/dashboard',
@@ -136,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/blog': typeof BlogRouteWithChildren
   '/gallery': typeof GalleryRouteWithChildren
+  '/map': typeof MapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/gallery/$order': typeof GalleryOrderRouteWithChildren
@@ -144,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/bulk-upload': typeof AuthenticatedAdminBulkUploadRoute
   '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/admin/ebird': typeof AuthenticatedAdminEbirdRoute
   '/admin/manage': typeof AuthenticatedAdminManageRoute
   '/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
@@ -155,6 +169,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/blog': typeof BlogRouteWithChildren
+  '/map': typeof MapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/gallery/$order': typeof GalleryOrderRouteWithChildren
@@ -163,6 +178,7 @@ export interface FileRoutesByTo {
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/bulk-upload': typeof AuthenticatedAdminBulkUploadRoute
   '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/admin/ebird': typeof AuthenticatedAdminEbirdRoute
   '/admin/manage': typeof AuthenticatedAdminManageRoute
   '/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
@@ -177,6 +193,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/blog': typeof BlogRouteWithChildren
   '/gallery': typeof GalleryRouteWithChildren
+  '/map': typeof MapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/gallery/$order': typeof GalleryOrderRouteWithChildren
@@ -185,6 +202,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/_authenticated/admin/bulk-upload': typeof AuthenticatedAdminBulkUploadRoute
   '/_authenticated/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/_authenticated/admin/ebird': typeof AuthenticatedAdminEbirdRoute
   '/_authenticated/admin/manage': typeof AuthenticatedAdminManageRoute
   '/_authenticated/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
@@ -199,6 +217,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/blog'
     | '/gallery'
+    | '/map'
     | '/sitemap.xml'
     | '/blog/$slug'
     | '/gallery/$order'
@@ -207,6 +226,7 @@ export interface FileRouteTypes {
     | '/admin/blog'
     | '/admin/bulk-upload'
     | '/admin/dashboard'
+    | '/admin/ebird'
     | '/admin/manage'
     | '/admin/upload'
     | '/gallery/$order/$family'
@@ -218,6 +238,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/blog'
+    | '/map'
     | '/sitemap.xml'
     | '/blog/$slug'
     | '/gallery/$order'
@@ -226,6 +247,7 @@ export interface FileRouteTypes {
     | '/admin/blog'
     | '/admin/bulk-upload'
     | '/admin/dashboard'
+    | '/admin/ebird'
     | '/admin/manage'
     | '/admin/upload'
     | '/gallery/$order/$family'
@@ -239,6 +261,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/blog'
     | '/gallery'
+    | '/map'
     | '/sitemap.xml'
     | '/blog/$slug'
     | '/gallery/$order'
@@ -247,6 +270,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/blog'
     | '/_authenticated/admin/bulk-upload'
     | '/_authenticated/admin/dashboard'
+    | '/_authenticated/admin/ebird'
     | '/_authenticated/admin/manage'
     | '/_authenticated/admin/upload'
     | '/gallery/$order/$family'
@@ -261,6 +285,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BlogRoute: typeof BlogRouteWithChildren
   GalleryRoute: typeof GalleryRouteWithChildren
+  MapRoute: typeof MapRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SpeciesSlugRoute: typeof SpeciesSlugRoute
 }
@@ -272,6 +297,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/map': {
+      id: '/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof MapRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/gallery': {
@@ -372,6 +404,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminManageRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/ebird': {
+      id: '/_authenticated/admin/ebird'
+      path: '/admin/ebird'
+      fullPath: '/admin/ebird'
+      preLoaderRoute: typeof AuthenticatedAdminEbirdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/dashboard': {
       id: '/_authenticated/admin/dashboard'
       path: '/admin/dashboard'
@@ -407,6 +446,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
   AuthenticatedAdminBulkUploadRoute: typeof AuthenticatedAdminBulkUploadRoute
   AuthenticatedAdminDashboardRoute: typeof AuthenticatedAdminDashboardRoute
+  AuthenticatedAdminEbirdRoute: typeof AuthenticatedAdminEbirdRoute
   AuthenticatedAdminManageRoute: typeof AuthenticatedAdminManageRoute
   AuthenticatedAdminUploadRoute: typeof AuthenticatedAdminUploadRoute
   AuthenticatedAdminEditIdRoute: typeof AuthenticatedAdminEditIdRoute
@@ -416,6 +456,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
   AuthenticatedAdminBulkUploadRoute: AuthenticatedAdminBulkUploadRoute,
   AuthenticatedAdminDashboardRoute: AuthenticatedAdminDashboardRoute,
+  AuthenticatedAdminEbirdRoute: AuthenticatedAdminEbirdRoute,
   AuthenticatedAdminManageRoute: AuthenticatedAdminManageRoute,
   AuthenticatedAdminUploadRoute: AuthenticatedAdminUploadRoute,
   AuthenticatedAdminEditIdRoute: AuthenticatedAdminEditIdRoute,
@@ -467,6 +508,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BlogRoute: BlogRouteWithChildren,
   GalleryRoute: GalleryRouteWithChildren,
+  MapRoute: MapRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SpeciesSlugRoute: SpeciesSlugRoute,
 }

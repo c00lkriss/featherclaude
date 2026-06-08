@@ -50,6 +50,90 @@ export type Database = {
         }
         Relationships: []
       }
+      ebird_lifelist: {
+        Row: {
+          category: string | null
+          checklist_id: string | null
+          common_name: string | null
+          countable: number | null
+          created_at: string
+          date_observed: string | null
+          exotic: string | null
+          id: string
+          location: string | null
+          location_id: string | null
+          obs_count: string | null
+          row_number: number | null
+          scientific_name: string | null
+          state_province: string | null
+          taxon_order: number | null
+        }
+        Insert: {
+          category?: string | null
+          checklist_id?: string | null
+          common_name?: string | null
+          countable?: number | null
+          created_at?: string
+          date_observed?: string | null
+          exotic?: string | null
+          id?: string
+          location?: string | null
+          location_id?: string | null
+          obs_count?: string | null
+          row_number?: number | null
+          scientific_name?: string | null
+          state_province?: string | null
+          taxon_order?: number | null
+        }
+        Update: {
+          category?: string | null
+          checklist_id?: string | null
+          common_name?: string | null
+          countable?: number | null
+          created_at?: string
+          date_observed?: string | null
+          exotic?: string | null
+          id?: string
+          location?: string | null
+          location_id?: string | null
+          obs_count?: string | null
+          row_number?: number | null
+          scientific_name?: string | null
+          state_province?: string | null
+          taxon_order?: number | null
+        }
+        Relationships: []
+      }
+      ebird_upload_log: {
+        Row: {
+          countable_count: number | null
+          filename: string | null
+          id: string
+          notes: string | null
+          status: string | null
+          total_count: number | null
+          uploaded_at: string
+        }
+        Insert: {
+          countable_count?: number | null
+          filename?: string | null
+          id?: string
+          notes?: string | null
+          status?: string | null
+          total_count?: number | null
+          uploaded_at?: string
+        }
+        Update: {
+          countable_count?: number | null
+          filename?: string | null
+          id?: string
+          notes?: string | null
+          status?: string | null
+          total_count?: number | null
+          uploaded_at?: string
+        }
+        Relationships: []
+      }
       photos: {
         Row: {
           aperture: string | null

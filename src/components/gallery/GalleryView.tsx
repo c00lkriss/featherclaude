@@ -25,9 +25,10 @@ type Props = {
   order?: string;
   family?: string;
   q?: string;
+  location?: string;
 };
 
-export function GalleryView({ order, family, q = "" }: Props) {
+export function GalleryView({ order, family, q = "", location }: Props) {
   const navigate = useNavigate();
   const [searchInput, setSearchInput] = useState(q);
 
@@ -57,12 +58,24 @@ export function GalleryView({ order, family, q = "" }: Props) {
             Gallery
           </p>
           <h1 className="font-display text-4xl font-semibold text-foreground md:text-5xl">
-            {family ?? order ?? "All Photographs"}
+            {location ?? family ?? order ?? "All Photographs"}
           </h1>
           {(order || family) && (
             <p className="mt-3 text-sm font-light text-muted-foreground">
               {family ? `Family · ${order}` : `Order`}
             </p>
+          )}
+          {location && (
+            <div className="mt-3 inline-flex items-center gap-2 rounded-sm border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-light text-primary">
+              <span>Location · {location}</span>
+              <button
+                onClick={() => navigate({ to: "/gallery", search: {} })}
+                className="text-primary/70 hover:text-primary"
+                aria-label="Clear location filter"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
           )}
         </header>
 
@@ -86,7 +99,7 @@ export function GalleryView({ order, family, q = "" }: Props) {
           )}
         </div>
 
-        <PhotoGrid order={order} family={family} q={q} />
+        <PhotoGrid order={order} family={family} q={q} location={location} />
       </main>
     </div>
   );
@@ -305,15 +318,17 @@ function PhotoGrid({
   order,
   family,
   q,
+  location,
 }: {
   order?: string;
   family?: string;
   q: string;
+  location?: string;
 }) {
   const searchTerm = q.trim().length >= 2 ? q.trim() : "";
 
   const query = useInfiniteQuery({
-    queryKey: ["photos", { order, family, searchTerm }],
+    queryKey: ["photos", { order, family, searchTerm, location }],
     initialPageParam: 0,
     queryFn: async ({ pageParam }): Promise<{ rows: Photo[]; total: number | null }> => {
       const from = pageParam * PAGE_SIZE;
@@ -322,13 +337,14 @@ function PhotoGrid({
         .from("photos")
         .select(
           "id, title, common_name, species_name, species_slug, species_identifier, order_name, family_name, image_url, thumbnail_url, tags",
-          { count: searchTerm ? "exact" : undefined },
+          { count: searchTerm || location ? "exact" : undefined },
         )
         .order("created_at", { ascending: false })
         .range(from, to);
 
       if (order) req = req.eq("order_name", order);
       if (family) req = req.eq("family_name", family);
+      if (location) req = req.ilike("location", `%${location}%`);
       if (searchTerm) {
         const safe = searchTerm.replace(/[%,()]/g, " ");
         req = req.or(

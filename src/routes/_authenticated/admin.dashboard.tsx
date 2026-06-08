@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Upload, FileText, Images, Star } from "lucide-react";
+import { Upload, FileText, Images, Star, ListChecks } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/admin/dashboard")({
@@ -77,10 +77,11 @@ function AdminDashboard() {
         <h2 className="mb-5 text-xs font-light uppercase tracking-[0.3em] text-muted-foreground">
           Quick Actions
         </h2>
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
           <ActionCard to="/admin/upload" icon={<Upload className="h-5 w-5" />} label="Upload Photo" />
           <ActionCard to="/admin/bulk-upload" icon={<Images className="h-5 w-5" />} label="Bulk Upload" />
           <ActionCard to="/admin/manage" icon={<Star className="h-5 w-5" />} label="Manage Photos" />
+          <ActionCard to="/admin/ebird" icon={<ListChecks className="h-5 w-5" />} label="eBird List" />
           <ActionCard to="/admin/blog" icon={<FileText className="h-5 w-5" />} label="New Blog Post" />
         </div>
       </section>

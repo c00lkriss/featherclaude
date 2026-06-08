@@ -183,6 +183,14 @@ function Header({ user }: { user: { id: string; email?: string } | null }) {
             Gallery
           </Link>
           <Link
+            to="/map"
+            activeProps={{ className: "text-primary" }}
+            inactiveProps={{ className: "text-muted-foreground hover:text-foreground" }}
+            className="text-sm font-medium transition-colors"
+          >
+            Map
+          </Link>
+          <Link
             to="/blog"
             activeProps={{ className: "text-primary" }}
             inactiveProps={{ className: "text-muted-foreground hover:text-foreground" }}
