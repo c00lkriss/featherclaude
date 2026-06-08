@@ -58,6 +58,8 @@ export type Database = {
           countable: number | null
           created_at: string
           date_observed: string | null
+          ebird_lat: number | null
+          ebird_long: number | null
           exotic: string | null
           id: string
           location: string | null
@@ -75,6 +77,8 @@ export type Database = {
           countable?: number | null
           created_at?: string
           date_observed?: string | null
+          ebird_lat?: number | null
+          ebird_long?: number | null
           exotic?: string | null
           id?: string
           location?: string | null
@@ -92,6 +96,8 @@ export type Database = {
           countable?: number | null
           created_at?: string
           date_observed?: string | null
+          ebird_lat?: number | null
+          ebird_long?: number | null
           exotic?: string | null
           id?: string
           location?: string | null
