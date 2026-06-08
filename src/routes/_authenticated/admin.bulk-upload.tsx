@@ -3,11 +3,17 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import exifr from "exifr";
-import { CheckCircle2, ImagePlus, Loader2, Pencil, Save, Trash2, X } from "lucide-react";
+import { CheckCircle2, ImagePlus, Loader2, MapPin, Pencil, Save, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { buildPhotoSlug, fileToDownscaledDataURL, formatShutter, slugify } from "@/lib/bird-constants";
 import { identifyBird } from "@/lib/identify-bird.functions";
+import {
+  geteBirdLocationSuggestion,
+  geocodeWithNominatim,
+  type EbirdSuggestion,
+} from "@/lib/ebird-suggestion";
+import { EBirdSuggestionCard } from "@/components/EBirdSuggestionCard";
 
 export const Route = createFileRoute("/_authenticated/admin/bulk-upload")({
   head: () => ({
@@ -59,6 +65,10 @@ type Item = {
   location?: string;
   country?: string;
   is_featured?: boolean;
+  // eBird location suggestion
+  ebirdSuggestion?: EbirdSuggestion | null;
+  ebird_lat?: string;
+  ebird_long?: string;
 };
 
 const MAX_FILES = 20;
@@ -148,6 +158,24 @@ function BulkUploadPage() {
         const dataUrl = await fileToDownscaledDataURL(next.file, 1024, 0.85);
         const ai = await identify({ data: { image_data_url: dataUrl } });
 
+        // Background eBird location suggestion
+        const ebirdSug = await geteBirdLocationSuggestion({
+          scientific_name: ai.scientific_name,
+          common_name: ai.common_name,
+          photo_date: exifPatch.date_taken ?? null,
+        });
+
+        const autoLocPatch: Partial<Item> = {};
+        if ((ebirdSug.tier === "high" || ebirdSug.tier === "good") && ebirdSug.location) {
+          autoLocPatch.location = ebirdSug.location;
+          if (ebirdSug.ebird_lat != null) autoLocPatch.ebird_lat = String(ebirdSug.ebird_lat);
+          if (ebirdSug.ebird_long != null) autoLocPatch.ebird_long = String(ebirdSug.ebird_long);
+          if (ebirdSug.ebird_lat != null && !exifPatch.latitude) {
+            autoLocPatch.latitude = String(ebirdSug.ebird_lat);
+            autoLocPatch.longitude = String(ebirdSug.ebird_long ?? "");
+          }
+        }
+
         updateItem(next.id, {
           status: "ready",
           common_name: ai.common_name,
@@ -159,6 +187,8 @@ function BulkUploadPage() {
           confidence: ai.confidence,
           notes: ai.identification_notes,
           title: ai.common_name || next.file.name.replace(/\.[^.]+$/, ""),
+          ebirdSuggestion: ebirdSug,
+          ...autoLocPatch,
         });
       } catch (err: any) {
         console.error("[bulk] processing failed:", err);
@@ -229,6 +259,11 @@ function BulkUploadPage() {
 
   const readyCount = items.filter((i) => i.status === "ready").length;
   const editingItem = items.find((i) => i.id === editing) ?? null;
+
+  // Summary stats after all detection finishes
+  const allDone = items.length > 0 && items.every((i) => i.status === "ready" || i.status === "saved" || i.status === "error");
+  const autoSuggested = items.filter((i) => i.ebirdSuggestion && (i.ebirdSuggestion.tier === "high" || i.ebirdSuggestion.tier === "good") && i.location).length;
+  const needLocation = items.filter((i) => i.ebirdSuggestion && !i.location).length;
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-16">
@@ -317,6 +352,14 @@ function BulkUploadPage() {
               Save All Ready ({readyCount})
             </button>
           </div>
+        </div>
+      )}
+
+      {/* eBird summary banner */}
+      {allDone && (autoSuggested > 0 || needLocation > 0) && (
+        <div className="mt-6 rounded-sm border border-primary/40 bg-primary/10 px-5 py-3 text-sm text-primary">
+          📍 {autoSuggested} location{autoSuggested === 1 ? "" : "s"} auto-suggested from your eBird list ·{" "}
+          {needLocation} need manual location entry
         </div>
       )}
 
@@ -442,9 +485,34 @@ function QueueCard({
           </p>
         )}
         {item.status === "ready" && <ConfidenceBadge value={item.confidence} />}
+        {item.status === "ready" && <EbirdLocPill item={item} />}
         {item.errorMsg && <p className="text-[10px] text-destructive">{item.errorMsg}</p>}
       </div>
     </div>
+  );
+}
+
+function EbirdLocPill({ item }: { item: Item }) {
+  const sug = item.ebirdSuggestion;
+  if (!sug) return null;
+  if (sug.tier === "high" && item.location) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-400">
+        <MapPin className="h-3 w-3" /> {item.location.split(",")[0]}
+      </span>
+    );
+  }
+  if (sug.tier === "good" && item.location) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-400">
+        <MapPin className="h-3 w-3" /> {item.location.split(",")[0]}?
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 text-[11px] font-light text-muted-foreground">
+      <MapPin className="h-3 w-3" /> Location needed
+    </span>
   );
 }
 
@@ -509,7 +577,29 @@ function EditDrawer({
             />
           </Pair>
           <Pair label="Location">
-            <input value={draft.location ?? ""} onChange={(e) => set("location", e.target.value)} className={inp} />
+            <div className="space-y-2">
+              <EBirdSuggestionCard
+                suggestion={draft.ebirdSuggestion ?? null}
+                onAccept={async (loc) => {
+                  let lat = loc.ebird_lat;
+                  let lon = loc.ebird_long;
+                  if (lat == null && loc.location) {
+                    const geo = await geocodeWithNominatim(loc.location);
+                    if (geo) {
+                      lat = geo.lat;
+                      lon = geo.lon;
+                    }
+                  }
+                  setDraft((d) => ({
+                    ...d,
+                    location: loc.location,
+                    latitude: lat != null ? String(lat) : d.latitude,
+                    longitude: lon != null ? String(lon) : d.longitude,
+                  }));
+                }}
+              />
+              <input value={draft.location ?? ""} onChange={(e) => set("location", e.target.value)} className={inp} />
+            </div>
           </Pair>
           <Pair label="Country">
             <input value={draft.country ?? "India"} onChange={(e) => set("country", e.target.value)} className={inp} />

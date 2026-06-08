@@ -5,6 +5,12 @@ import exifr from "exifr";
 import { Upload, X, ImagePlus, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import {
+  geteBirdLocationSuggestion,
+  geocodeWithNominatim,
+  type EbirdSuggestion,
+} from "@/lib/ebird-suggestion";
+import { EBirdSuggestionCard } from "@/components/EBirdSuggestionCard";
 
 export const Route = createFileRoute("/_authenticated/admin/upload")({
   head: () => ({
@@ -107,6 +113,9 @@ function UploadPage() {
   const [submitting, setSubmitting] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [commonNameTouched, setCommonNameTouched] = useState(false);
+  const [ebirdSuggestion, setEbirdSuggestion] = useState<EbirdSuggestion | null>(null);
+  const [ebirdLoading, setEbirdLoading] = useState(false);
+  const [locationMapped, setLocationMapped] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
@@ -123,6 +132,61 @@ function UploadPage() {
     setPreview(url);
     return () => URL.revokeObjectURL(url);
   }, [file]);
+
+  // Re-query eBird suggestion whenever the scientific name or photo date changes.
+  useEffect(() => {
+    let cancelled = false;
+    const sci = form.species_name.trim();
+    if (!sci) {
+      setEbirdSuggestion(null);
+      return;
+    }
+    setEbirdLoading(true);
+    const t = setTimeout(async () => {
+      const sug = await geteBirdLocationSuggestion({
+        scientific_name: sci,
+        common_name: form.common_name,
+        photo_date: form.date_taken || null,
+      });
+      if (!cancelled) {
+        setEbirdSuggestion(sug);
+        setEbirdLoading(false);
+      }
+    }, 350);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+      setEbirdLoading(false);
+    };
+  }, [form.species_name, form.common_name, form.date_taken]);
+
+  const acceptEbirdLocation = async (loc: {
+    location: string;
+    state_province: string | null;
+    ebird_lat: number | null;
+    ebird_long: number | null;
+  }) => {
+    setForm((p) => ({
+      ...p,
+      location: loc.location,
+      region: loc.state_province ?? p.region,
+      latitude: loc.ebird_lat != null ? String(loc.ebird_lat) : p.latitude,
+      longitude: loc.ebird_long != null ? String(loc.ebird_long) : p.longitude,
+    }));
+    setLocationMapped(loc.ebird_lat != null);
+    if (loc.ebird_lat == null && loc.location) {
+      // Resolve lat/long via Nominatim if we don't already have it
+      const geo = await geocodeWithNominatim(loc.location);
+      if (geo) {
+        setForm((p) => ({
+          ...p,
+          latitude: geo.lat.toFixed(6),
+          longitude: geo.lon.toFixed(6),
+        }));
+        setLocationMapped(true);
+      }
+    }
+  };
 
   const handleFile = async (f: File) => {
     if (!["image/jpeg", "image/png", "image/webp"].includes(f.type)) {
@@ -408,9 +472,29 @@ function UploadPage() {
 
         {/* 5. Location */}
         <Section title="Location" number="05">
+          <div className="mb-5 space-y-2">
+            <EBirdSuggestionCard
+              suggestion={ebirdSuggestion}
+              loading={ebirdLoading}
+              onAccept={acceptEbirdLocation}
+            />
+            {locationMapped && (
+              <p className="text-[11px] font-light text-emerald-400">
+                ✓ Location mapped
+              </p>
+            )}
+          </div>
           <Grid>
             <Field label="Place name" full>
-              <input value={form.location} onChange={(e) => set("location", e.target.value)} className={inputCls} placeholder="e.g. Keoladeo National Park" />
+              <input
+                value={form.location}
+                onChange={(e) => {
+                  set("location", e.target.value);
+                  setLocationMapped(false);
+                }}
+                className={inputCls}
+                placeholder="e.g. Keoladeo National Park"
+              />
             </Field>
             <Field label="Latitude"><input value={form.latitude} onChange={(e) => set("latitude", e.target.value)} className={inputCls} /></Field>
             <Field label="Longitude"><input value={form.longitude} onChange={(e) => set("longitude", e.target.value)} className={inputCls} /></Field>
