@@ -158,6 +158,24 @@ function BulkUploadPage() {
         const dataUrl = await fileToDownscaledDataURL(next.file, 1024, 0.85);
         const ai = await identify({ data: { image_data_url: dataUrl } });
 
+        // Background eBird location suggestion
+        const ebirdSug = await geteBirdLocationSuggestion({
+          scientific_name: ai.scientific_name,
+          common_name: ai.common_name,
+          photo_date: exifPatch.date_taken ?? null,
+        });
+
+        const autoLocPatch: Partial<Item> = {};
+        if ((ebirdSug.tier === "high" || ebirdSug.tier === "good") && ebirdSug.location) {
+          autoLocPatch.location = ebirdSug.location;
+          if (ebirdSug.ebird_lat != null) autoLocPatch.ebird_lat = String(ebirdSug.ebird_lat);
+          if (ebirdSug.ebird_long != null) autoLocPatch.ebird_long = String(ebirdSug.ebird_long);
+          if (ebirdSug.ebird_lat != null && !exifPatch.latitude) {
+            autoLocPatch.latitude = String(ebirdSug.ebird_lat);
+            autoLocPatch.longitude = String(ebirdSug.ebird_long ?? "");
+          }
+        }
+
         updateItem(next.id, {
           status: "ready",
           common_name: ai.common_name,
@@ -169,6 +187,8 @@ function BulkUploadPage() {
           confidence: ai.confidence,
           notes: ai.identification_notes,
           title: ai.common_name || next.file.name.replace(/\.[^.]+$/, ""),
+          ebirdSuggestion: ebirdSug,
+          ...autoLocPatch,
         });
       } catch (err: any) {
         console.error("[bulk] processing failed:", err);
