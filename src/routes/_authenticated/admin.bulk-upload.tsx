@@ -260,6 +260,11 @@ function BulkUploadPage() {
   const readyCount = items.filter((i) => i.status === "ready").length;
   const editingItem = items.find((i) => i.id === editing) ?? null;
 
+  // Summary stats after all detection finishes
+  const allDone = items.length > 0 && items.every((i) => i.status === "ready" || i.status === "saved" || i.status === "error");
+  const autoSuggested = items.filter((i) => i.ebirdSuggestion && (i.ebirdSuggestion.tier === "high" || i.ebirdSuggestion.tier === "good") && i.location).length;
+  const needLocation = items.filter((i) => i.ebirdSuggestion && !i.location).length;
+
   return (
     <div className="mx-auto max-w-7xl px-6 py-16">
       <header className="mb-10 flex items-end justify-between gap-4">
