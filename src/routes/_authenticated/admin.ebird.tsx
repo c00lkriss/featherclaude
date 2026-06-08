@@ -111,7 +111,21 @@ type ParsedRow = {
   checklist_id: string | null;
   exotic: string | null;
   countable: number;
+  ebird_lat: number | null;
+  ebird_long: number | null;
 };
+
+function extractCoords(text: string | null): { lat: number | null; long: number | null } {
+  if (!text) return { lat: null, long: null };
+  const m = text.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+  if (!m) return { lat: null, long: null };
+  const lat = parseFloat(m[1]);
+  const long = parseFloat(m[2]);
+  return {
+    lat: Number.isFinite(lat) ? lat : null,
+    long: Number.isFinite(long) ? long : null,
+  };
+}
 
 function rowsToRecords(rows: string[][]): ParsedRow[] {
   if (rows.length === 0) return [];
