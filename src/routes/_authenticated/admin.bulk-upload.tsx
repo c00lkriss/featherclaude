@@ -65,6 +65,10 @@ type Item = {
   location?: string;
   country?: string;
   is_featured?: boolean;
+  // eBird location suggestion
+  ebirdSuggestion?: EbirdSuggestion | null;
+  ebird_lat?: string;
+  ebird_long?: string;
 };
 
 const MAX_FILES = 20;
