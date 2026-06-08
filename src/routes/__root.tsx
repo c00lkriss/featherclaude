@@ -122,6 +122,15 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const [user, setUser] = useState<null | { id: string; email?: string }>(null);
 
+  // Admin subdomain hard-redirect: admin.coolkriss.in/ → /admin
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const { hostname, pathname, search, hash } = window.location;
+    if (hostname === "admin.coolkriss.in" && !pathname.startsWith("/admin")) {
+      window.location.replace("/admin" + search + hash);
+    }
+  }, []);
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user ? { id: data.user.id, email: data.user.email } : null);
@@ -132,6 +141,7 @@ function RootComponent() {
     });
     return () => subscription.unsubscribe();
   }, []);
+
 
   return (
     <QueryClientProvider client={queryClient}>
