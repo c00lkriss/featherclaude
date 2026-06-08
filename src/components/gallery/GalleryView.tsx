@@ -58,12 +58,24 @@ export function GalleryView({ order, family, q = "", location }: Props) {
             Gallery
           </p>
           <h1 className="font-display text-4xl font-semibold text-foreground md:text-5xl">
-            {family ?? order ?? "All Photographs"}
+            {location ?? family ?? order ?? "All Photographs"}
           </h1>
           {(order || family) && (
             <p className="mt-3 text-sm font-light text-muted-foreground">
               {family ? `Family · ${order}` : `Order`}
             </p>
+          )}
+          {location && (
+            <div className="mt-3 inline-flex items-center gap-2 rounded-sm border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-light text-primary">
+              <span>Location · {location}</span>
+              <button
+                onClick={() => navigate({ to: "/gallery", search: {} })}
+                className="text-primary/70 hover:text-primary"
+                aria-label="Clear location filter"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
           )}
         </header>
 
