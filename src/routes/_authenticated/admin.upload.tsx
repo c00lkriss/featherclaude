@@ -133,6 +133,61 @@ function UploadPage() {
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
+  // Re-query eBird suggestion whenever the scientific name or photo date changes.
+  useEffect(() => {
+    let cancelled = false;
+    const sci = form.species_name.trim();
+    if (!sci) {
+      setEbirdSuggestion(null);
+      return;
+    }
+    setEbirdLoading(true);
+    const t = setTimeout(async () => {
+      const sug = await geteBirdLocationSuggestion({
+        scientific_name: sci,
+        common_name: form.common_name,
+        photo_date: form.date_taken || null,
+      });
+      if (!cancelled) {
+        setEbirdSuggestion(sug);
+        setEbirdLoading(false);
+      }
+    }, 350);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+      setEbirdLoading(false);
+    };
+  }, [form.species_name, form.common_name, form.date_taken]);
+
+  const acceptEbirdLocation = async (loc: {
+    location: string;
+    state_province: string | null;
+    ebird_lat: number | null;
+    ebird_long: number | null;
+  }) => {
+    setForm((p) => ({
+      ...p,
+      location: loc.location,
+      region: loc.state_province ?? p.region,
+      latitude: loc.ebird_lat != null ? String(loc.ebird_lat) : p.latitude,
+      longitude: loc.ebird_long != null ? String(loc.ebird_long) : p.longitude,
+    }));
+    setLocationMapped(loc.ebird_lat != null);
+    if (loc.ebird_lat == null && loc.location) {
+      // Resolve lat/long via Nominatim if we don't already have it
+      const geo = await geocodeWithNominatim(loc.location);
+      if (geo) {
+        setForm((p) => ({
+          ...p,
+          latitude: geo.lat.toFixed(6),
+          longitude: geo.lon.toFixed(6),
+        }));
+        setLocationMapped(true);
+      }
+    }
+  };
+
   const handleFile = async (f: File) => {
     if (!["image/jpeg", "image/png", "image/webp"].includes(f.type)) {
       toast.error("Please choose a JPG, PNG, or WEBP image.");
