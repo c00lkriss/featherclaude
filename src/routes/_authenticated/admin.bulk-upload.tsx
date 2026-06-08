@@ -577,7 +577,29 @@ function EditDrawer({
             />
           </Pair>
           <Pair label="Location">
-            <input value={draft.location ?? ""} onChange={(e) => set("location", e.target.value)} className={inp} />
+            <div className="space-y-2">
+              <EBirdSuggestionCard
+                suggestion={draft.ebirdSuggestion ?? null}
+                onAccept={async (loc) => {
+                  let lat = loc.ebird_lat;
+                  let lon = loc.ebird_long;
+                  if (lat == null && loc.location) {
+                    const geo = await geocodeWithNominatim(loc.location);
+                    if (geo) {
+                      lat = geo.lat;
+                      lon = geo.lon;
+                    }
+                  }
+                  setDraft((d) => ({
+                    ...d,
+                    location: loc.location,
+                    latitude: lat != null ? String(lat) : d.latitude,
+                    longitude: lon != null ? String(lon) : d.longitude,
+                  }));
+                }}
+              />
+              <input value={draft.location ?? ""} onChange={(e) => set("location", e.target.value)} className={inp} />
+            </div>
           </Pair>
           <Pair label="Country">
             <input value={draft.country ?? "India"} onChange={(e) => set("country", e.target.value)} className={inp} />
