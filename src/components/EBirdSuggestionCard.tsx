@@ -66,7 +66,7 @@ export function EBirdSuggestionCard({ suggestion, loading, onAccept, onDismiss, 
             label="Recent records"
             list={suggestion.alternatives}
             onPick={(o) =>
-              onAccept({
+              acceptAndDismiss({
                 location: o.location ?? "",
                 state_province: o.state_province,
                 ebird_lat: o.ebird_lat,
@@ -80,6 +80,7 @@ export function EBirdSuggestionCard({ suggestion, loading, onAccept, onDismiss, 
   }
 
   if (suggestion.tier === "none" || !suggestion.location) return null;
+
 
   const accentBorder = suggestion.tier === "high" ? "border-primary" : "border-amber-400/60";
   const accentBg = suggestion.tier === "high" ? "bg-primary/10" : "bg-amber-500/10";
