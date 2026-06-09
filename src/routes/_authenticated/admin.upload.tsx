@@ -248,6 +248,23 @@ function UploadPage() {
 
     setSubmitting(true);
     try {
+      // Compute aspect ratio metadata
+      const meta = await readImageMeta(file);
+
+      // If location set but no lat/long, attempt geocode at submit time
+      let latNum = form.latitude ? parseFloat(form.latitude) : null;
+      let lonNum = form.longitude ? parseFloat(form.longitude) : null;
+      let missingCoords = false;
+      if (form.location && (latNum == null || lonNum == null)) {
+        const geo = await geocodeWithNominatim(form.location);
+        if (geo) {
+          latNum = geo.lat;
+          lonNum = geo.lon;
+        } else {
+          missingCoords = true;
+        }
+      }
+
       // Upload to storage
       const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
       const identifier = slugify(form.common_name || form.species_name || "bird");
@@ -288,13 +305,18 @@ function UploadPage() {
         shutter_speed: form.shutter_speed || null,
         focal_length: form.focal_length || null,
         location: locationParts.join(", ") || null,
-        latitude: form.latitude ? parseFloat(form.latitude) : null,
-        longitude: form.longitude ? parseFloat(form.longitude) : null,
+        latitude: latNum,
+        longitude: lonNum,
+        missing_coordinates: missingCoords,
+        image_width: meta?.width ?? null,
+        image_height: meta?.height ?? null,
+        aspect_ratio: meta?.aspect_ratio ?? null,
         tags,
         is_featured: form.is_featured,
         iucn_status: form.iucn_status || null,
       });
       if (insErr) throw insErr;
+
 
       toast.success("Photograph uploaded.");
       navigate({ to: "/admin/dashboard" });
