@@ -272,18 +272,19 @@ function StripRow({ photos, direction, onPick }: { photos: Photo[]; direction: "
             key={`${p.id}-${i}`}
             onClick={() => onPick(p)}
             disabled={!(p.species_identifier || p.species_slug)}
-            className="group relative h-40 w-40 flex-shrink-0 -mx-1 overflow-hidden rounded-sm bg-muted shadow-md transition-all duration-300 hover:z-10 hover:-translate-y-2 hover:scale-105 hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.7)] disabled:cursor-default"
+            className="group relative flex h-[220px] w-auto flex-shrink-0 items-center justify-center overflow-hidden rounded-sm shadow-md transition-all duration-300 hover:z-10 hover:-translate-y-2 hover:scale-105 hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.7)] disabled:cursor-default"
+            style={{ backgroundColor: "#0a0a0a" }}
           >
             {p.image_url ? (
               <img
                 src={p.thumbnail_url || p.image_url}
                 alt={p.title}
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                className="h-full w-auto object-contain transition-transform duration-500 group-hover:scale-105"
                 loading="lazy"
               />
             ) : (
               <div
-                className="h-full w-full"
+                className="h-full w-40"
                 style={{
                   background: `linear-gradient(${135 + i * 23}deg, oklch(0.18 0.04 ${(i * 47) % 360}), oklch(0.08 0.02 ${(i * 73) % 360}))`,
                 }}
@@ -291,6 +292,7 @@ function StripRow({ photos, direction, onPick }: { photos: Photo[]; direction: "
             )}
           </button>
         ))}
+
       </div>
     </div>
   );
