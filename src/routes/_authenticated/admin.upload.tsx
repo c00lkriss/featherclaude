@@ -382,7 +382,7 @@ function UploadPage() {
             </label>
           ) : (
             <div className="relative overflow-hidden rounded-sm border border-border bg-background">
-              <img src={preview} alt="Preview" className="max-h-[500px] w-full object-contain" />
+              <img src={preview} alt="Preview" className="mx-auto max-h-[300px] w-auto object-contain" />
               <button
                 type="button"
                 onClick={() => { setFile(null); setPreview(null); }}
@@ -393,6 +393,7 @@ function UploadPage() {
               </button>
             </div>
           )}
+
         </Section>
 
         {/* 2. Taxonomy */}
