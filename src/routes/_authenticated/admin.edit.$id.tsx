@@ -252,12 +252,19 @@ function EditPage() {
 
         <Section title="Location">
           <Grid>
-            <Field label="Place name" full><input value={form.location} onChange={(e) => set("location", e.target.value)} className={inputCls} /></Field>
-            <Field label="Latitude"><input value={form.latitude} onChange={(e) => set("latitude", e.target.value)} className={inputCls} /></Field>
-            <Field label="Longitude"><input value={form.longitude} onChange={(e) => set("longitude", e.target.value)} className={inputCls} /></Field>
+            <Field label="Place name" full>
+              <LocationField
+                value={form.location}
+                onChange={(v) => set("location", v)}
+                onTextEdit={() => { set("latitude", ""); set("longitude", ""); }}
+                onPick={(r) => { set("latitude", r.lat.toFixed(6)); set("longitude", r.lon.toFixed(6)); }}
+                mapped={!!(form.latitude && form.longitude)}
+              />
+            </Field>
             <Field label="Country"><input value={form.country} onChange={(e) => set("country", e.target.value)} className={inputCls} /></Field>
           </Grid>
         </Section>
+
 
         <Section title="Tags & Featured">
           <Field label="Tags (comma-separated)">
