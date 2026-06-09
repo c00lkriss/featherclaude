@@ -143,6 +143,7 @@ export type Database = {
       photos: {
         Row: {
           aperture: string | null
+          aspect_ratio: string | null
           camera: string | null
           common_name: string | null
           country: string | null
@@ -153,7 +154,9 @@ export type Database = {
           focal_length: string | null
           genus: string | null
           id: string
+          image_height: number | null
           image_url: string
+          image_width: number | null
           is_featured: boolean | null
           iso: number | null
           iucn_status: string | null
@@ -161,6 +164,7 @@ export type Database = {
           lens: string | null
           location: string | null
           longitude: number | null
+          missing_coordinates: boolean
           order_name: string
           shutter_speed: string | null
           species_identifier: string
@@ -172,6 +176,7 @@ export type Database = {
         }
         Insert: {
           aperture?: string | null
+          aspect_ratio?: string | null
           camera?: string | null
           common_name?: string | null
           country?: string | null
@@ -182,7 +187,9 @@ export type Database = {
           focal_length?: string | null
           genus?: string | null
           id?: string
+          image_height?: number | null
           image_url: string
+          image_width?: number | null
           is_featured?: boolean | null
           iso?: number | null
           iucn_status?: string | null
@@ -190,6 +197,7 @@ export type Database = {
           lens?: string | null
           location?: string | null
           longitude?: number | null
+          missing_coordinates?: boolean
           order_name: string
           shutter_speed?: string | null
           species_identifier: string
@@ -201,6 +209,7 @@ export type Database = {
         }
         Update: {
           aperture?: string | null
+          aspect_ratio?: string | null
           camera?: string | null
           common_name?: string | null
           country?: string | null
@@ -211,7 +220,9 @@ export type Database = {
           focal_length?: string | null
           genus?: string | null
           id?: string
+          image_height?: number | null
           image_url?: string
+          image_width?: number | null
           is_featured?: boolean | null
           iso?: number | null
           iucn_status?: string | null
@@ -219,6 +230,7 @@ export type Database = {
           lens?: string | null
           location?: string | null
           longitude?: number | null
+          missing_coordinates?: boolean
           order_name?: string
           shutter_speed?: string | null
           species_identifier?: string
