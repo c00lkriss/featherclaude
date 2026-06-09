@@ -226,18 +226,19 @@ function SpeciesPage() {
       {current && (
         <div
           style={{
-            backgroundColor: "rgba(0, 0, 0, 0.45)",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
+            backgroundColor: "rgba(0, 0, 0, 0.55)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
           }}
           className={cn(
-            "absolute inset-x-0 bottom-0 z-10 max-h-[75vh] overflow-y-auto border-t border-white/10 px-6 py-10 transition-transform duration-500 ease-out md:px-12 md:py-12",
+            "absolute inset-x-0 bottom-0 z-10 max-h-[50vh] overflow-y-auto border-t border-white/10 px-5 py-6 transition-transform duration-300 ease-out md:max-h-[45vh] md:px-12 md:py-10",
             infoOpen ? "translate-y-0" : "translate-y-full",
           )}
         >
           <InfoPanel photo={current} />
         </div>
       )}
+
     </div>
   );
 }
