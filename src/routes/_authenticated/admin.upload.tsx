@@ -504,30 +504,31 @@ function UploadPage() {
               loading={ebirdLoading}
               onAccept={acceptEbirdLocation}
             />
-            {locationMapped && (
-              <p className="text-[11px] font-light text-emerald-400">
-                ✓ Location mapped
-              </p>
-            )}
           </div>
           <Grid>
             <Field label="Place name" full>
-              <input
+              <LocationField
                 value={form.location}
-                onChange={(e) => {
-                  set("location", e.target.value);
+                onChange={(v) => set("location", v)}
+                onTextEdit={() => {
+                  set("latitude", "");
+                  set("longitude", "");
                   setLocationMapped(false);
                 }}
-                className={inputCls}
+                onPick={(r) => {
+                  set("latitude", r.lat.toFixed(6));
+                  set("longitude", r.lon.toFixed(6));
+                  setLocationMapped(true);
+                }}
+                mapped={locationMapped || !!(form.latitude && form.longitude)}
                 placeholder="e.g. Keoladeo National Park"
               />
             </Field>
-            <Field label="Latitude"><input value={form.latitude} onChange={(e) => set("latitude", e.target.value)} className={inputCls} /></Field>
-            <Field label="Longitude"><input value={form.longitude} onChange={(e) => set("longitude", e.target.value)} className={inputCls} /></Field>
             <Field label="State / Region"><input value={form.region} onChange={(e) => set("region", e.target.value)} className={inputCls} /></Field>
             <Field label="Country"><input value={form.country} onChange={(e) => set("country", e.target.value)} className={inputCls} /></Field>
           </Grid>
         </Section>
+
 
         {/* 6. Tags & settings */}
         <Section title="Tags & Settings" number="06">
