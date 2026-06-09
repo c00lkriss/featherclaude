@@ -120,6 +120,20 @@ function EditPage() {
 
       const tags = form.tags.split(",").map((t) => t.trim()).filter(Boolean);
 
+      // Auto-geocode if location present but coords missing
+      let latNum = form.latitude ? parseFloat(form.latitude) : null;
+      let lonNum = form.longitude ? parseFloat(form.longitude) : null;
+      let missingCoords = false;
+      if (form.location && (latNum == null || lonNum == null)) {
+        const geo = await geocodeWithNominatim(form.location);
+        if (geo) {
+          latNum = geo.lat;
+          lonNum = geo.lon;
+        } else {
+          missingCoords = true;
+        }
+      }
+
       const { error: upErr } = await supabase
         .from("photos")
         .update({
@@ -139,8 +153,9 @@ function EditPage() {
           shutter_speed: form.shutter_speed || null,
           focal_length: form.focal_length || null,
           location: form.location || null,
-          latitude: form.latitude ? parseFloat(form.latitude) : null,
-          longitude: form.longitude ? parseFloat(form.longitude) : null,
+          latitude: latNum,
+          longitude: lonNum,
+          missing_coordinates: missingCoords,
           country: form.country || "India",
           tags,
           is_featured: form.is_featured,
@@ -150,6 +165,7 @@ function EditPage() {
       if (upErr) throw upErr;
       toast.success("Photograph updated.");
       navigate({ to: "/admin/manage" });
+
     } catch (err: any) {
       toast.error(err.message || "Save failed");
     } finally {
