@@ -11,6 +11,9 @@ import {
   type EbirdSuggestion,
 } from "@/lib/ebird-suggestion";
 import { EBirdSuggestionCard } from "@/components/EBirdSuggestionCard";
+import { LocationField } from "@/components/LocationField";
+import { readImageMeta } from "@/lib/image-meta";
+
 
 export const Route = createFileRoute("/_authenticated/admin/upload")({
   head: () => ({
@@ -245,6 +248,23 @@ function UploadPage() {
 
     setSubmitting(true);
     try {
+      // Compute aspect ratio metadata
+      const meta = await readImageMeta(file);
+
+      // If location set but no lat/long, attempt geocode at submit time
+      let latNum = form.latitude ? parseFloat(form.latitude) : null;
+      let lonNum = form.longitude ? parseFloat(form.longitude) : null;
+      let missingCoords = false;
+      if (form.location && (latNum == null || lonNum == null)) {
+        const geo = await geocodeWithNominatim(form.location);
+        if (geo) {
+          latNum = geo.lat;
+          lonNum = geo.lon;
+        } else {
+          missingCoords = true;
+        }
+      }
+
       // Upload to storage
       const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
       const identifier = slugify(form.common_name || form.species_name || "bird");
@@ -285,13 +305,18 @@ function UploadPage() {
         shutter_speed: form.shutter_speed || null,
         focal_length: form.focal_length || null,
         location: locationParts.join(", ") || null,
-        latitude: form.latitude ? parseFloat(form.latitude) : null,
-        longitude: form.longitude ? parseFloat(form.longitude) : null,
+        latitude: latNum,
+        longitude: lonNum,
+        missing_coordinates: missingCoords,
+        image_width: meta?.width ?? null,
+        image_height: meta?.height ?? null,
+        aspect_ratio: meta?.aspect_ratio ?? null,
         tags,
         is_featured: form.is_featured,
         iucn_status: form.iucn_status || null,
       });
       if (insErr) throw insErr;
+
 
       toast.success("Photograph uploaded.");
       navigate({ to: "/admin/dashboard" });
@@ -357,7 +382,7 @@ function UploadPage() {
             </label>
           ) : (
             <div className="relative overflow-hidden rounded-sm border border-border bg-background">
-              <img src={preview} alt="Preview" className="max-h-[500px] w-full object-contain" />
+              <img src={preview} alt="Preview" className="mx-auto max-h-[300px] w-auto object-contain" />
               <button
                 type="button"
                 onClick={() => { setFile(null); setPreview(null); }}
@@ -368,6 +393,7 @@ function UploadPage() {
               </button>
             </div>
           )}
+
         </Section>
 
         {/* 2. Taxonomy */}
@@ -478,30 +504,31 @@ function UploadPage() {
               loading={ebirdLoading}
               onAccept={acceptEbirdLocation}
             />
-            {locationMapped && (
-              <p className="text-[11px] font-light text-emerald-400">
-                ✓ Location mapped
-              </p>
-            )}
           </div>
           <Grid>
             <Field label="Place name" full>
-              <input
+              <LocationField
                 value={form.location}
-                onChange={(e) => {
-                  set("location", e.target.value);
+                onChange={(v) => set("location", v)}
+                onTextEdit={() => {
+                  set("latitude", "");
+                  set("longitude", "");
                   setLocationMapped(false);
                 }}
-                className={inputCls}
+                onPick={(r) => {
+                  set("latitude", r.lat.toFixed(6));
+                  set("longitude", r.lon.toFixed(6));
+                  setLocationMapped(true);
+                }}
+                mapped={locationMapped || !!(form.latitude && form.longitude)}
                 placeholder="e.g. Keoladeo National Park"
               />
             </Field>
-            <Field label="Latitude"><input value={form.latitude} onChange={(e) => set("latitude", e.target.value)} className={inputCls} /></Field>
-            <Field label="Longitude"><input value={form.longitude} onChange={(e) => set("longitude", e.target.value)} className={inputCls} /></Field>
             <Field label="State / Region"><input value={form.region} onChange={(e) => set("region", e.target.value)} className={inputCls} /></Field>
             <Field label="Country"><input value={form.country} onChange={(e) => set("country", e.target.value)} className={inputCls} /></Field>
           </Grid>
         </Section>
+
 
         {/* 6. Tags & settings */}
         <Section title="Tags & Settings" number="06">

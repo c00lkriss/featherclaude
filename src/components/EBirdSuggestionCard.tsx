@@ -43,6 +43,11 @@ export function EBirdSuggestionCard({ suggestion, loading, onAccept, onDismiss, 
     onDismiss?.();
   };
 
+  const acceptAndDismiss = (loc: Parameters<typeof onAccept>[0]) => {
+    onAccept(loc);
+    setDismissed(true);
+  };
+
   if (suggestion.tier === "new") {
     return (
       <div className={cn("rounded-sm border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300", className)}>
@@ -50,6 +55,7 @@ export function EBirdSuggestionCard({ suggestion, loading, onAccept, onDismiss, 
       </div>
     );
   }
+
 
   if (suggestion.tier === "common") {
     return (
@@ -60,7 +66,7 @@ export function EBirdSuggestionCard({ suggestion, loading, onAccept, onDismiss, 
             label="Recent records"
             list={suggestion.alternatives}
             onPick={(o) =>
-              onAccept({
+              acceptAndDismiss({
                 location: o.location ?? "",
                 state_province: o.state_province,
                 ebird_lat: o.ebird_lat,
@@ -74,6 +80,7 @@ export function EBirdSuggestionCard({ suggestion, loading, onAccept, onDismiss, 
   }
 
   if (suggestion.tier === "none" || !suggestion.location) return null;
+
 
   const accentBorder = suggestion.tier === "high" ? "border-primary" : "border-amber-400/60";
   const accentBg = suggestion.tier === "high" ? "bg-primary/10" : "bg-amber-500/10";
@@ -101,7 +108,7 @@ export function EBirdSuggestionCard({ suggestion, loading, onAccept, onDismiss, 
           <button
             type="button"
             onClick={() =>
-              onAccept({
+              acceptAndDismiss({
                 location: suggestion.location!,
                 state_province: suggestion.state_province,
                 ebird_lat: suggestion.ebird_lat,
@@ -128,7 +135,7 @@ export function EBirdSuggestionCard({ suggestion, loading, onAccept, onDismiss, 
             label="Other observations"
             list={suggestion.alternatives}
             onPick={(o) =>
-              onAccept({
+              acceptAndDismiss({
                 location: o.location ?? "",
                 state_province: o.state_province,
                 ebird_lat: o.ebird_lat,
@@ -141,6 +148,7 @@ export function EBirdSuggestionCard({ suggestion, loading, onAccept, onDismiss, 
     </div>
   );
 }
+
 
 function ObservationChips({
   label,

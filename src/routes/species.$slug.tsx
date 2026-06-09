@@ -140,10 +140,12 @@ function SpeciesPage() {
 
   return (
     <div
-      className="fixed inset-0 z-[60] bg-background"
+      className="fixed inset-0 z-[60]"
+      style={{ backgroundColor: "#0a0a0a" }}
       onMouseMove={() => setChromeVisible(true)}
       onMouseLeave={() => setChromeVisible(false)}
     >
+
       {current ? (
         <img
           src={current.image_url}
@@ -226,18 +228,19 @@ function SpeciesPage() {
       {current && (
         <div
           style={{
-            backgroundColor: "rgba(0, 0, 0, 0.45)",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
+            backgroundColor: "rgba(0, 0, 0, 0.55)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
           }}
           className={cn(
-            "absolute inset-x-0 bottom-0 z-10 max-h-[75vh] overflow-y-auto border-t border-white/10 px-6 py-10 transition-transform duration-500 ease-out md:px-12 md:py-12",
+            "absolute inset-x-0 bottom-0 z-10 max-h-[50vh] overflow-y-auto border-t border-white/10 px-5 py-6 transition-transform duration-300 ease-out md:max-h-[45vh] md:px-12 md:py-10",
             infoOpen ? "translate-y-0" : "translate-y-full",
           )}
         >
           <InfoPanel photo={current} />
         </div>
       )}
+
     </div>
   );
 }
@@ -282,41 +285,42 @@ function InfoPanel({ photo }: { photo: Photo }) {
 
   return (
     <div className="mx-auto max-w-5xl text-white" style={{ textShadow: TEXT_SHADOW }}>
-      <h2 className="font-display text-4xl font-semibold leading-tight md:text-5xl">
+      <h2 className="font-display text-[1.1rem] font-semibold leading-tight md:text-5xl">
         {photo.common_name || photo.species_name}
       </h2>
-      <p className="mt-2 font-body text-lg font-light italic text-white/80">
+      <p className="mt-1 font-body text-[0.85rem] font-light italic text-white/80 md:mt-2 md:text-lg">
         {photo.species_name}
       </p>
 
       {photo.iucn_status && (
-        <div className="mt-5" style={{ textShadow: "none" }}>
+        <div className="mt-4 md:mt-5" style={{ textShadow: "none" }}>
           <IucnBadge status={photo.iucn_status} />
         </div>
       )}
 
-      <p className="mt-6 text-xs font-light uppercase tracking-[0.3em] text-white/85">
+      <p className="mt-4 text-[10px] font-light uppercase tracking-[0.3em] text-white/85 md:mt-6 md:text-xs">
         {tax}
       </p>
 
       {photo.description && (
-        <p className="mt-5 max-w-prose text-sm font-light leading-relaxed text-white/90">
+        <p className="mt-4 max-w-prose text-xs font-light leading-relaxed text-white/90 md:mt-5 md:text-sm">
           {photo.description}
         </p>
       )}
 
-      <div className="my-8 h-px w-full bg-white/20" />
+      <div className="my-5 h-px w-full bg-white/20 md:my-8" />
 
-      <dl className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3 md:grid-cols-6">
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-4 text-[0.75rem] md:grid-cols-6 md:gap-x-6 md:gap-y-5 md:text-sm">
         {exif.map((row) => (
           <div key={row.label} className="border-l-2 border-white/30 pl-3">
             <dt className="text-[10px] font-light uppercase tracking-widest text-white/70">
               {row.label}
             </dt>
-            <dd className="mt-1 font-display text-sm text-white">
+            <dd className="mt-1 font-display text-xs text-white md:text-sm">
               {row.value || "—"}
             </dd>
           </div>
+
         ))}
       </dl>
 

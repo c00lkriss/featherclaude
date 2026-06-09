@@ -407,7 +407,7 @@ function PhotoGrid({
           Showing {total ?? photos.length} result{(total ?? photos.length) === 1 ? "" : "s"} for &ldquo;{q}&rdquo;
         </p>
       )}
-      <div className="columns-1 gap-4 md:columns-2 lg:columns-3">
+      <div className="columns-1 gap-3 md:columns-2 xl:columns-3">
         {photos.map((p) => (
           <PhotoCard key={p.id} photo={p} />
         ))}
@@ -439,34 +439,37 @@ function PhotoCard({ photo }: { photo: Photo }) {
           sessionStorage.setItem("gallery:lastPath", window.location.pathname + window.location.search);
         }
       }}
-      className="group mb-4 block break-inside-avoid overflow-hidden rounded-sm bg-surface transition-shadow duration-300 hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)]"
+      className="group mb-3 block break-inside-avoid overflow-hidden rounded-sm bg-surface transition-transform duration-[250ms] ease-out hover:scale-[1.02]"
     >
       <div className="relative overflow-hidden">
         <img
           src={photo.thumbnail_url || photo.image_url}
           alt={photo.common_name || photo.species_name}
           loading="lazy"
-          className="w-full transition-transform duration-700 group-hover:scale-105"
+          className="block h-auto w-full"
         />
-        <div className="absolute inset-0 flex items-end bg-gradient-to-t from-background/95 via-background/40 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+        {/* Desktop hover overlay with species name */}
+        <div className="pointer-events-none absolute inset-0 hidden items-end bg-gradient-to-t from-background/95 via-background/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 md:flex">
           <div className="p-5">
-            <p className="text-[10px] font-light uppercase tracking-[0.25em] text-primary">
-              {photo.order_name}
-            </p>
-            <p className="mt-1 text-xs font-light uppercase tracking-widest text-foreground/80">
-              {photo.family_name}
+            <h3 className="font-display text-lg font-semibold leading-tight text-foreground">
+              {photo.common_name || photo.species_name}
+            </h3>
+            <p className="mt-0.5 text-xs font-light italic text-muted-foreground">
+              {photo.species_name}
             </p>
           </div>
         </div>
       </div>
-      <div className="p-4">
-        <h3 className="font-display text-lg font-semibold leading-tight text-foreground">
+      {/* Mobile: always-visible name below image */}
+      <div className="p-3 md:hidden">
+        <h3 className="font-display text-base font-semibold leading-tight text-foreground">
           {photo.common_name || photo.species_name}
         </h3>
-        <p className="mt-0.5 font-body text-sm font-light italic text-muted-foreground">
+        <p className="mt-0.5 text-xs font-light italic text-muted-foreground">
           {photo.species_name}
         </p>
       </div>
     </Link>
   );
 }
+
