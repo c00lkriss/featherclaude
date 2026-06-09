@@ -140,10 +140,12 @@ function SpeciesPage() {
 
   return (
     <div
-      className="fixed inset-0 z-[60] bg-background"
+      className="fixed inset-0 z-[60]"
+      style={{ backgroundColor: "#0a0a0a" }}
       onMouseMove={() => setChromeVisible(true)}
       onMouseLeave={() => setChromeVisible(false)}
     >
+
       {current ? (
         <img
           src={current.image_url}
