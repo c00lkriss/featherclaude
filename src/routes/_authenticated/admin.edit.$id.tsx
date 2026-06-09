@@ -5,6 +5,9 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { BIRD_ORDERS, FAMILIES_BY_ORDER, IUCN_OPTIONS, MAX_FEATURED, slugify } from "@/lib/bird-constants";
+import { LocationField } from "@/components/LocationField";
+import { geocodeWithNominatim } from "@/lib/ebird-suggestion";
+
 
 export const Route = createFileRoute("/_authenticated/admin/edit/$id")({
   head: () => ({
