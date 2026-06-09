@@ -211,6 +211,22 @@ function BulkUploadPage() {
     for (const item of ready) {
       updateItem(item.id, { status: "saving" });
       try {
+        const meta = await readImageMeta(item.file);
+
+        // Auto-geocode location if user typed one but no lat/long
+        let latNum = item.latitude ? parseFloat(item.latitude) : null;
+        let lonNum = item.longitude ? parseFloat(item.longitude) : null;
+        let missingCoords = false;
+        if (item.location && (latNum == null || lonNum == null)) {
+          const geo = await geocodeWithNominatim(item.location);
+          if (geo) {
+            latNum = geo.lat;
+            lonNum = geo.lon;
+          } else {
+            missingCoords = true;
+          }
+        }
+
         const ext = item.file.name.split(".").pop()?.toLowerCase() || "jpg";
         const identifier = slugify(item.common_name || item.species_name || "bird");
         const photoSlug = buildPhotoSlug(identifier);
@@ -243,8 +259,12 @@ function BulkUploadPage() {
           shutter_speed: item.shutter_speed || null,
           focal_length: item.focal_length || null,
           location: item.location || null,
-          latitude: item.latitude ? parseFloat(item.latitude) : null,
-          longitude: item.longitude ? parseFloat(item.longitude) : null,
+          latitude: latNum,
+          longitude: lonNum,
+          missing_coordinates: missingCoords,
+          image_width: meta?.width ?? null,
+          image_height: meta?.height ?? null,
+          aspect_ratio: meta?.aspect_ratio ?? null,
           country: item.country || "India",
           tags: [],
           is_featured: item.is_featured ?? false,
@@ -252,6 +272,7 @@ function BulkUploadPage() {
         });
         if (insErr) throw insErr;
         updateItem(item.id, { status: "saved" });
+
       } catch (err: any) {
         console.error("[bulk] save failed:", err);
         updateItem(item.id, { status: "error", errorMsg: err?.message || "Save failed" });
