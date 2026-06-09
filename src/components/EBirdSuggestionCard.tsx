@@ -43,6 +43,11 @@ export function EBirdSuggestionCard({ suggestion, loading, onAccept, onDismiss, 
     onDismiss?.();
   };
 
+  const acceptAndDismiss = (loc: Parameters<typeof onAccept>[0]) => {
+    onAccept(loc);
+    setDismissed(true);
+  };
+
   if (suggestion.tier === "new") {
     return (
       <div className={cn("rounded-sm border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300", className)}>
@@ -50,6 +55,7 @@ export function EBirdSuggestionCard({ suggestion, loading, onAccept, onDismiss, 
       </div>
     );
   }
+
 
   if (suggestion.tier === "common") {
     return (
