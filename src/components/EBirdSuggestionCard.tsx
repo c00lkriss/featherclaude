@@ -108,7 +108,7 @@ export function EBirdSuggestionCard({ suggestion, loading, onAccept, onDismiss, 
           <button
             type="button"
             onClick={() =>
-              onAccept({
+              acceptAndDismiss({
                 location: suggestion.location!,
                 state_province: suggestion.state_province,
                 ebird_lat: suggestion.ebird_lat,
@@ -135,7 +135,7 @@ export function EBirdSuggestionCard({ suggestion, loading, onAccept, onDismiss, 
             label="Other observations"
             list={suggestion.alternatives}
             onPick={(o) =>
-              onAccept({
+              acceptAndDismiss({
                 location: o.location ?? "",
                 state_province: o.state_province,
                 ebird_lat: o.ebird_lat,
@@ -148,6 +148,7 @@ export function EBirdSuggestionCard({ suggestion, loading, onAccept, onDismiss, 
     </div>
   );
 }
+
 
 function ObservationChips({
   label,
