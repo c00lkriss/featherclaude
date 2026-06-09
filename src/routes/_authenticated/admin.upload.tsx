@@ -11,6 +11,9 @@ import {
   type EbirdSuggestion,
 } from "@/lib/ebird-suggestion";
 import { EBirdSuggestionCard } from "@/components/EBirdSuggestionCard";
+import { LocationField } from "@/components/LocationField";
+import { readImageMeta } from "@/lib/image-meta";
+
 
 export const Route = createFileRoute("/_authenticated/admin/upload")({
   head: () => ({
