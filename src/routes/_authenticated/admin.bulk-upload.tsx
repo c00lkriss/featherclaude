@@ -622,9 +622,19 @@ function EditDrawer({
                   }));
                 }}
               />
-              <input value={draft.location ?? ""} onChange={(e) => set("location", e.target.value)} className={inp} />
+              <LocationField
+                value={draft.location ?? ""}
+                onChange={(v) => set("location", v)}
+                onTextEdit={() => { set("latitude", undefined as any); set("longitude", undefined as any); }}
+                onPick={(r) => {
+                  set("latitude", r.lat.toFixed(6));
+                  set("longitude", r.lon.toFixed(6));
+                }}
+                mapped={!!(draft.latitude && draft.longitude)}
+              />
             </div>
           </Pair>
+
           <Pair label="Country">
             <input value={draft.country ?? "India"} onChange={(e) => set("country", e.target.value)} className={inp} />
           </Pair>
