@@ -96,6 +96,37 @@ function EditPage() {
     });
   }, [data]);
 
+  // Auto-populate taxonomy from common_name (debounced 500ms)
+  useEffect(() => {
+    const name = form?.common_name?.trim();
+    if (!name) {
+      setTaxBadge(null);
+      return;
+    }
+    const t = setTimeout(async () => {
+      const hit = await lookupTaxonomyByCommonName(name);
+      if (!hit.source) {
+        setTaxBadge("none");
+        return;
+      }
+      setTaxBadge(hit.source);
+      setForm((f) =>
+        f
+          ? {
+              ...f,
+              order_name: f.order_name || hit.order_name || f.order_name,
+              family_name: f.family_name || hit.family_name || f.family_name,
+              genus: f.genus || hit.genus || f.genus,
+              species_name: f.species_name || hit.species_name || f.species_name,
+              iucn_status: f.iucn_status || hit.iucn_status || f.iucn_status,
+            }
+          : f,
+      );
+    }, 500);
+    return () => clearTimeout(t);
+  }, [form?.common_name]);
+
+
   if (error) {
     return <div className="mx-auto max-w-3xl p-16 text-destructive">Failed to load: {error.message}</div>;
   }
