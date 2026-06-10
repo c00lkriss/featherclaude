@@ -163,13 +163,49 @@ function BulkUploadPage() {
         };
         updateItem(next.id, { ...exifPatch, status: "detecting" });
 
-        const dataUrl = await fileToDownscaledDataURL(next.file, 1024, 0.85);
-        const ai = await identify({ data: { image_data_url: dataUrl } });
+        // 1. Try filename first
+        const guess = parseSpeciesFromFilename(next.file.name);
+        let common_name: string | undefined;
+        let scientific_name: string | undefined;
+        let order_name: string | undefined;
+        let family_name: string | undefined;
+        let genus: string | undefined;
+        let iucn_status: string | undefined;
+        let confidence: number | undefined;
+        let notes: string | undefined;
+        let source: "filename" | "ai" = "ai";
 
-        // Background eBird location suggestion
+        if (guess) {
+          const { data: hits } = await supabase
+            .from("ebird_lifelist")
+            .select("common_name, scientific_name")
+            .ilike("common_name", `%${guess}%`)
+            .limit(1);
+          if (hits?.[0]) {
+            common_name = hits[0].common_name ?? guess;
+            scientific_name = hits[0].scientific_name ?? undefined;
+            source = "filename";
+          }
+        }
+
+        // 2. Fall back to AI if filename didn't yield a match
+        if (source === "ai") {
+          const dataUrl = await fileToDownscaledDataURL(next.file, 1024, 0.85);
+          const ai = await identify({ data: { image_data_url: dataUrl } });
+          common_name = ai.common_name;
+          scientific_name = ai.scientific_name;
+          genus = ai.genus;
+          family_name = ai.family_name;
+          order_name = ai.order_name;
+          iucn_status = ai.iucn_status;
+          confidence = ai.confidence;
+          notes = ai.identification_notes;
+        }
+
+        // 3. Background eBird location suggestion
         const ebirdSug = await geteBirdLocationSuggestion({
-          scientific_name: ai.scientific_name,
-          common_name: ai.common_name,
+          scientific_name,
+          common_name,
           photo_date: exifPatch.date_taken ?? null,
         });
 
@@ -186,15 +222,17 @@ function BulkUploadPage() {
 
         updateItem(next.id, {
           status: "ready",
-          common_name: ai.common_name,
-          species_name: ai.scientific_name,
-          genus: ai.genus,
-          family_name: ai.family_name,
-          order_name: ai.order_name,
-          iucn_status: ai.iucn_status,
-          confidence: ai.confidence,
-          notes: ai.identification_notes,
-          title: ai.common_name || next.file.name.replace(/\.[^.]+$/, ""),
+          common_name,
+          species_name: scientific_name,
+          genus,
+          family_name,
+          order_name,
+          iucn_status,
+          confidence,
+          notes,
+          source,
+          filename_guess: guess,
+          title: common_name || next.file.name.replace(/\.[^.]+$/, ""),
           ebirdSuggestion: ebirdSug,
           ...autoLocPatch,
         });
