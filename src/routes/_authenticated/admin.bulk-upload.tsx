@@ -568,7 +568,12 @@ function QueueCard({
             {item.species_name}
           </p>
         )}
-        {item.status === "ready" && <ConfidenceBadge value={item.confidence} />}
+        {item.status === "ready" && item.source === "ai" && <ConfidenceBadge value={item.confidence} />}
+        {item.status === "ready" && item.source === "filename" && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald-300">
+            📁 Filename ✓
+          </span>
+        )}
         {item.status === "ready" && <EbirdLocPill item={item} />}
         {item.errorMsg && <p className="text-[10px] text-destructive">{item.errorMsg}</p>}
       </div>
