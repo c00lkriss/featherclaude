@@ -55,6 +55,8 @@ function EditPage() {
   const [form, setForm] = useState<Form | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [imageUrl, setImageUrl] = useState<string>("");
+  const [taxBadge, setTaxBadge] = useState<"photos" | "ebird" | "none" | null>(null);
+
 
   const { data, error } = useQuery({
     queryKey: ["admin", "photo", id],
