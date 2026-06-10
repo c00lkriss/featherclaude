@@ -282,7 +282,7 @@ function BulkUploadPage() {
         const { data: pub } = supabase.storage.from("photos").getPublicUrl(path);
         const image_url = pub.publicUrl;
 
-        const { error: insErr } = await supabase.from("photos").insert({
+        const { data: inserted, error: insErr } = await supabase.from("photos").insert({
           title: item.title || item.common_name || "Untitled",
           description: item.description || item.notes || null,
           order_name: item.order_name || "Unknown",
@@ -312,8 +312,25 @@ function BulkUploadPage() {
           tags: [],
           is_featured: item.is_featured ?? false,
           iucn_status: item.iucn_status || null,
-        });
+        }).select("id").single();
         if (insErr) throw insErr;
+
+        // Background xeno-canto fetch
+        if (inserted?.id && item.species_name) {
+          fetchXenoCantoCall(item.species_name).then(async (call) => {
+            if (!call) {
+              await supabase.from("photos").update({ xeno_canto_id: "not_found" }).eq("id", inserted.id);
+              return;
+            }
+            await supabase.from("photos").update({
+              xeno_canto_id: call.id,
+              xeno_canto_url: call.url,
+              xeno_canto_recordist: call.recordist,
+              xeno_canto_license: call.license,
+            }).eq("id", inserted.id);
+          }).catch(() => {});
+        }
+
         updateItem(item.id, { status: "saved" });
 
       } catch (err: any) {
