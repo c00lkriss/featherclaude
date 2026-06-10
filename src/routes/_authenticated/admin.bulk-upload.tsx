@@ -18,6 +18,7 @@ import { LocationField } from "@/components/LocationField";
 import { readImageMeta } from "@/lib/image-meta";
 import { parseSpeciesFromFilename } from "@/lib/filename-species";
 import { fetchXenoCantoCall } from "@/lib/xeno-canto";
+import { lookupTaxonomyByCommonName } from "@/lib/taxonomy-lookup";
 
 
 export const Route = createFileRoute("/_authenticated/admin/bulk-upload")({
