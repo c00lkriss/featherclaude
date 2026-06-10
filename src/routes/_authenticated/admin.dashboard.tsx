@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Upload, FileText, Images, Star, ListChecks, AlertCircle } from "lucide-react";
+import { useState } from "react";
+import { Upload, FileText, Images, Star, ListChecks, AlertCircle, Volume2, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchXenoCantoCall } from "@/lib/xeno-canto";
 
 export const Route = createFileRoute("/_authenticated/admin/dashboard")({
   head: () => ({
@@ -14,6 +17,9 @@ export const Route = createFileRoute("/_authenticated/admin/dashboard")({
 });
 
 function AdminDashboard() {
+  const [callsRunning, setCallsRunning] = useState(false);
+  const [callsProgress, setCallsProgress] = useState({ done: 0, total: 0, found: 0 });
+
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
@@ -44,6 +50,61 @@ function AdminDashboard() {
       return data ?? [];
     },
   });
+
+  const runBatchCalls = async () => {
+    if (callsRunning) return;
+    setCallsRunning(true);
+    setCallsProgress({ done: 0, total: 0, found: 0 });
+    try {
+      const { data: photos } = await supabase
+        .from("photos")
+        .select("id, species_name")
+        .is("xeno_canto_url", null)
+        .is("xeno_canto_id", null)
+        .not("species_name", "is", null);
+
+      const rows = (photos ?? []) as { id: string; species_name: string | null }[];
+
+      // Group by species — fetch once per unique species
+      const bySpecies = new Map<string, string[]>();
+      for (const r of rows) {
+        if (!r.species_name) continue;
+        const key = r.species_name.trim();
+        if (!bySpecies.has(key)) bySpecies.set(key, []);
+        bySpecies.get(key)!.push(r.id);
+      }
+
+      const speciesList = Array.from(bySpecies.keys());
+      setCallsProgress({ done: 0, total: speciesList.length, found: 0 });
+
+      let found = 0;
+      for (let i = 0; i < speciesList.length; i++) {
+        const sci = speciesList[i];
+        const ids = bySpecies.get(sci)!;
+        try {
+          const call = await fetchXenoCantoCall(sci);
+          if (call) {
+            await supabase.from("photos").update({
+              xeno_canto_id: call.id,
+              xeno_canto_url: call.url,
+              xeno_canto_recordist: call.recordist,
+              xeno_canto_license: call.license,
+            }).in("id", ids);
+            found++;
+          } else {
+            await supabase.from("photos").update({ xeno_canto_id: "not_found" }).in("id", ids);
+          }
+        } catch (err) {
+          console.warn("xeno-canto fetch failed for", sci, err);
+        }
+        setCallsProgress({ done: i + 1, total: speciesList.length, found });
+        await new Promise((r) => setTimeout(r, 1000));
+      }
+      toast.success(`✓ Found calls for ${found}/${speciesList.length} species`);
+    } finally {
+      setCallsRunning(false);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-16">
@@ -84,6 +145,45 @@ function AdminDashboard() {
           <ActionCard to="/admin/ebird" icon={<ListChecks className="h-5 w-5" />} label="eBird List" />
           <ActionCard to="/admin/incomplete" icon={<AlertCircle className="h-5 w-5" />} label="Incomplete" />
           <ActionCard to="/admin/blog" icon={<FileText className="h-5 w-5" />} label="New Blog Post" />
+        </div>
+      </section>
+
+      {/* Bird calls batch */}
+      <section className="mt-12">
+        <h2 className="mb-5 text-xs font-light uppercase tracking-[0.3em] text-muted-foreground">
+          Bird Calls (xeno-canto)
+        </h2>
+        <div className="rounded-sm border border-border bg-surface p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="font-display text-base text-foreground">Fetch bird calls for all photos</p>
+              <p className="mt-1 text-xs font-light text-muted-foreground">
+                Loops through photos missing audio and fetches a quality-A recording per species.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={runBatchCalls}
+              disabled={callsRunning}
+              className="inline-flex items-center gap-2 rounded-sm border border-primary bg-primary/90 px-5 py-2.5 text-xs font-medium uppercase tracking-widest text-primary-foreground hover:bg-primary disabled:opacity-50"
+            >
+              {callsRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
+              {callsRunning ? "Fetching…" : "Fetch bird calls"}
+            </button>
+          </div>
+          {callsRunning && callsProgress.total > 0 && (
+            <div className="mt-4">
+              <div className="h-1.5 w-full rounded-full bg-background">
+                <div
+                  className="h-1.5 rounded-full bg-primary transition-all"
+                  style={{ width: `${(callsProgress.done / callsProgress.total) * 100}%` }}
+                />
+              </div>
+              <p className="mt-2 text-xs font-light text-muted-foreground">
+                Fetching calls… {callsProgress.done}/{callsProgress.total} done · {callsProgress.found} found
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
