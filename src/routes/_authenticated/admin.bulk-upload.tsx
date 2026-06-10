@@ -316,9 +316,10 @@ function BulkUploadPage() {
         }).select("id").single();
         if (insErr) throw insErr;
 
-        // Background xeno-canto fetch
-        if (inserted?.id && item.species_name) {
-          fetchXenoCantoCall(item.species_name).then(async (call) => {
+        // Background xeno-canto fetch (fallback to common name)
+        const callQuery = item.species_name || item.common_name;
+        if (inserted?.id && callQuery) {
+          fetchXenoCantoCall(callQuery).then(async (call) => {
             if (!call) {
               await supabase.from("photos").update({ xeno_canto_id: "not_found" }).eq("id", inserted.id);
               return;
@@ -333,12 +334,15 @@ function BulkUploadPage() {
         }
 
         updateItem(item.id, { status: "saved" });
+        // Small pacing delay between sequential xeno-canto requests
+        await new Promise((r) => setTimeout(r, 500));
 
       } catch (err: any) {
         console.error("[bulk] save failed:", err);
         updateItem(item.id, { status: "error", errorMsg: err?.message || "Save failed" });
       }
     }
+
     toast.success("Batch save complete.");
   };
 
