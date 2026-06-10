@@ -465,6 +465,75 @@ function UploadPage() {
             </div>
           )}
 
+          {/* Filename detection card */}
+          {file && filenameStatus === "pending" && (
+            <div className="mt-4 rounded-sm border border-border bg-surface p-5">
+              {filenameGuess ? (
+                <>
+                  <p className="text-xs font-light uppercase tracking-widest text-muted-foreground">
+                    📁 Detected from filename
+                  </p>
+                  <p className="font-display mt-2 text-lg text-foreground">"{filenameGuess}"</p>
+                  <p className="mt-2 text-sm text-muted-foreground">Is this correct?</p>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={acceptFilename}
+                      className="inline-flex items-center gap-2 rounded-sm border border-primary bg-primary/90 px-4 py-2 text-xs font-medium uppercase tracking-widest text-primary-foreground hover:bg-primary"
+                    >
+                      <FileText className="h-3.5 w-3.5" /> Yes, use this name
+                    </button>
+                    <button
+                      type="button"
+                      onClick={detectWithAI}
+                      disabled={aiLoading}
+                      className="inline-flex items-center gap-2 rounded-sm border border-border bg-surface px-4 py-2 text-xs font-medium uppercase tracking-widest text-foreground hover:border-primary"
+                    >
+                      {aiLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                      No, detect with AI
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-xs font-light uppercase tracking-widest text-muted-foreground">
+                    🤖 Filename unclear
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">No species name found in filename.</p>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={detectWithAI}
+                      disabled={aiLoading}
+                      className="inline-flex items-center gap-2 rounded-sm border border-primary bg-primary/90 px-4 py-2 text-xs font-medium uppercase tracking-widest text-primary-foreground hover:bg-primary"
+                    >
+                      {aiLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                      Detect species with AI
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFilenameStatus("rejected")}
+                      className="inline-flex items-center gap-2 rounded-sm border border-border bg-surface px-4 py-2 text-xs font-medium uppercase tracking-widest text-foreground hover:border-primary"
+                    >
+                      Enter manually
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {ebirdMatchBadge === "hit" && (
+            <p className="mt-3 inline-block rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-medium text-emerald-400">
+              ✓ Found in your eBird list
+            </p>
+          )}
+          {ebirdMatchBadge === "miss" && (
+            <p className="mt-3 inline-block rounded-full bg-amber-500/15 px-3 py-1 text-[11px] font-medium text-amber-400">
+              ⚠ Not in your eBird list — please verify taxonomy
+            </p>
+          )}
+
         </Section>
 
         {/* 2. Taxonomy */}
