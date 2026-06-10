@@ -232,6 +232,21 @@ function SpeciesPage() {
       </button>
 
       {current && (
+        <BirdCallPlayer
+          photoId={current.id}
+          scientificName={current.species_name}
+          commonName={current.common_name}
+          stored={{
+            xeno_canto_id: current.xeno_canto_id,
+            xeno_canto_url: current.xeno_canto_url,
+            xeno_canto_recordist: current.xeno_canto_recordist,
+            xeno_canto_license: current.xeno_canto_license,
+          }}
+          visible={chromeVisible || infoOpen}
+        />
+      )}
+
+      {current && (
         <div
           style={{
             backgroundColor: "rgba(0, 0, 0, 0.55)",
