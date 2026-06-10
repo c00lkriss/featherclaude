@@ -18,6 +18,7 @@ import { LocationField } from "@/components/LocationField";
 import { readImageMeta } from "@/lib/image-meta";
 import { parseSpeciesFromFilename } from "@/lib/filename-species";
 import { fetchXenoCantoCall } from "@/lib/xeno-canto";
+import { lookupTaxonomyByCommonName } from "@/lib/taxonomy-lookup";
 
 
 export const Route = createFileRoute("/_authenticated/admin/bulk-upload")({
@@ -315,9 +316,10 @@ function BulkUploadPage() {
         }).select("id").single();
         if (insErr) throw insErr;
 
-        // Background xeno-canto fetch
-        if (inserted?.id && item.species_name) {
-          fetchXenoCantoCall(item.species_name).then(async (call) => {
+        // Background xeno-canto fetch (fallback to common name)
+        const callQuery = item.species_name || item.common_name;
+        if (inserted?.id && callQuery) {
+          fetchXenoCantoCall(callQuery).then(async (call) => {
             if (!call) {
               await supabase.from("photos").update({ xeno_canto_id: "not_found" }).eq("id", inserted.id);
               return;
@@ -332,12 +334,15 @@ function BulkUploadPage() {
         }
 
         updateItem(item.id, { status: "saved" });
+        // Small pacing delay between sequential xeno-canto requests
+        await new Promise((r) => setTimeout(r, 500));
 
       } catch (err: any) {
         console.error("[bulk] save failed:", err);
         updateItem(item.id, { status: "error", errorMsg: err?.message || "Save failed" });
       }
     }
+
     toast.success("Batch save complete.");
   };
 
@@ -617,8 +622,35 @@ function EditDrawer({
   onSave: (patch: Partial<Item>) => void;
 }) {
   const [draft, setDraft] = useState<Item>(item);
+  const [taxBadge, setTaxBadge] = useState<"photos" | "ebird" | "none" | null>(null);
   const set = <K extends keyof Item>(k: K, v: Item[K]) =>
     setDraft((d) => ({ ...d, [k]: v }));
+
+  // Auto-populate taxonomy from common_name (debounced 500ms)
+  useEffect(() => {
+    const name = draft.common_name?.trim();
+    if (!name) {
+      setTaxBadge(null);
+      return;
+    }
+    const t = setTimeout(async () => {
+      const hit = await lookupTaxonomyByCommonName(name);
+      if (!hit.source) {
+        setTaxBadge("none");
+        return;
+      }
+      setTaxBadge(hit.source);
+      setDraft((d) => ({
+        ...d,
+        order_name: d.order_name || hit.order_name || d.order_name,
+        family_name: d.family_name || hit.family_name || d.family_name,
+        genus: d.genus || hit.genus || d.genus,
+        species_name: d.species_name || hit.species_name || d.species_name,
+        iucn_status: d.iucn_status || hit.iucn_status || d.iucn_status,
+      }));
+    }, 500);
+    return () => clearTimeout(t);
+  }, [draft.common_name]);
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-background/60 backdrop-blur-sm" onClick={onClose}>
@@ -639,6 +671,15 @@ function EditDrawer({
           <Pair label="Common name">
             <input value={draft.common_name ?? ""} onChange={(e) => set("common_name", e.target.value)} className={inp} />
           </Pair>
+          {taxBadge === "photos" && (
+            <p className="text-[11px] text-amber-400">📋 Taxonomy from your existing photos</p>
+          )}
+          {taxBadge === "ebird" && (
+            <p className="text-[11px] text-amber-400">📋 Taxonomy from your eBird list</p>
+          )}
+          {taxBadge === "none" && (
+            <p className="text-[11px] text-muted-foreground">Not in eBird list — enter manually</p>
+          )}
           <Pair label="Scientific name">
             <input value={draft.species_name ?? ""} onChange={(e) => set("species_name", e.target.value)} className={cn(inp, "italic")} />
           </Pair>
@@ -654,6 +695,7 @@ function EditDrawer({
           <Pair label="IUCN status">
             <input value={draft.iucn_status ?? ""} onChange={(e) => set("iucn_status", e.target.value)} className={inp} />
           </Pair>
+
           <Pair label="Title">
             <input value={draft.title ?? ""} onChange={(e) => set("title", e.target.value)} className={inp} />
           </Pair>

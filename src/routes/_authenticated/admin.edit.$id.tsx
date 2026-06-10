@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { BIRD_ORDERS, FAMILIES_BY_ORDER, IUCN_OPTIONS, MAX_FEATURED, slugify } from "@/lib/bird-constants";
 import { LocationField } from "@/components/LocationField";
 import { geocodeWithNominatim } from "@/lib/ebird-suggestion";
+import { lookupTaxonomyByCommonName } from "@/lib/taxonomy-lookup";
+
 
 
 export const Route = createFileRoute("/_authenticated/admin/edit/$id")({
@@ -53,6 +55,8 @@ function EditPage() {
   const [form, setForm] = useState<Form | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [imageUrl, setImageUrl] = useState<string>("");
+  const [taxBadge, setTaxBadge] = useState<"photos" | "ebird" | "none" | null>(null);
+
 
   const { data, error } = useQuery({
     queryKey: ["admin", "photo", id],
@@ -91,6 +95,37 @@ function EditPage() {
       iucn_status: data.iucn_status ?? "",
     });
   }, [data]);
+
+  // Auto-populate taxonomy from common_name (debounced 500ms)
+  useEffect(() => {
+    const name = form?.common_name?.trim();
+    if (!name) {
+      setTaxBadge(null);
+      return;
+    }
+    const t = setTimeout(async () => {
+      const hit = await lookupTaxonomyByCommonName(name);
+      if (!hit.source) {
+        setTaxBadge("none");
+        return;
+      }
+      setTaxBadge(hit.source);
+      setForm((f) =>
+        f
+          ? {
+              ...f,
+              order_name: f.order_name || hit.order_name || f.order_name,
+              family_name: f.family_name || hit.family_name || f.family_name,
+              genus: f.genus || hit.genus || f.genus,
+              species_name: f.species_name || hit.species_name || f.species_name,
+              iucn_status: f.iucn_status || hit.iucn_status || f.iucn_status,
+            }
+          : f,
+      );
+    }, 500);
+    return () => clearTimeout(t);
+  }, [form?.common_name]);
+
 
   if (error) {
     return <div className="mx-auto max-w-3xl p-16 text-destructive">Failed to load: {error.message}</div>;
@@ -213,7 +248,17 @@ function EditPage() {
             </Field>
             <Field label="Common name">
               <input value={form.common_name} onChange={(e) => set("common_name", e.target.value)} className={inputCls} />
+              {taxBadge === "photos" && (
+                <p className="mt-1 text-[11px] text-amber-400">📋 Taxonomy from your existing photos</p>
+              )}
+              {taxBadge === "ebird" && (
+                <p className="mt-1 text-[11px] text-amber-400">📋 Taxonomy from your eBird list</p>
+              )}
+              {taxBadge === "none" && (
+                <p className="mt-1 text-[11px] text-muted-foreground">Not in eBird list — enter manually</p>
+              )}
             </Field>
+
             <Field label="Species identifier">
               <input value={form.species_identifier} onChange={(e) => set("species_identifier", slugify(e.target.value))} className={inputCls} />
             </Field>

@@ -7,11 +7,11 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { supabase } from "@/integrations/supabase/client";
+
 
 function NotFoundComponent() {
   return (
@@ -120,7 +120,6 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const [user, setUser] = useState<null | { id: string; email?: string }>(null);
 
   // Admin subdomain hard-redirect: admin.coolkriss.in/ → /admin
   useEffect(() => {
@@ -131,22 +130,10 @@ function RootComponent() {
     }
   }, []);
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user ? { id: data.user.id, email: data.user.email } : null);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
-
-
   return (
     <QueryClientProvider client={queryClient}>
       <div className="flex min-h-screen flex-col bg-background">
-        <Header user={user} />
+        <Header />
         <main className="flex-1">
           <Outlet />
         </main>
@@ -156,15 +143,7 @@ function RootComponent() {
   );
 }
 
-function Header({ user }: { user: { id: string; email?: string } | null }) {
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.invalidate();
-    window.location.reload();
-  };
-
+function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
@@ -215,35 +194,11 @@ function Header({ user }: { user: { id: string; email?: string } | null }) {
             About
           </Link>
         </nav>
-        <div className="flex items-center gap-4">
-          {user ? (
-            <div className="flex items-center gap-3">
-              <Link
-                to="/admin/dashboard"
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-              >
-                Admin
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Log out
-              </button>
-            </div>
-          ) : (
-            <Link
-              to="/admin"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-              Sign in
-            </Link>
-          )}
-        </div>
       </div>
     </header>
   );
 }
+
 
 function Footer() {
   const socialCls =
