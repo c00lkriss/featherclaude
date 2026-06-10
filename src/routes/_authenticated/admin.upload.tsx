@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import exifr from "exifr";
-import { Upload, X, ImagePlus, Star } from "lucide-react";
+import { Upload, X, ImagePlus, Star, Loader2, FileText, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import {
@@ -13,6 +14,10 @@ import {
 import { EBirdSuggestionCard } from "@/components/EBirdSuggestionCard";
 import { LocationField } from "@/components/LocationField";
 import { readImageMeta } from "@/lib/image-meta";
+import { parseSpeciesFromFilename } from "@/lib/filename-species";
+import { fetchXenoCantoCall } from "@/lib/xeno-canto";
+import { identifyBird } from "@/lib/identify-bird.functions";
+import { fileToDownscaledDataURL } from "@/lib/bird-constants";
 
 
 export const Route = createFileRoute("/_authenticated/admin/upload")({
@@ -110,6 +115,7 @@ const slugify = (s: string) =>
 
 function UploadPage() {
   const navigate = useNavigate();
+  const identify = useServerFn(identifyBird);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY);
@@ -119,6 +125,10 @@ function UploadPage() {
   const [ebirdSuggestion, setEbirdSuggestion] = useState<EbirdSuggestion | null>(null);
   const [ebirdLoading, setEbirdLoading] = useState(false);
   const [locationMapped, setLocationMapped] = useState(false);
+  const [filenameGuess, setFilenameGuess] = useState<string | null>(null);
+  const [filenameStatus, setFilenameStatus] = useState<"pending" | "accepted" | "rejected" | "none">("none");
+  const [ebirdMatchBadge, setEbirdMatchBadge] = useState<"hit" | "miss" | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
@@ -202,6 +212,12 @@ function UploadPage() {
     }
     setFile(f);
 
+    // Filename parsing
+    const guess = parseSpeciesFromFilename(f.name);
+    setFilenameGuess(guess);
+    setFilenameStatus(guess ? "pending" : "none");
+    setEbirdMatchBadge(null);
+
     // Read EXIF
     try {
       const exif = await exifr.parse(f, { gps: true });
@@ -219,10 +235,65 @@ function UploadPage() {
           latitude: p.latitude || (exif.latitude != null ? exif.latitude.toFixed(6) : ""),
           longitude: p.longitude || (exif.longitude != null ? exif.longitude.toFixed(6) : ""),
         }));
-        toast.success("EXIF data read from photo.");
       }
     } catch {
       // silent — EXIF is optional
+    }
+  };
+
+  const acceptFilename = async () => {
+    if (!filenameGuess) return;
+    setCommonNameTouched(true);
+    set("common_name", filenameGuess);
+    set("title", filenameGuess);
+    setFilenameStatus("accepted");
+
+    // Cross-reference eBird life list
+    const { data } = await supabase
+      .from("ebird_lifelist")
+      .select("common_name, scientific_name")
+      .ilike("common_name", `%${filenameGuess}%`)
+      .limit(1);
+    const hit = data?.[0];
+    if (hit) {
+      setEbirdMatchBadge("hit");
+      setForm((p) => ({
+        ...p,
+        common_name: hit.common_name || p.common_name,
+        species_name: p.species_name || hit.scientific_name || "",
+        title: p.title || hit.common_name || filenameGuess,
+      }));
+      toast.success("Matched your eBird list — taxonomy pre-filled.");
+    } else {
+      setEbirdMatchBadge("miss");
+      toast.warning("Not in your eBird list — please verify taxonomy.");
+    }
+  };
+
+  const detectWithAI = async () => {
+    if (!file) return;
+    setAiLoading(true);
+    try {
+      const dataUrl = await fileToDownscaledDataURL(file, 1024, 0.85);
+      const ai = await identify({ data: { image_data_url: dataUrl } });
+      setForm((p) => ({
+        ...p,
+        common_name: ai.common_name || p.common_name,
+        species_name: ai.scientific_name || p.species_name,
+        genus: ai.genus || p.genus,
+        family_name: ai.family_name || p.family_name,
+        order_name: ai.order_name || p.order_name,
+        iucn_status: ai.iucn_status || p.iucn_status,
+        title: p.title || ai.common_name || "",
+        description: p.description || ai.identification_notes || "",
+      }));
+      setCommonNameTouched(true);
+      setFilenameStatus("rejected");
+      toast.success(`Identified: ${ai.common_name ?? "unknown"}`);
+    } catch (err: any) {
+      toast.error(err?.message || "AI detection failed");
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -285,7 +356,7 @@ function UploadPage() {
 
       const locationParts = [form.location, form.region, form.country].filter(Boolean);
 
-      const { error: insErr } = await supabase.from("photos").insert({
+      const { data: inserted, error: insErr } = await supabase.from("photos").insert({
         title: form.title,
         description: form.description || null,
         order_name: form.order_name,
@@ -314,9 +385,24 @@ function UploadPage() {
         tags,
         is_featured: form.is_featured,
         iucn_status: form.iucn_status || null,
-      });
+      }).select("id").single();
       if (insErr) throw insErr;
 
+      // Background — fetch xeno-canto call (don't await)
+      if (inserted?.id && form.species_name) {
+        fetchXenoCantoCall(form.species_name).then(async (call) => {
+          if (!call) {
+            await supabase.from("photos").update({ xeno_canto_id: "not_found" }).eq("id", inserted.id);
+            return;
+          }
+          await supabase.from("photos").update({
+            xeno_canto_id: call.id,
+            xeno_canto_url: call.url,
+            xeno_canto_recordist: call.recordist,
+            xeno_canto_license: call.license,
+          }).eq("id", inserted.id);
+        }).catch(() => {});
+      }
 
       toast.success("Photograph uploaded.");
       navigate({ to: "/admin/dashboard" });
@@ -392,6 +478,75 @@ function UploadPage() {
                 <X className="h-4 w-4" />
               </button>
             </div>
+          )}
+
+          {/* Filename detection card */}
+          {file && filenameStatus === "pending" && (
+            <div className="mt-4 rounded-sm border border-border bg-surface p-5">
+              {filenameGuess ? (
+                <>
+                  <p className="text-xs font-light uppercase tracking-widest text-muted-foreground">
+                    📁 Detected from filename
+                  </p>
+                  <p className="font-display mt-2 text-lg text-foreground">"{filenameGuess}"</p>
+                  <p className="mt-2 text-sm text-muted-foreground">Is this correct?</p>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={acceptFilename}
+                      className="inline-flex items-center gap-2 rounded-sm border border-primary bg-primary/90 px-4 py-2 text-xs font-medium uppercase tracking-widest text-primary-foreground hover:bg-primary"
+                    >
+                      <FileText className="h-3.5 w-3.5" /> Yes, use this name
+                    </button>
+                    <button
+                      type="button"
+                      onClick={detectWithAI}
+                      disabled={aiLoading}
+                      className="inline-flex items-center gap-2 rounded-sm border border-border bg-surface px-4 py-2 text-xs font-medium uppercase tracking-widest text-foreground hover:border-primary"
+                    >
+                      {aiLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                      No, detect with AI
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-xs font-light uppercase tracking-widest text-muted-foreground">
+                    🤖 Filename unclear
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">No species name found in filename.</p>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={detectWithAI}
+                      disabled={aiLoading}
+                      className="inline-flex items-center gap-2 rounded-sm border border-primary bg-primary/90 px-4 py-2 text-xs font-medium uppercase tracking-widest text-primary-foreground hover:bg-primary"
+                    >
+                      {aiLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                      Detect species with AI
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFilenameStatus("rejected")}
+                      className="inline-flex items-center gap-2 rounded-sm border border-border bg-surface px-4 py-2 text-xs font-medium uppercase tracking-widest text-foreground hover:border-primary"
+                    >
+                      Enter manually
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {ebirdMatchBadge === "hit" && (
+            <p className="mt-3 inline-block rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-medium text-emerald-400">
+              ✓ Found in your eBird list
+            </p>
+          )}
+          {ebirdMatchBadge === "miss" && (
+            <p className="mt-3 inline-block rounded-full bg-amber-500/15 px-3 py-1 text-[11px] font-medium text-amber-400">
+              ⚠ Not in your eBird list — please verify taxonomy
+            </p>
           )}
 
         </Section>

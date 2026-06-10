@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Info, MapPin, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { BirdCallPlayer } from "@/components/BirdCallPlayer";
+import { getWikipediaUrl } from "@/lib/wikipedia";
 
 type SpeciesSearch = { p?: string };
 
@@ -44,6 +46,10 @@ type Photo = {
   shutter_speed: string | null;
   focal_length: string | null;
   iucn_status: string | null;
+  xeno_canto_id: string | null;
+  xeno_canto_url: string | null;
+  xeno_canto_recordist: string | null;
+  xeno_canto_license: string | null;
 };
 
 const IUCN_COLORS: Record<string, string> = {
@@ -78,7 +84,7 @@ function SpeciesPage() {
       const { data, error } = await supabase
         .from("photos")
         .select(
-          "id, title, description, common_name, species_name, species_slug, species_identifier, order_name, family_name, genus, image_url, thumbnail_url, location, latitude, longitude, date_taken, camera, lens, iso, aperture, shutter_speed, focal_length, iucn_status",
+          "id, title, description, common_name, species_name, species_slug, species_identifier, order_name, family_name, genus, image_url, thumbnail_url, location, latitude, longitude, date_taken, camera, lens, iso, aperture, shutter_speed, focal_length, iucn_status, xeno_canto_id, xeno_canto_url, xeno_canto_recordist, xeno_canto_license",
         )
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -226,6 +232,21 @@ function SpeciesPage() {
       </button>
 
       {current && (
+        <BirdCallPlayer
+          photoId={current.id}
+          scientificName={current.species_name}
+          commonName={current.common_name}
+          stored={{
+            xeno_canto_id: current.xeno_canto_id,
+            xeno_canto_url: current.xeno_canto_url,
+            xeno_canto_recordist: current.xeno_canto_recordist,
+            xeno_canto_license: current.xeno_canto_license,
+          }}
+          visible={chromeVisible || infoOpen}
+        />
+      )}
+
+      {current && (
         <div
           style={{
             backgroundColor: "rgba(0, 0, 0, 0.55)",
@@ -301,6 +322,18 @@ function InfoPanel({ photo }: { photo: Photo }) {
       <p className="mt-4 text-[10px] font-light uppercase tracking-[0.3em] text-white/85 md:mt-6 md:text-xs">
         {tax}
       </p>
+
+      {(photo.common_name || photo.species_name) && (
+        <a
+          href={getWikipediaUrl(photo.common_name || photo.species_name)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 inline-flex items-center gap-1 text-xs font-medium hover:underline"
+          style={{ color: "#c9a84c" }}
+        >
+          Wikipedia ↗
+        </a>
+      )}
 
       {photo.description && (
         <p className="mt-4 max-w-prose text-xs font-light leading-relaxed text-white/90 md:mt-5 md:text-sm">

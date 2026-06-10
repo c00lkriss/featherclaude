@@ -16,6 +16,8 @@ import {
 import { EBirdSuggestionCard } from "@/components/EBirdSuggestionCard";
 import { LocationField } from "@/components/LocationField";
 import { readImageMeta } from "@/lib/image-meta";
+import { parseSpeciesFromFilename } from "@/lib/filename-species";
+import { fetchXenoCantoCall } from "@/lib/xeno-canto";
 
 
 export const Route = createFileRoute("/_authenticated/admin/bulk-upload")({
@@ -72,6 +74,9 @@ type Item = {
   ebirdSuggestion?: EbirdSuggestion | null;
   ebird_lat?: string;
   ebird_long?: string;
+  // detection source
+  source?: "filename" | "ai" | null;
+  filename_guess?: string | null;
 };
 
 const MAX_FILES = 20;
@@ -158,13 +163,49 @@ function BulkUploadPage() {
         };
         updateItem(next.id, { ...exifPatch, status: "detecting" });
 
-        const dataUrl = await fileToDownscaledDataURL(next.file, 1024, 0.85);
-        const ai = await identify({ data: { image_data_url: dataUrl } });
+        // 1. Try filename first
+        const guess = parseSpeciesFromFilename(next.file.name);
+        let common_name: string | undefined;
+        let scientific_name: string | undefined;
+        let order_name: string | undefined;
+        let family_name: string | undefined;
+        let genus: string | undefined;
+        let iucn_status: string | undefined;
+        let confidence: number | undefined;
+        let notes: string | undefined;
+        let source: "filename" | "ai" = "ai";
 
-        // Background eBird location suggestion
+        if (guess) {
+          const { data: hits } = await supabase
+            .from("ebird_lifelist")
+            .select("common_name, scientific_name")
+            .ilike("common_name", `%${guess}%`)
+            .limit(1);
+          if (hits?.[0]) {
+            common_name = hits[0].common_name ?? guess;
+            scientific_name = hits[0].scientific_name ?? undefined;
+            source = "filename";
+          }
+        }
+
+        // 2. Fall back to AI if filename didn't yield a match
+        if (source === "ai") {
+          const dataUrl = await fileToDownscaledDataURL(next.file, 1024, 0.85);
+          const ai = await identify({ data: { image_data_url: dataUrl } });
+          common_name = ai.common_name;
+          scientific_name = ai.scientific_name;
+          genus = ai.genus;
+          family_name = ai.family_name;
+          order_name = ai.order_name;
+          iucn_status = ai.iucn_status;
+          confidence = ai.confidence;
+          notes = ai.identification_notes;
+        }
+
+        // 3. Background eBird location suggestion
         const ebirdSug = await geteBirdLocationSuggestion({
-          scientific_name: ai.scientific_name,
-          common_name: ai.common_name,
+          scientific_name,
+          common_name,
           photo_date: exifPatch.date_taken ?? null,
         });
 
@@ -181,15 +222,17 @@ function BulkUploadPage() {
 
         updateItem(next.id, {
           status: "ready",
-          common_name: ai.common_name,
-          species_name: ai.scientific_name,
-          genus: ai.genus,
-          family_name: ai.family_name,
-          order_name: ai.order_name,
-          iucn_status: ai.iucn_status,
-          confidence: ai.confidence,
-          notes: ai.identification_notes,
-          title: ai.common_name || next.file.name.replace(/\.[^.]+$/, ""),
+          common_name,
+          species_name: scientific_name,
+          genus,
+          family_name,
+          order_name,
+          iucn_status,
+          confidence,
+          notes,
+          source,
+          filename_guess: guess,
+          title: common_name || next.file.name.replace(/\.[^.]+$/, ""),
           ebirdSuggestion: ebirdSug,
           ...autoLocPatch,
         });
@@ -239,7 +282,7 @@ function BulkUploadPage() {
         const { data: pub } = supabase.storage.from("photos").getPublicUrl(path);
         const image_url = pub.publicUrl;
 
-        const { error: insErr } = await supabase.from("photos").insert({
+        const { data: inserted, error: insErr } = await supabase.from("photos").insert({
           title: item.title || item.common_name || "Untitled",
           description: item.description || item.notes || null,
           order_name: item.order_name || "Unknown",
@@ -269,8 +312,25 @@ function BulkUploadPage() {
           tags: [],
           is_featured: item.is_featured ?? false,
           iucn_status: item.iucn_status || null,
-        });
+        }).select("id").single();
         if (insErr) throw insErr;
+
+        // Background xeno-canto fetch
+        if (inserted?.id && item.species_name) {
+          fetchXenoCantoCall(item.species_name).then(async (call) => {
+            if (!call) {
+              await supabase.from("photos").update({ xeno_canto_id: "not_found" }).eq("id", inserted.id);
+              return;
+            }
+            await supabase.from("photos").update({
+              xeno_canto_id: call.id,
+              xeno_canto_url: call.url,
+              xeno_canto_recordist: call.recordist,
+              xeno_canto_license: call.license,
+            }).eq("id", inserted.id);
+          }).catch(() => {});
+        }
+
         updateItem(item.id, { status: "saved" });
 
       } catch (err: any) {
@@ -508,7 +568,12 @@ function QueueCard({
             {item.species_name}
           </p>
         )}
-        {item.status === "ready" && <ConfidenceBadge value={item.confidence} />}
+        {item.status === "ready" && item.source === "ai" && <ConfidenceBadge value={item.confidence} />}
+        {item.status === "ready" && item.source === "filename" && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald-300">
+            📁 Filename ✓
+          </span>
+        )}
         {item.status === "ready" && <EbirdLocPill item={item} />}
         {item.errorMsg && <p className="text-[10px] text-destructive">{item.errorMsg}</p>}
       </div>

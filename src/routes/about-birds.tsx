@@ -817,13 +817,13 @@ function ConservationSection() {
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">{b.threat}</p>
                   <a
-                    href={`https://ebird.org/species/search?q=${encodeURIComponent(b.name)}`}
+                    href={`https://en.wikipedia.org/wiki/${encodeURIComponent(b.name.trim().replace(/\s+/g, "_"))}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-2 inline-block text-xs font-medium hover:underline"
                     style={{ color: AMBER }}
                   >
-                    Learn more on eBird →
+                    Wikipedia ↗
                   </a>
                 </div>
               ))}

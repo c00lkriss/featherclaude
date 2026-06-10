@@ -504,7 +504,17 @@ function Wishlist() {
             ) : (
               pageRows.map((r) => (
                 <tr key={r.id} className="border-t border-border/60 text-foreground">
-                  <td className="px-4 py-3 font-medium">{r.common_name}</td>
+                  <td className="px-4 py-3 font-medium">
+                    <a
+                      href={`https://en.wikipedia.org/wiki/${encodeURIComponent((r.common_name || "").trim().replace(/\s+/g, "_"))}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline"
+                      style={{ color: "inherit" }}
+                    >
+                      {r.common_name} <span style={{ color: "#c9a84c" }}>↗</span>
+                    </a>
+                  </td>
                   <td className="px-4 py-3 italic text-muted-foreground">
                     {r.scientific_name}
                   </td>

@@ -173,6 +173,10 @@ export type Database = {
           tags: string[] | null
           thumbnail_url: string | null
           title: string
+          xeno_canto_id: string | null
+          xeno_canto_license: string | null
+          xeno_canto_recordist: string | null
+          xeno_canto_url: string | null
         }
         Insert: {
           aperture?: string | null
@@ -206,6 +210,10 @@ export type Database = {
           tags?: string[] | null
           thumbnail_url?: string | null
           title: string
+          xeno_canto_id?: string | null
+          xeno_canto_license?: string | null
+          xeno_canto_recordist?: string | null
+          xeno_canto_url?: string | null
         }
         Update: {
           aperture?: string | null
@@ -239,6 +247,10 @@ export type Database = {
           tags?: string[] | null
           thumbnail_url?: string | null
           title?: string
+          xeno_canto_id?: string | null
+          xeno_canto_license?: string | null
+          xeno_canto_recordist?: string | null
+          xeno_canto_url?: string | null
         }
         Relationships: []
       }
