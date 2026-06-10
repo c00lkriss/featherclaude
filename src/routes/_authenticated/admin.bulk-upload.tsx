@@ -16,6 +16,8 @@ import {
 import { EBirdSuggestionCard } from "@/components/EBirdSuggestionCard";
 import { LocationField } from "@/components/LocationField";
 import { readImageMeta } from "@/lib/image-meta";
+import { parseSpeciesFromFilename } from "@/lib/filename-species";
+import { fetchXenoCantoCall } from "@/lib/xeno-canto";
 
 
 export const Route = createFileRoute("/_authenticated/admin/bulk-upload")({
@@ -72,6 +74,9 @@ type Item = {
   ebirdSuggestion?: EbirdSuggestion | null;
   ebird_lat?: string;
   ebird_long?: string;
+  // detection source
+  source?: "filename" | "ai" | null;
+  filename_guess?: string | null;
 };
 
 const MAX_FILES = 20;
