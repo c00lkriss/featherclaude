@@ -12,26 +12,18 @@ export const Route = createFileRoute("/admin")({
   component: AdminLoginPage,
 });
 
-type Mode = "signin" | "signup";
-
 function AdminLoginPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [info, setInfo] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
-  const [adminExists, setAdminExists] = useState<boolean>(false);
 
-  // Redirect away if already signed in as admin; detect if any admin exists.
   useEffect(() => {
     (async () => {
-      console.log("[admin] checking existing session…");
       const { data: userData } = await supabase.auth.getUser();
       if (userData.user) {
-        console.log("[admin] existing user:", userData.user.id);
         const { data: ok } = await supabase.rpc("has_role", {
           _user_id: userData.user.id,
           _role: "admin",
@@ -41,9 +33,6 @@ function AdminLoginPage() {
           return;
         }
       }
-      // Check if any admin role exists (publicly readable: no, but count via signed-out
-      // we can't read user_roles. So we infer from a flag: try to call bootstrap_admin
-      // only after sign-in. For now assume signup is allowed; we'll hide it after success.)
       setChecking(false);
     })();
   }, [navigate]);
@@ -51,71 +40,21 @@ function AdminLoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setInfo(null);
     setLoading(true);
-
     try {
-      if (mode === "signup") {
-        console.log("[admin] signing up:", email);
-        const { data, error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: `${window.location.origin}/admin` },
-        });
-        if (signUpError) {
-          console.error("[admin] signUp error:", signUpError);
-          throw signUpError;
-        }
-        console.log("[admin] signUp result:", { user: data.user?.id, session: !!data.session });
-
-        if (data.session) {
-          // Auto-confirm enabled → session present. Trigger has already created
-          // profile + admin role for the first user.
-          console.log("[admin] session present, verifying admin role…");
-          const { data: ok, error: rpcErr } = await supabase.rpc("has_role", {
-            _user_id: data.user!.id,
-            _role: "admin",
-          });
-          if (rpcErr) {
-            console.error("[admin] has_role error:", rpcErr);
-            throw rpcErr;
-          }
-          if (!ok) {
-            await supabase.auth.signOut();
-            throw new Error("This account is not authorized for admin access.");
-          }
-          console.log("[admin] redirecting to dashboard");
-          setAdminExists(true);
-          navigate({ to: "/admin/dashboard", replace: true });
-        } else {
-          setInfo("Check your email to confirm your account, then sign in.");
-          setMode("signin");
-        }
-      } else {
-        console.log("[admin] signing in:", email);
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (signInError) {
-          console.error("[admin] signIn error:", signInError);
-          throw signInError;
-        }
-
-        console.log("[admin] sign-in success, checking admin role…");
-        const { data: signedIn } = await supabase.auth.getUser();
-        const { data: ok, error: rpcErr } = await supabase.rpc("has_role", {
-          _user_id: signedIn.user!.id,
-          _role: "admin",
-        });
-        if (rpcErr) throw rpcErr;
-        if (!ok) {
-          await supabase.auth.signOut();
-          throw new Error("This account is not authorized for admin access.");
-        }
-        console.log("[admin] redirecting to dashboard");
-        navigate({ to: "/admin/dashboard", replace: true });
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError) throw signInError;
+      const { data: signedIn } = await supabase.auth.getUser();
+      const { data: ok, error: rpcErr } = await supabase.rpc("has_role", {
+        _user_id: signedIn.user!.id,
+        _role: "admin",
+      });
+      if (rpcErr) throw rpcErr;
+      if (!ok) {
+        await supabase.auth.signOut();
+        throw new Error("This account is not authorized for admin access.");
       }
+      navigate({ to: "/admin/dashboard", replace: true });
     } catch (err: any) {
       setError(err?.message || "Authentication failed.");
     } finally {
@@ -135,16 +74,10 @@ function AdminLoginPage() {
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-6 py-16">
       <div className="w-full max-w-md">
         <div className="mb-10 text-center">
-          <p className="mb-3 text-xs font-light uppercase tracking-[0.3em] text-primary">
-            Admin
-          </p>
-          <h1 className="font-display text-4xl font-semibold text-foreground">
-            {mode === "signin" ? "Sign In" : "Create Admin"}
-          </h1>
+          <p className="mb-3 text-xs font-light uppercase tracking-[0.3em] text-primary">Admin</p>
+          <h1 className="font-display text-4xl font-semibold text-foreground">Sign In</h1>
           <p className="mt-3 text-sm font-light text-muted-foreground">
-            {mode === "signin"
-              ? "Manage photographs and field notes."
-              : "The first registered user becomes the site administrator."}
+            Manage photographs and field notes.
           </p>
         </div>
 
@@ -152,11 +85,6 @@ function AdminLoginPage() {
           {error && (
             <div className="rounded-sm border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
               {error}
-            </div>
-          )}
-          {info && (
-            <div className="rounded-sm border border-primary/40 bg-primary/10 px-4 py-3 text-sm text-primary">
-              {info}
             </div>
           )}
 
@@ -191,41 +119,8 @@ function AdminLoginPage() {
             disabled={loading}
             className="w-full rounded-none border border-primary bg-primary/90 px-6 py-3 text-xs font-medium uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary disabled:opacity-50"
           >
-            {loading ? "Please wait…" : mode === "signin" ? "Sign In" : "Create Admin Account"}
+            {loading ? "Please wait…" : "Sign In"}
           </button>
-
-          {mode === "signin" && !adminExists && (
-            <p className="text-center text-xs font-light text-muted-foreground">
-              No admin yet?{" "}
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("signup");
-                  setError(null);
-                  setInfo(null);
-                }}
-                className="text-primary hover:underline"
-              >
-                Create the admin account
-              </button>
-            </p>
-          )}
-          {mode === "signup" && (
-            <p className="text-center text-xs font-light text-muted-foreground">
-              Already set up?{" "}
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("signin");
-                  setError(null);
-                  setInfo(null);
-                }}
-                className="text-primary hover:underline"
-              >
-                Sign in
-              </button>
-            </p>
-          )}
         </form>
       </div>
     </div>
