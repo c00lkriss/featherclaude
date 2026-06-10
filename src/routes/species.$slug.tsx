@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Info, MapPin, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { BirdCallPlayer } from "@/components/BirdCallPlayer";
+import { getWikipediaUrl } from "@/lib/wikipedia";
 
 type SpeciesSearch = { p?: string };
 
@@ -44,6 +46,10 @@ type Photo = {
   shutter_speed: string | null;
   focal_length: string | null;
   iucn_status: string | null;
+  xeno_canto_id: string | null;
+  xeno_canto_url: string | null;
+  xeno_canto_recordist: string | null;
+  xeno_canto_license: string | null;
 };
 
 const IUCN_COLORS: Record<string, string> = {
@@ -78,7 +84,7 @@ function SpeciesPage() {
       const { data, error } = await supabase
         .from("photos")
         .select(
-          "id, title, description, common_name, species_name, species_slug, species_identifier, order_name, family_name, genus, image_url, thumbnail_url, location, latitude, longitude, date_taken, camera, lens, iso, aperture, shutter_speed, focal_length, iucn_status",
+          "id, title, description, common_name, species_name, species_slug, species_identifier, order_name, family_name, genus, image_url, thumbnail_url, location, latitude, longitude, date_taken, camera, lens, iso, aperture, shutter_speed, focal_length, iucn_status, xeno_canto_id, xeno_canto_url, xeno_canto_recordist, xeno_canto_license",
         )
         .order("created_at", { ascending: false });
       if (error) throw error;
