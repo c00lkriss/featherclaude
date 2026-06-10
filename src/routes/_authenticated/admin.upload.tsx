@@ -115,6 +115,7 @@ const slugify = (s: string) =>
 
 function UploadPage() {
   const navigate = useNavigate();
+  const identify = useServerFn(identifyBird);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY);
@@ -124,6 +125,10 @@ function UploadPage() {
   const [ebirdSuggestion, setEbirdSuggestion] = useState<EbirdSuggestion | null>(null);
   const [ebirdLoading, setEbirdLoading] = useState(false);
   const [locationMapped, setLocationMapped] = useState(false);
+  const [filenameGuess, setFilenameGuess] = useState<string | null>(null);
+  const [filenameStatus, setFilenameStatus] = useState<"pending" | "accepted" | "rejected" | "none">("none");
+  const [ebirdMatchBadge, setEbirdMatchBadge] = useState<"hit" | "miss" | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
