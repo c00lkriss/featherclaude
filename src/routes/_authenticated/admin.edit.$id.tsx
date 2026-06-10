@@ -248,7 +248,17 @@ function EditPage() {
             </Field>
             <Field label="Common name">
               <input value={form.common_name} onChange={(e) => set("common_name", e.target.value)} className={inputCls} />
+              {taxBadge === "photos" && (
+                <p className="mt-1 text-[11px] text-amber-400">📋 Taxonomy from your existing photos</p>
+              )}
+              {taxBadge === "ebird" && (
+                <p className="mt-1 text-[11px] text-amber-400">📋 Taxonomy from your eBird list</p>
+              )}
+              {taxBadge === "none" && (
+                <p className="mt-1 text-[11px] text-muted-foreground">Not in eBird list — enter manually</p>
+              )}
             </Field>
+
             <Field label="Species identifier">
               <input value={form.species_identifier} onChange={(e) => set("species_identifier", slugify(e.target.value))} className={inputCls} />
             </Field>
