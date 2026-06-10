@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import exifr from "exifr";
-import { Upload, X, ImagePlus, Star } from "lucide-react";
+import { Upload, X, ImagePlus, Star, Loader2, FileText, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import {
@@ -13,6 +14,10 @@ import {
 import { EBirdSuggestionCard } from "@/components/EBirdSuggestionCard";
 import { LocationField } from "@/components/LocationField";
 import { readImageMeta } from "@/lib/image-meta";
+import { parseSpeciesFromFilename } from "@/lib/filename-species";
+import { fetchXenoCantoCall } from "@/lib/xeno-canto";
+import { identifyBird } from "@/lib/identify-bird.functions";
+import { fileToDownscaledDataURL } from "@/lib/bird-constants";
 
 
 export const Route = createFileRoute("/_authenticated/admin/upload")({
