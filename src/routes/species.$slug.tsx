@@ -323,6 +323,18 @@ function InfoPanel({ photo }: { photo: Photo }) {
         {tax}
       </p>
 
+      {(photo.common_name || photo.species_name) && (
+        <a
+          href={getWikipediaUrl(photo.common_name || photo.species_name)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 inline-flex items-center gap-1 text-xs font-medium hover:underline"
+          style={{ color: "#c9a84c" }}
+        >
+          Wikipedia ↗
+        </a>
+      )}
+
       {photo.description && (
         <p className="mt-4 max-w-prose text-xs font-light leading-relaxed text-white/90 md:mt-5 md:text-sm">
           {photo.description}
