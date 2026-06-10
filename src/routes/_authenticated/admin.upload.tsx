@@ -356,7 +356,7 @@ function UploadPage() {
 
       const locationParts = [form.location, form.region, form.country].filter(Boolean);
 
-      const { error: insErr } = await supabase.from("photos").insert({
+      const { data: inserted, error: insErr } = await supabase.from("photos").insert({
         title: form.title,
         description: form.description || null,
         order_name: form.order_name,
@@ -385,9 +385,24 @@ function UploadPage() {
         tags,
         is_featured: form.is_featured,
         iucn_status: form.iucn_status || null,
-      });
+      }).select("id").single();
       if (insErr) throw insErr;
 
+      // Background — fetch xeno-canto call (don't await)
+      if (inserted?.id && form.species_name) {
+        fetchXenoCantoCall(form.species_name).then(async (call) => {
+          if (!call) {
+            await supabase.from("photos").update({ xeno_canto_id: "not_found" }).eq("id", inserted.id);
+            return;
+          }
+          await supabase.from("photos").update({
+            xeno_canto_id: call.id,
+            xeno_canto_url: call.url,
+            xeno_canto_recordist: call.recordist,
+            xeno_canto_license: call.license,
+          }).eq("id", inserted.id);
+        }).catch(() => {});
+      }
 
       toast.success("Photograph uploaded.");
       navigate({ to: "/admin/dashboard" });
