@@ -212,6 +212,12 @@ function UploadPage() {
     }
     setFile(f);
 
+    // Filename parsing
+    const guess = parseSpeciesFromFilename(f.name);
+    setFilenameGuess(guess);
+    setFilenameStatus(guess ? "pending" : "none");
+    setEbirdMatchBadge(null);
+
     // Read EXIF
     try {
       const exif = await exifr.parse(f, { gps: true });
@@ -229,10 +235,65 @@ function UploadPage() {
           latitude: p.latitude || (exif.latitude != null ? exif.latitude.toFixed(6) : ""),
           longitude: p.longitude || (exif.longitude != null ? exif.longitude.toFixed(6) : ""),
         }));
-        toast.success("EXIF data read from photo.");
       }
     } catch {
       // silent — EXIF is optional
+    }
+  };
+
+  const acceptFilename = async () => {
+    if (!filenameGuess) return;
+    setCommonNameTouched(true);
+    set("common_name", filenameGuess);
+    set("title", filenameGuess);
+    setFilenameStatus("accepted");
+
+    // Cross-reference eBird life list
+    const { data } = await supabase
+      .from("ebird_lifelist")
+      .select("common_name, scientific_name")
+      .ilike("common_name", `%${filenameGuess}%`)
+      .limit(1);
+    const hit = data?.[0];
+    if (hit) {
+      setEbirdMatchBadge("hit");
+      setForm((p) => ({
+        ...p,
+        common_name: hit.common_name || p.common_name,
+        species_name: p.species_name || hit.scientific_name || "",
+        title: p.title || hit.common_name || filenameGuess,
+      }));
+      toast.success("Matched your eBird list — taxonomy pre-filled.");
+    } else {
+      setEbirdMatchBadge("miss");
+      toast.warning("Not in your eBird list — please verify taxonomy.");
+    }
+  };
+
+  const detectWithAI = async () => {
+    if (!file) return;
+    setAiLoading(true);
+    try {
+      const dataUrl = await fileToDownscaledDataURL(file, 1024, 0.85);
+      const ai = await identify({ data: { image_data_url: dataUrl } });
+      setForm((p) => ({
+        ...p,
+        common_name: ai.common_name || p.common_name,
+        species_name: ai.scientific_name || p.species_name,
+        genus: ai.genus || p.genus,
+        family_name: ai.family_name || p.family_name,
+        order_name: ai.order_name || p.order_name,
+        iucn_status: ai.iucn_status || p.iucn_status,
+        title: p.title || ai.common_name || "",
+        description: p.description || ai.identification_notes || "",
+      }));
+      setCommonNameTouched(true);
+      setFilenameStatus("rejected");
+      toast.success(`Identified: ${ai.common_name ?? "unknown"}`);
+    } catch (err: any) {
+      toast.error(err?.message || "AI detection failed");
+    } finally {
+      setAiLoading(false);
     }
   };
 
