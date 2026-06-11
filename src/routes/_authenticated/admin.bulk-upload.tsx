@@ -316,26 +316,28 @@ function BulkUploadPage() {
         }).select("id").single();
         if (insErr) throw insErr;
 
-        // Background xeno-canto fetch (fallback to common name)
-        const callQuery = item.species_name || item.common_name;
-        if (inserted?.id && callQuery) {
-          fetchXenoCantoCall(callQuery).then(async (call) => {
+        // Xeno-canto fetch via edge function (sequential — paced by outer 1.2s delay)
+        if (inserted?.id && (item.species_name || item.common_name)) {
+          try {
+            const call = await fetchXenoCantoCall(item.species_name, item.common_name);
             if (!call) {
               await supabase.from("photos").update({ xeno_canto_id: "not_found" }).eq("id", inserted.id);
-              return;
+            } else {
+              await supabase.from("photos").update({
+                xeno_canto_id: call.id,
+                xeno_canto_url: call.url,
+                xeno_canto_recordist: call.recordist,
+                xeno_canto_license: call.license,
+              }).eq("id", inserted.id);
             }
-            await supabase.from("photos").update({
-              xeno_canto_id: call.id,
-              xeno_canto_url: call.url,
-              xeno_canto_recordist: call.recordist,
-              xeno_canto_license: call.license,
-            }).eq("id", inserted.id);
-          }).catch(() => {});
+          } catch (err) {
+            console.warn("[bulk] xeno-canto failed:", err);
+          }
         }
 
         updateItem(item.id, { status: "saved" });
-        // Small pacing delay between sequential xeno-canto requests
-        await new Promise((r) => setTimeout(r, 500));
+        // Pacing delay between sequential xeno-canto requests
+        await new Promise((r) => setTimeout(r, 1200));
 
       } catch (err: any) {
         console.error("[bulk] save failed:", err);

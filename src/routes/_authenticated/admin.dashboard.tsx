@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/admin/dashboard")({
 
 function AdminDashboard() {
   const [callsRunning, setCallsRunning] = useState(false);
-  const [callsProgress, setCallsProgress] = useState({ done: 0, total: 0, found: 0 });
+  const [callsProgress, setCallsProgress] = useState({ done: 0, total: 0, found: 0, missing: 0, errors: 0 });
 
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
@@ -54,53 +54,55 @@ function AdminDashboard() {
   const runBatchCalls = async () => {
     if (callsRunning) return;
     setCallsRunning(true);
-    setCallsProgress({ done: 0, total: 0, found: 0 });
+    setCallsProgress({ done: 0, total: 0, found: 0, missing: 0, errors: 0 });
     try {
       const { data: photos } = await supabase
         .from("photos")
-        .select("id, species_name")
-        .is("xeno_canto_url", null)
+        .select("id, species_name, common_name")
         .is("xeno_canto_id", null)
-        .not("species_name", "is", null);
+        .or("species_name.not.is.null,common_name.not.is.null");
 
-      const rows = (photos ?? []) as { id: string; species_name: string | null }[];
+      const rows = (photos ?? []) as { id: string; species_name: string | null; common_name: string | null }[];
 
-      // Group by species — fetch once per unique species
-      const bySpecies = new Map<string, string[]>();
+      // Group by species key to fetch once per unique species
+      const keyOf = (r: { species_name: string | null; common_name: string | null }) =>
+        `${(r.species_name || "").trim().toLowerCase()}|${(r.common_name || "").trim().toLowerCase()}`;
+      const byKey = new Map<string, { sci: string | null; common: string | null; ids: string[] }>();
       for (const r of rows) {
-        if (!r.species_name) continue;
-        const key = r.species_name.trim();
-        if (!bySpecies.has(key)) bySpecies.set(key, []);
-        bySpecies.get(key)!.push(r.id);
+        const k = keyOf(r);
+        if (!byKey.has(k)) byKey.set(k, { sci: r.species_name, common: r.common_name, ids: [] });
+        byKey.get(k)!.ids.push(r.id);
       }
 
-      const speciesList = Array.from(bySpecies.keys());
-      setCallsProgress({ done: 0, total: speciesList.length, found: 0 });
+      const entries = Array.from(byKey.values());
+      setCallsProgress({ done: 0, total: entries.length, found: 0, missing: 0, errors: 0 });
 
-      let found = 0;
-      for (let i = 0; i < speciesList.length; i++) {
-        const sci = speciesList[i];
-        const ids = bySpecies.get(sci)!;
+      let found = 0, missing = 0, errors = 0;
+      for (let i = 0; i < entries.length; i++) {
+        const e = entries[i];
         try {
-          const call = await fetchXenoCantoCall(sci);
+          const call = await fetchXenoCantoCall(e.sci, e.common);
           if (call) {
             await supabase.from("photos").update({
               xeno_canto_id: call.id,
               xeno_canto_url: call.url,
               xeno_canto_recordist: call.recordist,
               xeno_canto_license: call.license,
-            }).in("id", ids);
+            }).in("id", e.ids);
             found++;
           } else {
-            await supabase.from("photos").update({ xeno_canto_id: "not_found" }).in("id", ids);
+            await supabase.from("photos").update({ xeno_canto_id: "not_found" }).in("id", e.ids);
+            missing++;
           }
-        } catch (err) {
-          console.warn("xeno-canto fetch failed for", sci, err);
+        } catch (err: any) {
+          errors++;
+          console.warn("xeno-canto fetch failed for", e.sci || e.common, err?.message || err);
+          toast.error(`Fetch failed for ${e.common || e.sci}: ${err?.message || "network error"}`);
         }
-        setCallsProgress({ done: i + 1, total: speciesList.length, found });
-        await new Promise((r) => setTimeout(r, 1000));
+        setCallsProgress({ done: i + 1, total: entries.length, found, missing, errors });
+        await new Promise((r) => setTimeout(r, 1200));
       }
-      toast.success(`✓ Found calls for ${found}/${speciesList.length} species`);
+      toast.success(`✓ Found calls: ${found} · Not found: ${missing}${errors ? ` · Errors: ${errors}` : ""}`);
     } finally {
       setCallsRunning(false);
     }
@@ -180,7 +182,7 @@ function AdminDashboard() {
                 />
               </div>
               <p className="mt-2 text-xs font-light text-muted-foreground">
-                Fetching calls… {callsProgress.done}/{callsProgress.total} done · {callsProgress.found} found
+                Fetching call {callsProgress.done}/{callsProgress.total} · {callsProgress.found} found · {callsProgress.missing} missing{callsProgress.errors ? ` · ${callsProgress.errors} errors` : ""}
               </p>
             </div>
           )}
