@@ -182,7 +182,7 @@ function AdminDashboard() {
                 />
               </div>
               <p className="mt-2 text-xs font-light text-muted-foreground">
-                Fetching calls… {callsProgress.done}/{callsProgress.total} done · {callsProgress.found} found
+                Fetching call {callsProgress.done}/{callsProgress.total} · {callsProgress.found} found · {callsProgress.missing} missing{callsProgress.errors ? ` · ${callsProgress.errors} errors` : ""}
               </p>
             </div>
           )}
