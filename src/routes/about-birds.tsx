@@ -175,29 +175,35 @@ function TaxonomySection() {
 /* ─────────────────────────────────────────────
    Section 3 — Anatomy
    ───────────────────────────────────────────── */
-type AnatomyPart = { id: string; name: string; x: number; y: number; lx: number; ly: number; look: string; matters: string; example: string };
+type AnatomyPart = { id: string; name: string; left: string; top: string; look: string; matters: string; example: string };
 
 const ANATOMY: AnatomyPart[] = [
-  { id: "bill",     name: "Bill / Beak",      x: 175, y: 175, lx: 30,  ly: 175, look: "Shape, length, colour, curvature.", matters: "Indicates diet — hooked = raptor, probing = wader, conical = seedeater.", example: "The long decurved bill of a Sunbird signals nectar feeding." },
-  { id: "crown",    name: "Crown",            x: 270, y: 130, lx: 270, ly: 50,  look: "Cap colour and pattern on top of head.", matters: "Often the most diagnostic head feature.", example: "The chestnut crown identifies the Eurasian Tree Sparrow." },
-  { id: "supercilium", name: "Supercilium",   x: 240, y: 155, lx: 100, ly: 80,  look: "Bold or thin 'eyebrow' stripe above the eye.", matters: "A classic field mark in warblers and pipits.", example: "A white supercilium is key to the White-browed Wagtail." },
-  { id: "eyering",  name: "Eye-ring",         x: 235, y: 170, lx: 80,  ly: 130, look: "Pale ring of feathers circling the eye.", matters: "Distinguishes look-alike flycatchers and warblers.", example: "Bold eye-ring helps separate Red-breasted Flycatcher." },
-  { id: "ear",      name: "Ear Coverts",      x: 280, y: 185, lx: 130, ly: 240, look: "Patch of feathers behind/below the eye.", matters: "Often coloured or framed in species like nuthatches.", example: "Black ear coverts mark a male House Sparrow." },
-  { id: "throat",   name: "Throat",           x: 230, y: 215, lx: 70,  ly: 290, look: "Front of neck under the bill.", matters: "Frequently brightly coloured in males.", example: "The crimson throat of a Crimson Sunbird." },
-  { id: "nape",     name: "Nape",             x: 320, y: 155, lx: 270, ly: 90,  look: "Back of neck, between crown and mantle.", matters: "Useful for separating similar species in profile.", example: "Black-naped Monarch is named for this." },
-  { id: "mantle",   name: "Mantle",           x: 380, y: 175, lx: 480, ly: 80,  look: "Upper back between wings.", matters: "Often a different shade from the crown or rump.", example: "Grey mantle is a key feature of the Common Myna." },
-  { id: "coverts",  name: "Wing Coverts",     x: 400, y: 215, lx: 550, ly: 150, look: "Small feathers covering the base of the wing.", matters: "Wing bars are formed by their pale tips.", example: "Two white wing bars on a Chiffchaff." },
-  { id: "primary",  name: "Primary Feathers", x: 520, y: 245, lx: 700, ly: 220, look: "Outermost flight feathers.", matters: "Determine wing shape and flight style.", example: "Long pointed primaries of the Common Swift." },
-  { id: "secondary", name: "Secondary Feathers", x: 460, y: 245, lx: 620, ly: 290, look: "Inner flight feathers along the trailing edge.", matters: "Often show a contrasting panel.", example: "White secondary patch flashes on a Hoopoe in flight." },
-  { id: "breast",   name: "Breast",           x: 260, y: 260, lx: 90,  ly: 360, look: "Upper chest, below the throat.", matters: "Streaking, spotting and colour key for ID.", example: "Orange breast names the Red-breasted Flycatcher." },
-  { id: "belly",    name: "Belly",            x: 320, y: 305, lx: 150, ly: 420, look: "Mid underside of body.", matters: "Often pale and contrasts with breast.", example: "White belly on a Black Drongo." },
-  { id: "flanks",   name: "Flanks",           x: 380, y: 290, lx: 280, ly: 440, look: "Sides of the body, below the folded wing.", matters: "Streaks or barring here are diagnostic.", example: "Rufous flanks identify the White-bellied Blue Flycatcher." },
-  { id: "vent",     name: "Vent / Undertail", x: 480, y: 305, lx: 480, ly: 440, look: "Area under the base of the tail.", matters: "Pale or barred vent often clinches an ID.", example: "Rufous vent of the Red-vented Bulbul." },
-  { id: "tail",     name: "Tail / Rectrices", x: 620, y: 250, lx: 750, ly: 360, look: "Length, shape, colour, white edges.", matters: "Forked, graduated or square tails name many birds.", example: "Deeply forked tail of the Black Drongo." },
+  { id: "bill",        name: "Bill / Beak",   left: "8%",  top: "42%", look: "Shape, length, colour, curvature.", matters: "Indicates diet — hooked = raptor, probing = wader, conical = seedeater.", example: "The long decurved bill of a Sunbird signals nectar feeding." },
+  { id: "crown",       name: "Crown",         left: "28%", top: "12%", look: "Cap colour and pattern on top of head.", matters: "Often the most diagnostic head feature.", example: "The chestnut crown identifies the Eurasian Tree Sparrow." },
+  { id: "supercilium", name: "Supercilium",   left: "22%", top: "22%", look: "Bold or thin 'eyebrow' stripe above the eye.", matters: "A classic field mark in warblers and pipits.", example: "A white supercilium is key to the White-browed Wagtail." },
+  { id: "eye",         name: "Eye",           left: "25%", top: "28%", look: "Iris colour, eye-ring, eye-stripe.", matters: "Pale iris distinguishes many otherwise-similar birds.", example: "Pale yellow eye of the Jungle Babbler." },
+  { id: "ear",         name: "Ear Coverts",   left: "32%", top: "30%", look: "Patch of feathers behind/below the eye.", matters: "Often coloured or framed in species like nuthatches.", example: "Black ear coverts mark a male House Sparrow." },
+  { id: "throat",      name: "Throat",        left: "18%", top: "40%", look: "Front of neck under the bill.", matters: "Frequently brightly coloured in males.", example: "The crimson throat of a Crimson Sunbird." },
+  { id: "nape",        name: "Nape",          left: "42%", top: "18%", look: "Back of neck, between crown and mantle.", matters: "Useful for separating similar species in profile.", example: "Black-naped Monarch is named for this." },
+  { id: "mantle",      name: "Mantle",        left: "52%", top: "22%", look: "Upper back between wings.", matters: "Often a different shade from the crown or rump.", example: "Grey mantle is a key feature of the Common Myna." },
+  { id: "coverts",     name: "Wing Coverts",  left: "55%", top: "38%", look: "Small feathers covering the base of the wing.", matters: "Wing bars are formed by their pale tips.", example: "Two white wing bars on a Chiffchaff." },
+  { id: "primary",     name: "Primaries",     left: "65%", top: "52%", look: "Outermost flight feathers.", matters: "Determine wing shape and flight style.", example: "Long pointed primaries of the Common Swift." },
+  { id: "secondary",   name: "Secondaries",   left: "58%", top: "48%", look: "Inner flight feathers along the trailing edge.", matters: "Often show a contrasting panel.", example: "White secondary patch flashes on a Hoopoe in flight." },
+  { id: "breast",      name: "Breast",        left: "28%", top: "48%", look: "Upper chest, below the throat.", matters: "Streaking, spotting and colour key for ID.", example: "Orange breast names the Red-breasted Flycatcher." },
+  { id: "belly",       name: "Belly",         left: "32%", top: "58%", look: "Mid underside of body.", matters: "Often pale and contrasts with breast.", example: "White belly on a Black Drongo." },
+  { id: "flanks",      name: "Flanks",        left: "42%", top: "58%", look: "Sides of the body, below the folded wing.", matters: "Streaks or barring here are diagnostic.", example: "Rufous flanks identify the White-bellied Blue Flycatcher." },
+  { id: "vent",        name: "Vent",          left: "52%", top: "65%", look: "Area under the base of the tail.", matters: "Pale or barred vent often clinches an ID.", example: "Rufous vent of the Red-vented Bulbul." },
+  { id: "tail",        name: "Tail",          left: "72%", top: "50%", look: "Length, shape, colour, white edges.", matters: "Forked, graduated or square tails name many birds.", example: "Deeply forked tail of the Black Drongo." },
+  { id: "rump",        name: "Rump",          left: "62%", top: "38%", look: "Lower back, above the tail.", matters: "Contrasting rump patches are often visible in flight.", example: "White rump of the Pied Bushchat in flight." },
+  { id: "tarsus",      name: "Tarsus",        left: "38%", top: "75%", look: "Leg between the foot and the joint.", matters: "Colour and length help separate similar species.", example: "Yellow tarsus of the Cattle Egret." },
 ];
+
+const TOPO_PRIMARY = "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Wren_troglodytes_topography.svg/1200px-Wren_troglodytes_topography.svg.png";
+const TOPO_FALLBACK = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Pied_kingfisher_topography.svg/1200px-Pied_kingfisher_topography.svg.png";
 
 function AnatomySection() {
   const [active, setActive] = useState<AnatomyPart | null>(ANATOMY[0]);
+  const [imgSrc, setImgSrc] = useState(TOPO_PRIMARY);
 
   return (
     <section className="bg-surface py-20 md:py-28">
@@ -208,77 +214,58 @@ function AnatomySection() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          <div className="lg:col-span-2 rounded-lg border border-border bg-background p-4">
-            <svg viewBox="0 0 800 500" className="w-full h-auto">
-              {/* Branch */}
-              <line x1="100" y1="380" x2="700" y2="395" stroke="#374151" strokeWidth="6" strokeLinecap="round" />
-              {/* Body */}
-              <ellipse cx="380" cy="260" rx="170" ry="85" fill="#6b7280" stroke="#374151" strokeWidth="2" />
-              {/* Head */}
-              <circle cx="240" cy="180" r="65" fill="#6b7280" stroke="#374151" strokeWidth="2" />
-              {/* Neck blend */}
-              <path d="M275 220 Q300 250 340 240 L300 200 Z" fill="#6b7280" stroke="#374151" strokeWidth="2" />
-              {/* Bill */}
-              <polygon points="175,170 130,178 175,188" fill="#374151" stroke="#1f2937" strokeWidth="1.5" />
-              {/* Eye */}
-              <circle cx="225" cy="170" r="6" fill="#111827" />
-              <circle cx="227" cy="168" r="2" fill="#f9fafb" />
-              {/* Wing */}
-              <path d="M340 200 Q450 180 540 230 Q560 260 520 280 Q450 270 380 250 Z" fill="#4b5563" stroke="#374151" strokeWidth="2" />
-              {/* Wing feather lines */}
-              <path d="M380 230 Q450 235 520 260" fill="none" stroke="#374151" strokeWidth="1" />
-              <path d="M390 245 Q460 250 525 270" fill="none" stroke="#374151" strokeWidth="1" />
-              {/* Primaries */}
-              <path d="M510 240 Q570 230 600 250 Q580 260 510 260 Z" fill="#374151" />
-              {/* Tail */}
-              <path d="M540 260 Q650 245 670 270 Q650 285 540 290 Z" fill="#4b5563" stroke="#374151" strokeWidth="2" />
-              {/* Legs */}
-              <line x1="340" y1="340" x2="340" y2="380" stroke="#374151" strokeWidth="3" />
-              <line x1="420" y1="345" x2="420" y2="385" stroke="#374151" strokeWidth="3" />
-              {/* Feet */}
-              <path d="M330 380 L350 380 M335 380 L335 388" stroke="#374151" strokeWidth="2" />
-              <path d="M410 385 L430 385 M420 385 L420 392" stroke="#374151" strokeWidth="2" />
-
-              {/* Labels */}
-              {ANATOMY.map((p) => {
-                const isActive = active?.id === p.id;
-                return (
-                  <g
-                    key={p.id}
-                    className="cursor-pointer"
-                    onClick={() => setActive(p)}
-                  >
-                    <line
-                      x1={p.x}
-                      y1={p.y}
-                      x2={p.lx}
-                      y2={p.ly}
-                      stroke={isActive ? "#fde68a" : AMBER}
-                      strokeWidth={isActive ? 2 : 1}
-                      opacity={isActive ? 1 : 0.7}
-                    />
-                    <circle cx={p.x} cy={p.y} r={isActive ? 4.5 : 3} fill={isActive ? "#fde68a" : AMBER} />
-                    <text
-                      x={p.lx}
-                      y={p.ly}
-                      fill="#ffffff"
-                      fontSize="12"
-                      fontFamily="Inter, sans-serif"
-                      textAnchor={p.lx < 200 ? "end" : p.lx > 600 ? "start" : "middle"}
-                      style={{ textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}
+          <div className="lg:col-span-2">
+            <div
+              className="relative mx-auto w-full max-w-[900px] rounded-xl p-6"
+              style={{ backgroundColor: "#111111" }}
+            >
+              <div className="relative">
+                <img
+                  src={imgSrc}
+                  alt="Bird topography diagram"
+                  onError={() => {
+                    if (imgSrc !== TOPO_FALLBACK) setImgSrc(TOPO_FALLBACK);
+                  }}
+                  className="block w-full h-auto select-none"
+                  draggable={false}
+                />
+                {ANATOMY.map((p) => {
+                  const isActive = active?.id === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setActive(p)}
+                      className="group absolute -translate-x-1/2 -translate-y-1/2 outline-none"
+                      style={{ left: p.left, top: p.top }}
+                      aria-label={p.name}
                     >
-                      {p.name}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
-            <p className="mt-3 text-center text-xs text-muted-foreground">
-              Tap any label to learn what to look for
-            </p>
+                      <span
+                        className="block rounded-full transition-all"
+                        style={{
+                          width: isActive ? 14 : 10,
+                          height: isActive ? 14 : 10,
+                          backgroundColor: isActive ? "#fde68a" : AMBER,
+                          boxShadow: isActive ? "0 0 0 4px rgba(253,230,138,0.25)" : "0 0 0 3px rgba(201,168,76,0.18)",
+                        }}
+                      />
+                      <span
+                        className="pointer-events-none absolute left-1/2 top-full mt-1.5 -translate-x-1/2 whitespace-nowrap rounded px-1.5 py-0.5 text-[11px] text-white opacity-0 transition-opacity group-hover:opacity-100 md:opacity-90"
+                        style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+                      >
+                        {p.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-4 text-right text-[11px] text-white/40">
+                Illustration: Wikimedia Commons — Public Domain
+              </p>
+            </div>
           </div>
 
-          <div className="rounded-lg border p-6 bg-background sticky top-20" style={{ borderColor: "rgba(201,168,76,0.4)" }}>
+          <div className="rounded-lg border p-6 bg-background lg:sticky lg:top-20" style={{ borderColor: "rgba(201,168,76,0.4)" }}>
             {active ? (
               <>
                 <div className="text-xs uppercase tracking-wider" style={{ color: AMBER }}>Field Mark</div>
@@ -298,7 +285,7 @@ function AnatomySection() {
                 </div>
               </>
             ) : (
-              <p className="text-sm text-muted-foreground">Tap a label on the diagram to learn more.</p>
+              <p className="text-sm text-muted-foreground">Tap a dot on the diagram to learn more.</p>
             )}
           </div>
         </div>
@@ -306,6 +293,7 @@ function AnatomySection() {
     </section>
   );
 }
+
 
 /* ─────────────────────────────────────────────
    Section 4 — BESS Method
