@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Upload, FileText, Images, Star, ListChecks, AlertCircle, Volume2, Loader2 } from "lucide-react";
+import { Upload, FileText, Images, Star, ListChecks, AlertCircle, Volume2, Loader2, Settings as SettingsIcon } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchXenoCantoCall } from "@/lib/xeno-canto";
@@ -147,6 +147,7 @@ function AdminDashboard() {
           <ActionCard to="/admin/ebird" icon={<ListChecks className="h-5 w-5" />} label="eBird List" />
           <ActionCard to="/admin/incomplete" icon={<AlertCircle className="h-5 w-5" />} label="Incomplete" />
           <ActionCard to="/admin/blog" icon={<FileText className="h-5 w-5" />} label="New Blog Post" />
+          <ActionCard to="/admin/settings" icon={<SettingsIcon className="h-5 w-5" />} label="Site Settings" />
         </div>
       </section>
 

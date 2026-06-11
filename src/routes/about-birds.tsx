@@ -1,11 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/about-birds")({
   head: () => ({
@@ -172,29 +169,35 @@ function TaxonomySection() {
 /* ─────────────────────────────────────────────
    Section 3 — Anatomy
    ───────────────────────────────────────────── */
-type AnatomyPart = { id: string; name: string; x: number; y: number; lx: number; ly: number; look: string; matters: string; example: string };
+type AnatomyPart = { id: string; name: string; left: string; top: string; look: string; matters: string; example: string };
 
 const ANATOMY: AnatomyPart[] = [
-  { id: "bill",     name: "Bill / Beak",      x: 175, y: 175, lx: 30,  ly: 175, look: "Shape, length, colour, curvature.", matters: "Indicates diet — hooked = raptor, probing = wader, conical = seedeater.", example: "The long decurved bill of a Sunbird signals nectar feeding." },
-  { id: "crown",    name: "Crown",            x: 270, y: 130, lx: 270, ly: 50,  look: "Cap colour and pattern on top of head.", matters: "Often the most diagnostic head feature.", example: "The chestnut crown identifies the Eurasian Tree Sparrow." },
-  { id: "supercilium", name: "Supercilium",   x: 240, y: 155, lx: 100, ly: 80,  look: "Bold or thin 'eyebrow' stripe above the eye.", matters: "A classic field mark in warblers and pipits.", example: "A white supercilium is key to the White-browed Wagtail." },
-  { id: "eyering",  name: "Eye-ring",         x: 235, y: 170, lx: 80,  ly: 130, look: "Pale ring of feathers circling the eye.", matters: "Distinguishes look-alike flycatchers and warblers.", example: "Bold eye-ring helps separate Red-breasted Flycatcher." },
-  { id: "ear",      name: "Ear Coverts",      x: 280, y: 185, lx: 130, ly: 240, look: "Patch of feathers behind/below the eye.", matters: "Often coloured or framed in species like nuthatches.", example: "Black ear coverts mark a male House Sparrow." },
-  { id: "throat",   name: "Throat",           x: 230, y: 215, lx: 70,  ly: 290, look: "Front of neck under the bill.", matters: "Frequently brightly coloured in males.", example: "The crimson throat of a Crimson Sunbird." },
-  { id: "nape",     name: "Nape",             x: 320, y: 155, lx: 270, ly: 90,  look: "Back of neck, between crown and mantle.", matters: "Useful for separating similar species in profile.", example: "Black-naped Monarch is named for this." },
-  { id: "mantle",   name: "Mantle",           x: 380, y: 175, lx: 480, ly: 80,  look: "Upper back between wings.", matters: "Often a different shade from the crown or rump.", example: "Grey mantle is a key feature of the Common Myna." },
-  { id: "coverts",  name: "Wing Coverts",     x: 400, y: 215, lx: 550, ly: 150, look: "Small feathers covering the base of the wing.", matters: "Wing bars are formed by their pale tips.", example: "Two white wing bars on a Chiffchaff." },
-  { id: "primary",  name: "Primary Feathers", x: 520, y: 245, lx: 700, ly: 220, look: "Outermost flight feathers.", matters: "Determine wing shape and flight style.", example: "Long pointed primaries of the Common Swift." },
-  { id: "secondary", name: "Secondary Feathers", x: 460, y: 245, lx: 620, ly: 290, look: "Inner flight feathers along the trailing edge.", matters: "Often show a contrasting panel.", example: "White secondary patch flashes on a Hoopoe in flight." },
-  { id: "breast",   name: "Breast",           x: 260, y: 260, lx: 90,  ly: 360, look: "Upper chest, below the throat.", matters: "Streaking, spotting and colour key for ID.", example: "Orange breast names the Red-breasted Flycatcher." },
-  { id: "belly",    name: "Belly",            x: 320, y: 305, lx: 150, ly: 420, look: "Mid underside of body.", matters: "Often pale and contrasts with breast.", example: "White belly on a Black Drongo." },
-  { id: "flanks",   name: "Flanks",           x: 380, y: 290, lx: 280, ly: 440, look: "Sides of the body, below the folded wing.", matters: "Streaks or barring here are diagnostic.", example: "Rufous flanks identify the White-bellied Blue Flycatcher." },
-  { id: "vent",     name: "Vent / Undertail", x: 480, y: 305, lx: 480, ly: 440, look: "Area under the base of the tail.", matters: "Pale or barred vent often clinches an ID.", example: "Rufous vent of the Red-vented Bulbul." },
-  { id: "tail",     name: "Tail / Rectrices", x: 620, y: 250, lx: 750, ly: 360, look: "Length, shape, colour, white edges.", matters: "Forked, graduated or square tails name many birds.", example: "Deeply forked tail of the Black Drongo." },
+  { id: "bill",        name: "Bill / Beak",   left: "8%",  top: "42%", look: "Shape, length, colour, curvature.", matters: "Indicates diet — hooked = raptor, probing = wader, conical = seedeater.", example: "The long decurved bill of a Sunbird signals nectar feeding." },
+  { id: "crown",       name: "Crown",         left: "28%", top: "12%", look: "Cap colour and pattern on top of head.", matters: "Often the most diagnostic head feature.", example: "The chestnut crown identifies the Eurasian Tree Sparrow." },
+  { id: "supercilium", name: "Supercilium",   left: "22%", top: "22%", look: "Bold or thin 'eyebrow' stripe above the eye.", matters: "A classic field mark in warblers and pipits.", example: "A white supercilium is key to the White-browed Wagtail." },
+  { id: "eye",         name: "Eye",           left: "25%", top: "28%", look: "Iris colour, eye-ring, eye-stripe.", matters: "Pale iris distinguishes many otherwise-similar birds.", example: "Pale yellow eye of the Jungle Babbler." },
+  { id: "ear",         name: "Ear Coverts",   left: "32%", top: "30%", look: "Patch of feathers behind/below the eye.", matters: "Often coloured or framed in species like nuthatches.", example: "Black ear coverts mark a male House Sparrow." },
+  { id: "throat",      name: "Throat",        left: "18%", top: "40%", look: "Front of neck under the bill.", matters: "Frequently brightly coloured in males.", example: "The crimson throat of a Crimson Sunbird." },
+  { id: "nape",        name: "Nape",          left: "42%", top: "18%", look: "Back of neck, between crown and mantle.", matters: "Useful for separating similar species in profile.", example: "Black-naped Monarch is named for this." },
+  { id: "mantle",      name: "Mantle",        left: "52%", top: "22%", look: "Upper back between wings.", matters: "Often a different shade from the crown or rump.", example: "Grey mantle is a key feature of the Common Myna." },
+  { id: "coverts",     name: "Wing Coverts",  left: "55%", top: "38%", look: "Small feathers covering the base of the wing.", matters: "Wing bars are formed by their pale tips.", example: "Two white wing bars on a Chiffchaff." },
+  { id: "primary",     name: "Primaries",     left: "65%", top: "52%", look: "Outermost flight feathers.", matters: "Determine wing shape and flight style.", example: "Long pointed primaries of the Common Swift." },
+  { id: "secondary",   name: "Secondaries",   left: "58%", top: "48%", look: "Inner flight feathers along the trailing edge.", matters: "Often show a contrasting panel.", example: "White secondary patch flashes on a Hoopoe in flight." },
+  { id: "breast",      name: "Breast",        left: "28%", top: "48%", look: "Upper chest, below the throat.", matters: "Streaking, spotting and colour key for ID.", example: "Orange breast names the Red-breasted Flycatcher." },
+  { id: "belly",       name: "Belly",         left: "32%", top: "58%", look: "Mid underside of body.", matters: "Often pale and contrasts with breast.", example: "White belly on a Black Drongo." },
+  { id: "flanks",      name: "Flanks",        left: "42%", top: "58%", look: "Sides of the body, below the folded wing.", matters: "Streaks or barring here are diagnostic.", example: "Rufous flanks identify the White-bellied Blue Flycatcher." },
+  { id: "vent",        name: "Vent",          left: "52%", top: "65%", look: "Area under the base of the tail.", matters: "Pale or barred vent often clinches an ID.", example: "Rufous vent of the Red-vented Bulbul." },
+  { id: "tail",        name: "Tail",          left: "72%", top: "50%", look: "Length, shape, colour, white edges.", matters: "Forked, graduated or square tails name many birds.", example: "Deeply forked tail of the Black Drongo." },
+  { id: "rump",        name: "Rump",          left: "62%", top: "38%", look: "Lower back, above the tail.", matters: "Contrasting rump patches are often visible in flight.", example: "White rump of the Pied Bushchat in flight." },
+  { id: "tarsus",      name: "Tarsus",        left: "38%", top: "75%", look: "Leg between the foot and the joint.", matters: "Colour and length help separate similar species.", example: "Yellow tarsus of the Cattle Egret." },
 ];
+
+const TOPO_PRIMARY = "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Wren_troglodytes_topography.svg/1200px-Wren_troglodytes_topography.svg.png";
+const TOPO_FALLBACK = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Pied_kingfisher_topography.svg/1200px-Pied_kingfisher_topography.svg.png";
 
 function AnatomySection() {
   const [active, setActive] = useState<AnatomyPart | null>(ANATOMY[0]);
+  const [imgSrc, setImgSrc] = useState(TOPO_PRIMARY);
 
   return (
     <section className="bg-surface py-20 md:py-28">
@@ -205,77 +208,58 @@ function AnatomySection() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          <div className="lg:col-span-2 rounded-lg border border-border bg-background p-4">
-            <svg viewBox="0 0 800 500" className="w-full h-auto">
-              {/* Branch */}
-              <line x1="100" y1="380" x2="700" y2="395" stroke="#374151" strokeWidth="6" strokeLinecap="round" />
-              {/* Body */}
-              <ellipse cx="380" cy="260" rx="170" ry="85" fill="#6b7280" stroke="#374151" strokeWidth="2" />
-              {/* Head */}
-              <circle cx="240" cy="180" r="65" fill="#6b7280" stroke="#374151" strokeWidth="2" />
-              {/* Neck blend */}
-              <path d="M275 220 Q300 250 340 240 L300 200 Z" fill="#6b7280" stroke="#374151" strokeWidth="2" />
-              {/* Bill */}
-              <polygon points="175,170 130,178 175,188" fill="#374151" stroke="#1f2937" strokeWidth="1.5" />
-              {/* Eye */}
-              <circle cx="225" cy="170" r="6" fill="#111827" />
-              <circle cx="227" cy="168" r="2" fill="#f9fafb" />
-              {/* Wing */}
-              <path d="M340 200 Q450 180 540 230 Q560 260 520 280 Q450 270 380 250 Z" fill="#4b5563" stroke="#374151" strokeWidth="2" />
-              {/* Wing feather lines */}
-              <path d="M380 230 Q450 235 520 260" fill="none" stroke="#374151" strokeWidth="1" />
-              <path d="M390 245 Q460 250 525 270" fill="none" stroke="#374151" strokeWidth="1" />
-              {/* Primaries */}
-              <path d="M510 240 Q570 230 600 250 Q580 260 510 260 Z" fill="#374151" />
-              {/* Tail */}
-              <path d="M540 260 Q650 245 670 270 Q650 285 540 290 Z" fill="#4b5563" stroke="#374151" strokeWidth="2" />
-              {/* Legs */}
-              <line x1="340" y1="340" x2="340" y2="380" stroke="#374151" strokeWidth="3" />
-              <line x1="420" y1="345" x2="420" y2="385" stroke="#374151" strokeWidth="3" />
-              {/* Feet */}
-              <path d="M330 380 L350 380 M335 380 L335 388" stroke="#374151" strokeWidth="2" />
-              <path d="M410 385 L430 385 M420 385 L420 392" stroke="#374151" strokeWidth="2" />
-
-              {/* Labels */}
-              {ANATOMY.map((p) => {
-                const isActive = active?.id === p.id;
-                return (
-                  <g
-                    key={p.id}
-                    className="cursor-pointer"
-                    onClick={() => setActive(p)}
-                  >
-                    <line
-                      x1={p.x}
-                      y1={p.y}
-                      x2={p.lx}
-                      y2={p.ly}
-                      stroke={isActive ? "#fde68a" : AMBER}
-                      strokeWidth={isActive ? 2 : 1}
-                      opacity={isActive ? 1 : 0.7}
-                    />
-                    <circle cx={p.x} cy={p.y} r={isActive ? 4.5 : 3} fill={isActive ? "#fde68a" : AMBER} />
-                    <text
-                      x={p.lx}
-                      y={p.ly}
-                      fill="#ffffff"
-                      fontSize="12"
-                      fontFamily="Inter, sans-serif"
-                      textAnchor={p.lx < 200 ? "end" : p.lx > 600 ? "start" : "middle"}
-                      style={{ textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}
+          <div className="lg:col-span-2">
+            <div
+              className="relative mx-auto w-full max-w-[900px] rounded-xl p-6"
+              style={{ backgroundColor: "#111111" }}
+            >
+              <div className="relative">
+                <img
+                  src={imgSrc}
+                  alt="Bird topography diagram"
+                  onError={() => {
+                    if (imgSrc !== TOPO_FALLBACK) setImgSrc(TOPO_FALLBACK);
+                  }}
+                  className="block w-full h-auto select-none"
+                  draggable={false}
+                />
+                {ANATOMY.map((p) => {
+                  const isActive = active?.id === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setActive(p)}
+                      className="group absolute -translate-x-1/2 -translate-y-1/2 outline-none"
+                      style={{ left: p.left, top: p.top }}
+                      aria-label={p.name}
                     >
-                      {p.name}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
-            <p className="mt-3 text-center text-xs text-muted-foreground">
-              Tap any label to learn what to look for
-            </p>
+                      <span
+                        className="block rounded-full transition-all"
+                        style={{
+                          width: isActive ? 14 : 10,
+                          height: isActive ? 14 : 10,
+                          backgroundColor: isActive ? "#fde68a" : AMBER,
+                          boxShadow: isActive ? "0 0 0 4px rgba(253,230,138,0.25)" : "0 0 0 3px rgba(201,168,76,0.18)",
+                        }}
+                      />
+                      <span
+                        className="pointer-events-none absolute left-1/2 top-full mt-1.5 -translate-x-1/2 whitespace-nowrap rounded px-1.5 py-0.5 text-[11px] text-white opacity-0 transition-opacity group-hover:opacity-100 md:opacity-90"
+                        style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+                      >
+                        {p.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-4 text-right text-[11px] text-white/40">
+                Illustration: Wikimedia Commons — Public Domain
+              </p>
+            </div>
           </div>
 
-          <div className="rounded-lg border p-6 bg-background sticky top-20" style={{ borderColor: "rgba(201,168,76,0.4)" }}>
+          <div className="rounded-lg border p-6 bg-background lg:sticky lg:top-20" style={{ borderColor: "rgba(201,168,76,0.4)" }}>
             {active ? (
               <>
                 <div className="text-xs uppercase tracking-wider" style={{ color: AMBER }}>Field Mark</div>
@@ -295,7 +279,7 @@ function AnatomySection() {
                 </div>
               </>
             ) : (
-              <p className="text-sm text-muted-foreground">Tap a label on the diagram to learn more.</p>
+              <p className="text-sm text-muted-foreground">Tap a dot on the diagram to learn more.</p>
             )}
           </div>
         </div>
@@ -303,6 +287,7 @@ function AnatomySection() {
     </section>
   );
 }
+
 
 /* ─────────────────────────────────────────────
    Section 4 — BESS Method
@@ -559,71 +544,198 @@ const ORDERS = [
   },
 ];
 
-const OrderIcon = () => (
-  <svg viewBox="0 0 32 24" className="w-8 h-6" fill="currentColor"><path d="M2 14c3-6 9-10 16-10 4 0 8 2 10 6l2-1-1 3 2 2-4 1c-1 4-5 7-10 7-7 0-13-3-15-8z" /></svg>
-);
+// Simple silhouette SVGs keyed by order — used when no photo exists yet.
+const ORDER_SILHOUETTES: Record<string, string> = {
+  Passeriformes: "M22 38c0-6 5-11 11-11s11 5 11 11l-3 4-6-2-4 6-5-4-4 3-4-3 4-4z M44 30l8-6 2 3-7 5z",
+  Accipitriformes: "M6 36c8-10 18-14 26-14s18 4 26 14c-8-2-16-3-26-3s-18 1-26 3z M30 22l4-8 4 8z",
+  Columbiformes: "M16 38c0-9 7-15 16-15s16 6 16 15c0 5-4 8-8 9l-4 2h-8l-4-2c-4-1-8-4-8-9z M22 28l-5-3 5-1z",
+  Strigiformes: "M18 30c0-9 6-16 14-16s14 7 14 16c0 8-6 14-14 14s-14-6-14-14z M22 28a3 3 0 1 1 6 0 3 3 0 1 1-6 0z M36 28a3 3 0 1 1 6 0 3 3 0 1 1-6 0z M30 34l-2 4h4z",
+  Coraciiformes: "M10 32c4-8 14-12 22-12 6 0 10 2 14 6l8-2-3 5 3 3-8 1c-2 4-7 6-12 6h-6c-9 0-15-3-18-7z M14 30l-6-2 6-1z",
+  Piciformes: "M30 12v40 M30 16c-6 0-10 4-10 8 0 5 4 8 10 8 M30 24l-8-4 8-1z",
+  Cuculiformes: "M10 38c10-12 28-16 44-12l-6 4-30 8z M14 40h36",
+  Anseriformes: "M14 36c6-6 16-8 24-8s14 3 18 6c0 5-8 8-22 8s-22-2-22-6z M14 32l-6-2 6-1z M22 36v6 M30 36v6",
+  Charadriiformes: "M22 22c4-2 9-2 13 0l4 4-2 4-4-2-5 1-4-2-2-3z M28 28v18 M30 28v18 M26 46l4 2 4-2",
+  Pelecaniformes: "M30 8v32 M28 8c0 2 2 4 2 4s2-2 2-4z M30 40c-6 0-10 4-10 8h20c0-4-4-8-10-8z",
+  Bucerotiformes: "M14 26c8-10 22-12 32-8l8-2-6 6 4 4-10 2c-4 4-12 6-20 6s-12-2-14-4z M14 24l-8-4 8 0z",
+  Galliformes: "M16 38c0-8 6-14 14-14s14 6 14 14h-28z M40 38c8-12 16-14 16-4l-6 2 4 4-8 2z",
+  Gruiformes: "M28 6v34 M28 8c0 2 2 3 2 3s2-1 2-3z M22 40h12 M22 40v12 M34 40v12",
+  Falconiformes: "M10 20c10 4 22 12 30 20l8-6-2 8 6 4-10 2c-4-6-10-10-16-12s-12-2-16-2z",
+  Psittaciformes: "M22 14c8 0 14 6 14 14s-6 14-14 14h-2c-6 0-12-4-12-12 0-8 6-16 14-16z M36 28l8-2-2 4 4 2-8 2z",
+  Apodiformes: "M6 30c12-6 26-8 38-4l-6 6-30 6z M44 26l8-4-4 6 6 2-8 2z",
+};
+
+function OrderSilhouette({ name }: { name: string }) {
+  const d = ORDER_SILHOUETTES[name] ?? ORDER_SILHOUETTES.Passeriformes;
+  return (
+    <svg
+      viewBox="0 0 64 64"
+      className="absolute inset-0 m-auto h-24 w-24"
+      style={{ opacity: 0.3 }}
+      fill="white"
+    >
+      <path d={d} />
+    </svg>
+  );
+}
 
 function OrdersSection() {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [scrollPct, setScrollPct] = useState(0);
+
+  // Fetch one photo per order_name
+  const { data: orderPhotos } = useQuery({
+    queryKey: ["about-birds-order-cover-photos"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("photos")
+        .select("order_name, thumbnail_url, image_url, id")
+        .not("order_name", "is", null)
+        .not("image_url", "is", null);
+      const byOrder: Record<string, { url: string; count: number }> = {};
+      (data ?? []).forEach((r: any) => {
+        const o = r.order_name as string;
+        if (!o) return;
+        if (!byOrder[o]) byOrder[o] = { url: r.thumbnail_url || r.image_url, count: 0 };
+        byOrder[o].count += 1;
+      });
+      return byOrder;
+    },
+  });
+
+  const onScroll = () => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    setScrollPct(max <= 0 ? 0 : el.scrollLeft / max);
+  };
+
+  const scrollBy = (dir: 1 | -1) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const cardWidth = 260 + 16; // card + gap approx
+    el.scrollBy({ left: dir * cardWidth * 3, behavior: "smooth" });
+  };
+
+  // 5 evenly-spaced position dots
+  const dots = 5;
+
   return (
     <section className="bg-surface py-20 md:py-28">
-      <div className="mx-auto max-w-5xl px-6">
-        <div className="text-center mb-12">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="text-center mb-10">
           <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground">Major Orders in India</h2>
           <p className="mt-3 text-muted-foreground">16 orders that account for nearly all of India's birds</p>
         </div>
 
-        <Accordion type="single" collapsible className="space-y-3">
-          {ORDERS.map((o) => (
-            <AccordionItem
-              key={o.name}
-              value={o.name}
-              className="border rounded-lg bg-background px-5"
-              style={{ borderColor: "rgba(201,168,76,0.2)" }}
-            >
-              <AccordionTrigger className="hover:no-underline">
-                <div className="flex flex-1 items-center gap-4 text-left">
-                  <span style={{ color: AMBER }}><OrderIcon /></span>
-                  <div className="flex-1">
-                    <div className="font-display text-lg text-foreground">
-                      {o.name} <span className="text-xs font-normal italic text-muted-foreground">({o.pron})</span>
+        <div className="relative">
+          <button
+            type="button"
+            aria-label="Scroll left"
+            onClick={() => scrollBy(-1)}
+            className="absolute left-0 top-1/2 z-20 -translate-y-1/2 -translate-x-2 rounded-full p-2 text-white transition-colors hover:text-amber-300"
+            style={{ backgroundColor: "rgba(0,0,0,0.55)" }}
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            aria-label="Scroll right"
+            onClick={() => scrollBy(1)}
+            className="absolute right-0 top-1/2 z-20 -translate-y-1/2 translate-x-2 rounded-full p-2 text-white transition-colors hover:text-amber-300"
+            style={{ backgroundColor: "rgba(0,0,0,0.55)" }}
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+
+          <div
+            ref={scrollerRef}
+            onScroll={onScroll}
+            className="flex gap-4 overflow-x-auto scroll-smooth pb-4"
+            style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none" }}
+          >
+            <style>{`.orders-carousel::-webkit-scrollbar{display:none}`}</style>
+            {ORDERS.map((o) => {
+              const cover = orderPhotos?.[o.name];
+              const count = cover?.count ?? 0;
+              return (
+                <Link
+                  key={o.name}
+                  to="/gallery/$order"
+                  params={{ order: o.name }}
+                  className="group relative flex-none overflow-hidden rounded-lg border transition-transform hover:-translate-y-1"
+                  style={{
+                    width: "min(85vw, 260px)",
+                    height: "340px",
+                    scrollSnapAlign: "start",
+                    borderColor: "rgba(201,168,76,0.25)",
+                    background: cover
+                      ? "#0a0a0a"
+                      : "linear-gradient(160deg,#1a1a2e 0%,#0f3460 100%)",
+                  }}
+                >
+                  {cover ? (
+                    <img
+                      src={cover.url}
+                      alt={o.name}
+                      loading="lazy"
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <OrderSilhouette name={o.name} />
+                  )}
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background:
+                        "linear-gradient(to top, rgba(0,0,0,0.92) 45%, rgba(0,0,0,0.15) 100%)",
+                    }}
+                  />
+                  <div className="absolute inset-x-0 bottom-0 p-4 text-white">
+                    <h3 className="font-display text-[1.1rem] font-bold leading-tight">
+                      {o.name}
+                    </h3>
+                    <div className="mt-0.5 text-[0.8rem] italic" style={{ color: AMBER }}>
+                      {o.pron}
                     </div>
-                    <div className="text-sm text-muted-foreground">{o.line}</div>
+                    <div className="mt-2 text-[11px] text-white/60">
+                      {o.count}
+                    </div>
+                    <p className="mt-2 line-clamp-2 text-[12px] text-white/80">{o.line}</p>
+                    <div
+                      className="mt-3 text-[11px] font-medium"
+                      style={{ color: count > 0 ? AMBER : "rgba(255,255,255,0.45)" }}
+                    >
+                      {count > 0 ? "Browse my photos →" : "No photos yet"}
+                    </div>
                   </div>
-                  <span
-                    className="hidden sm:inline-block rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap"
-                    style={{ backgroundColor: "rgba(201,168,76,0.12)", color: AMBER }}
-                  >
-                    {o.count}
-                  </span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-3">
-                  <div>
-                    <div className="text-xs uppercase tracking-wider mb-2" style={{ color: AMBER }}>About</div>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{o.about}</p>
-                  </div>
-                  <div>
-                    <div className="text-xs uppercase tracking-wider mb-2" style={{ color: AMBER }}>Key families in India</div>
-                    <ul className="space-y-2 text-sm text-foreground/80">
-                      {o.families.map((f) => <li key={f}>{f}</li>)}
-                    </ul>
-                  </div>
-                  <div>
-                    <div className="text-xs uppercase tracking-wider mb-2" style={{ color: AMBER }}>Field ID tips</div>
-                    <ul className="space-y-2 text-sm text-muted-foreground">
-                      {o.tips.map((t) => <li key={t} className="flex gap-2"><span style={{ color: AMBER }}>›</span><span>{t}</span></li>)}
-                    </ul>
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Position dots */}
+          <div className="mt-4 flex justify-center gap-1.5">
+            {Array.from({ length: dots }).map((_, i) => {
+              const segPct = (i + 0.5) / dots;
+              const active = Math.abs(scrollPct - segPct) < 0.5 / dots;
+              return (
+                <span
+                  key={i}
+                  className="h-1.5 rounded-full transition-all"
+                  style={{
+                    width: active ? 20 : 8,
+                    backgroundColor: active ? AMBER : "rgba(201,168,76,0.25)",
+                  }}
+                />
+              );
+            })}
+          </div>
+        </div>
       </div>
     </section>
   );
 }
+
 
 /* ─────────────────────────────────────────────
    Section 6 — Biogeographic Zones

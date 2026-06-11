@@ -15,7 +15,7 @@ export const Route = createFileRoute("/species/$slug")({
   }),
   head: ({ params }) => ({
     meta: [
-      { title: `${params.slug.replace(/-/g, " ")} — Coolkriss` },
+      { title: `${params.slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} — Coolkriss` },
       { name: "description", content: "Full-screen bird photograph viewer with EXIF and taxonomy." },
     ],
   }),
