@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Volume2, X } from "lucide-react";
+import { Loader2, Volume2, VolumeX, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchXenoCantoCall, formatLicense } from "@/lib/xeno-canto";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,8 @@ type Props = {
   visible?: boolean;
 };
 
+type State = "ready" | "loading" | "not_found" | "unfetched";
+
 export function BirdCallPlayer({ photoId, scientificName, commonName, stored, visible = true }: Props) {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -29,8 +31,8 @@ export function BirdCallPlayer({ photoId, scientificName, commonName, stored, vi
     recordist: stored.xeno_canto_recordist,
     license: stored.xeno_canto_license,
   });
+  const [notFound, setNotFound] = useState(stored.xeno_canto_id === "not_found");
 
-  // Reset when photo changes
   useEffect(() => {
     setOpen(false);
     setInfo({
@@ -38,28 +40,34 @@ export function BirdCallPlayer({ photoId, scientificName, commonName, stored, vi
       recordist: stored.xeno_canto_recordist,
       license: stored.xeno_canto_license,
     });
+    setNotFound(stored.xeno_canto_id === "not_found");
   }, [photoId, stored.xeno_canto_id, stored.xeno_canto_recordist, stored.xeno_canto_license]);
 
-  const notFound = stored.xeno_canto_id === "not_found" && !info.id;
+  const state: State = loading
+    ? "loading"
+    : info.id
+      ? "ready"
+      : notFound
+        ? "not_found"
+        : "unfetched";
+
+  const tooltip =
+    state === "ready" ? "Play bird call" :
+    state === "loading" ? "Loading call..." :
+    state === "not_found" ? "No call recording available" :
+    "Click to find call recording";
 
   const handleClick = async () => {
-    if (notFound) return;
-    if (open) {
-      setOpen(false);
-      return;
-    }
-    if (info.id) {
-      setOpen(true);
-      return;
-    }
-    const query = scientificName || commonName;
-    if (!query) return;
+    if (state === "not_found" || state === "loading") return;
+    if (open) { setOpen(false); return; }
+    if (info.id) { setOpen(true); return; }
+
     setLoading(true);
     try {
-      const result = await fetchXenoCantoCall(query);
+      const result = await fetchXenoCantoCall(scientificName, commonName);
       if (!result) {
         await supabase.from("photos").update({ xeno_canto_id: "not_found" }).eq("id", photoId);
-        setInfo({ id: null, recordist: null, license: null });
+        setNotFound(true);
         return;
       }
       await supabase
@@ -78,6 +86,17 @@ export function BirdCallPlayer({ photoId, scientificName, commonName, stored, vi
     }
   };
 
+  // Visual styling per state
+  const colorStyles: Record<State, { color: string; bg: string; opacity: number }> = {
+    ready:      { color: "#c9a84c", bg: "rgba(0,0,0,0.5)", opacity: 1 },
+    loading:    { color: "#c9a84c", bg: "rgba(0,0,0,0.5)", opacity: 1 },
+    not_found:  { color: "#9ca3af", bg: "rgba(0,0,0,0.5)", opacity: 0.4 },
+    unfetched:  { color: "#ffffff", bg: "rgba(0,0,0,0.5)", opacity: 0.7 },
+  };
+  const s = open && state === "ready"
+    ? { color: "#111", bg: "#c9a84c", opacity: 1 }
+    : colorStyles[state];
+
   return (
     <>
       {open && info.id && (
@@ -86,10 +105,7 @@ export function BirdCallPlayer({ photoId, scientificName, commonName, stored, vi
             "absolute bottom-24 right-6 z-30 w-[360px] max-w-[calc(100vw-3rem)] rounded-xl p-3 backdrop-blur-md transition-opacity",
             visible ? "opacity-100" : "opacity-0",
           )}
-          style={{
-            backgroundColor: "rgba(0,0,0,0.85)",
-            border: "1px solid rgba(201,168,76,0.3)",
-          }}
+          style={{ backgroundColor: "rgba(0,0,0,0.85)", border: "1px solid rgba(201,168,76,0.3)" }}
         >
           <div className="mb-2 flex items-center justify-between">
             <span className="text-[11px] font-light uppercase tracking-widest text-white/80">
@@ -121,21 +137,26 @@ export function BirdCallPlayer({ photoId, scientificName, commonName, stored, vi
 
       <button
         onClick={handleClick}
-        aria-label={open ? "Hide call" : "Play bird call"}
-        disabled={loading || notFound}
-        title={notFound ? "No call recording found for this species" : info.id ? "Show call" : "Fetch call"}
+        aria-label={tooltip}
+        title={tooltip}
+        disabled={state === "not_found" || state === "loading"}
         style={{
-          borderColor: "#c9a84c",
-          color: open ? "#111" : "#c9a84c",
-          backgroundColor: open ? "#c9a84c" : "rgba(0,0,0,0.5)",
-          opacity: notFound ? 0.4 : 1,
+          borderColor: s.color,
+          color: s.color,
+          backgroundColor: s.bg,
+          opacity: s.opacity,
         }}
         className={cn(
           "absolute bottom-6 right-[5.25rem] z-30 flex h-12 w-12 items-center justify-center rounded-full border-2 backdrop-blur-md transition-all duration-300",
+          state === "loading" && "animate-pulse",
           visible ? "opacity-100" : "opacity-0",
         )}
       >
-        {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Volume2 className="h-5 w-5" />}
+        {state === "loading"
+          ? <Loader2 className="h-5 w-5 animate-spin" />
+          : state === "not_found"
+            ? <VolumeX className="h-5 w-5" />
+            : <Volume2 className="h-5 w-5" />}
       </button>
     </>
   );
