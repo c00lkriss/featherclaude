@@ -6,9 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Coolkriss — Bird Photography from India" },
+      { title: "Coolkriss — Bird Photography by Gokul Krishna Addanki" },
       { name: "description", content: "Award-winning bird photography from across the Indian subcontinent. Explore galleries by taxonomy, read field notes, and discover the beauty of avian life." },
-      { property: "og:title", content: "Coolkriss — Bird Photography from India" },
+      { property: "og:title", content: "Coolkriss — Bird Photography by Gokul Krishna Addanki" },
       { property: "og:description", content: "Award-winning bird photography from across the Indian subcontinent." },
     ],
   }),

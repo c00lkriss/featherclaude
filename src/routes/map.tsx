@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/map")({
   head: () => ({
     meta: [
-      { title: "Map — My World Through a Lens — Coolkriss" },
+      { title: "My World Map — Coolkriss" },
       {
         name: "description",
         content:
