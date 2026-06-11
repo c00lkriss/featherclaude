@@ -388,10 +388,9 @@ function UploadPage() {
       }).select("id").single();
       if (insErr) throw insErr;
 
-      // Background — fetch xeno-canto call (don't await); fall back to common name
-      const callQuery = form.species_name || form.common_name;
-      if (inserted?.id && callQuery) {
-        fetchXenoCantoCall(callQuery).then(async (call) => {
+      // Background — fetch xeno-canto call via edge function
+      if (inserted?.id && (form.species_name || form.common_name)) {
+        fetchXenoCantoCall(form.species_name, form.common_name).then(async (call) => {
           if (!call) {
             await supabase.from("photos").update({ xeno_canto_id: "not_found" }).eq("id", inserted.id);
             return;
