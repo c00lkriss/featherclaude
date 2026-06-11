@@ -150,14 +150,42 @@ function RootComponent() {
 }
 
 function Header() {
+  const { data: settings } = useSiteSettings();
+  const logoUrl = settings?.logo_url || "";
+  const [logoFailed, setLogoFailed] = useState(false);
+
+  // Apply favicon override from site_settings when present
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const fav = settings?.favicon_url;
+    if (!fav) return;
+    let link = document.querySelector<HTMLLinkElement>("link[rel='icon']");
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "icon";
+      document.head.appendChild(link);
+    }
+    link.href = fav;
+  }, [settings?.favicon_url]);
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <Link to="/" className="flex items-center gap-2">
-          <span className="font-display text-xl font-bold tracking-tight text-foreground">
-            Coolkriss
-          </span>
+          {logoUrl && !logoFailed ? (
+            <img
+              src={logoUrl}
+              alt="Coolkriss"
+              onError={() => setLogoFailed(true)}
+              className="h-8 w-auto object-contain md:h-10"
+            />
+          ) : (
+            <span className="font-display text-xl font-bold tracking-tight text-foreground">
+              Coolkriss
+            </span>
+          )}
         </Link>
+
         <nav className="hidden items-center gap-8 md:flex">
           <Link
             to="/gallery"
