@@ -1,62 +1,56 @@
+import { supabase } from "@/integrations/supabase/client";
+
 export type XenoCantoCall = {
   id: string;
-  url: string;
+  url: string | null;
   recordist: string;
   license: string;
   type: string;
+  country: string | null;
+  embed_url: string;
 };
 
-const ALLOWED_LICENSES = ["by", "by-nc", "by-sa", "by-nc-sa"];
-
-function licenseAllowed(lic: string | undefined | null): boolean {
-  if (!lic) return false;
-  const s = String(lic).toLowerCase();
-  // xeno-canto licenses look like "//creativecommons.org/licenses/by-nc-sa/4.0/"
-  return ALLOWED_LICENSES.some((tok) => s.includes(`/licenses/${tok}/`)) ||
-    ALLOWED_LICENSES.some((tok) => s.includes(`cc-${tok}`));
-}
-
 /**
- * Fetches the best quality-A call/song recording for a species
- * from xeno-canto. Returns null if nothing usable is found.
+ * Fetches the best call recording via the `fetch-bird-call` edge function
+ * (server-side proxy to xeno-canto.org — avoids browser CORS).
  */
-export async function fetchXenoCantoCall(scientificName: string): Promise<XenoCantoCall | null> {
-  if (!scientificName?.trim()) return null;
+export async function fetchXenoCantoCall(
+  scientificName: string | null | undefined,
+  commonName?: string | null,
+): Promise<XenoCantoCall | null> {
+  const sci = scientificName?.trim() ?? "";
+  const common = commonName?.trim() ?? "";
+  if (!sci && !common) return null;
+
   try {
-    const url = `https://xeno-canto.org/api/2/recordings?query=${encodeURIComponent(scientificName.trim())}+q:A`;
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const data = await res.json();
-    const recordings: any[] = Array.isArray(data?.recordings) ? data.recordings : [];
-    if (recordings.length === 0) return null;
-
-    const usable = recordings.filter(
-      (r) => r["file-mp3"] && licenseAllowed(r.lic),
-    );
-    if (usable.length === 0) return null;
-
-    // Prefer "call" over "song"
-    const call = usable.find((r) => /call/i.test(r.type ?? ""));
-    const song = usable.find((r) => /song/i.test(r.type ?? ""));
-    const pick = call ?? song ?? usable[0];
-
+    const { data, error } = await supabase.functions.invoke("fetch-bird-call", {
+      body: { species_name: sci, common_name: common },
+    });
+    if (error) {
+      console.warn("[fetch-bird-call] invoke failed:", error.message);
+      return null;
+    }
+    if (!data || !data.found) return null;
     return {
-      id: String(pick.id),
-      url: pick["file-mp3"],
-      recordist: pick.rec ?? "Unknown",
-      license: pick.lic ?? "",
-      type: pick.type ?? "call",
+      id: String(data.id),
+      url: data.url ?? null,
+      recordist: data.recordist ?? "Unknown",
+      license: data.license ?? "",
+      type: data.type ?? "call",
+      country: data.country ?? null,
+      embed_url: data.embed_url,
     };
   } catch (err) {
-    console.warn("[xeno-canto] fetch failed:", err);
+    console.warn("[fetch-bird-call] error:", err);
     return null;
   }
 }
 
-/** Pretty-prints a xeno-canto license URL into "CC BY-NC". */
+/** Pretty license string — function already formatted server-side, kept for compatibility. */
 export function formatLicense(lic: string): string {
   if (!lic) return "CC";
-  const m = lic.match(/\/licenses\/([a-z-]+)\//i);
-  if (m) return `CC ${m[1].toUpperCase()}`;
+  if (lic.startsWith("CC ")) return lic;
+  const m = lic.match(/\/licenses\/([a-z-]+)\/([0-9.]+)/i);
+  if (m) return `CC ${m[1].toUpperCase()} ${m[2]}`;
   return lic;
 }
