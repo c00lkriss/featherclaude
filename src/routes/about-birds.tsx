@@ -550,71 +550,198 @@ const ORDERS = [
   },
 ];
 
-const OrderIcon = () => (
-  <svg viewBox="0 0 32 24" className="w-8 h-6" fill="currentColor"><path d="M2 14c3-6 9-10 16-10 4 0 8 2 10 6l2-1-1 3 2 2-4 1c-1 4-5 7-10 7-7 0-13-3-15-8z" /></svg>
-);
+// Simple silhouette SVGs keyed by order — used when no photo exists yet.
+const ORDER_SILHOUETTES: Record<string, string> = {
+  Passeriformes: "M22 38c0-6 5-11 11-11s11 5 11 11l-3 4-6-2-4 6-5-4-4 3-4-3 4-4z M44 30l8-6 2 3-7 5z",
+  Accipitriformes: "M6 36c8-10 18-14 26-14s18 4 26 14c-8-2-16-3-26-3s-18 1-26 3z M30 22l4-8 4 8z",
+  Columbiformes: "M16 38c0-9 7-15 16-15s16 6 16 15c0 5-4 8-8 9l-4 2h-8l-4-2c-4-1-8-4-8-9z M22 28l-5-3 5-1z",
+  Strigiformes: "M18 30c0-9 6-16 14-16s14 7 14 16c0 8-6 14-14 14s-14-6-14-14z M22 28a3 3 0 1 1 6 0 3 3 0 1 1-6 0z M36 28a3 3 0 1 1 6 0 3 3 0 1 1-6 0z M30 34l-2 4h4z",
+  Coraciiformes: "M10 32c4-8 14-12 22-12 6 0 10 2 14 6l8-2-3 5 3 3-8 1c-2 4-7 6-12 6h-6c-9 0-15-3-18-7z M14 30l-6-2 6-1z",
+  Piciformes: "M30 12v40 M30 16c-6 0-10 4-10 8 0 5 4 8 10 8 M30 24l-8-4 8-1z",
+  Cuculiformes: "M10 38c10-12 28-16 44-12l-6 4-30 8z M14 40h36",
+  Anseriformes: "M14 36c6-6 16-8 24-8s14 3 18 6c0 5-8 8-22 8s-22-2-22-6z M14 32l-6-2 6-1z M22 36v6 M30 36v6",
+  Charadriiformes: "M22 22c4-2 9-2 13 0l4 4-2 4-4-2-5 1-4-2-2-3z M28 28v18 M30 28v18 M26 46l4 2 4-2",
+  Pelecaniformes: "M30 8v32 M28 8c0 2 2 4 2 4s2-2 2-4z M30 40c-6 0-10 4-10 8h20c0-4-4-8-10-8z",
+  Bucerotiformes: "M14 26c8-10 22-12 32-8l8-2-6 6 4 4-10 2c-4 4-12 6-20 6s-12-2-14-4z M14 24l-8-4 8 0z",
+  Galliformes: "M16 38c0-8 6-14 14-14s14 6 14 14h-28z M40 38c8-12 16-14 16-4l-6 2 4 4-8 2z",
+  Gruiformes: "M28 6v34 M28 8c0 2 2 3 2 3s2-1 2-3z M22 40h12 M22 40v12 M34 40v12",
+  Falconiformes: "M10 20c10 4 22 12 30 20l8-6-2 8 6 4-10 2c-4-6-10-10-16-12s-12-2-16-2z",
+  Psittaciformes: "M22 14c8 0 14 6 14 14s-6 14-14 14h-2c-6 0-12-4-12-12 0-8 6-16 14-16z M36 28l8-2-2 4 4 2-8 2z",
+  Apodiformes: "M6 30c12-6 26-8 38-4l-6 6-30 6z M44 26l8-4-4 6 6 2-8 2z",
+};
+
+function OrderSilhouette({ name }: { name: string }) {
+  const d = ORDER_SILHOUETTES[name] ?? ORDER_SILHOUETTES.Passeriformes;
+  return (
+    <svg
+      viewBox="0 0 64 64"
+      className="absolute inset-0 m-auto h-24 w-24"
+      style={{ opacity: 0.3 }}
+      fill="white"
+    >
+      <path d={d} />
+    </svg>
+  );
+}
 
 function OrdersSection() {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [scrollPct, setScrollPct] = useState(0);
+
+  // Fetch one photo per order_name
+  const { data: orderPhotos } = useQuery({
+    queryKey: ["about-birds-order-cover-photos"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("photos")
+        .select("order_name, thumbnail_url, image_url, id")
+        .not("order_name", "is", null)
+        .not("image_url", "is", null);
+      const byOrder: Record<string, { url: string; count: number }> = {};
+      (data ?? []).forEach((r: any) => {
+        const o = r.order_name as string;
+        if (!o) return;
+        if (!byOrder[o]) byOrder[o] = { url: r.thumbnail_url || r.image_url, count: 0 };
+        byOrder[o].count += 1;
+      });
+      return byOrder;
+    },
+  });
+
+  const onScroll = () => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    setScrollPct(max <= 0 ? 0 : el.scrollLeft / max);
+  };
+
+  const scrollBy = (dir: 1 | -1) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const cardWidth = 260 + 16; // card + gap approx
+    el.scrollBy({ left: dir * cardWidth * 3, behavior: "smooth" });
+  };
+
+  // 5 evenly-spaced position dots
+  const dots = 5;
+
   return (
     <section className="bg-surface py-20 md:py-28">
-      <div className="mx-auto max-w-5xl px-6">
-        <div className="text-center mb-12">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="text-center mb-10">
           <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground">Major Orders in India</h2>
           <p className="mt-3 text-muted-foreground">16 orders that account for nearly all of India's birds</p>
         </div>
 
-        <Accordion type="single" collapsible className="space-y-3">
-          {ORDERS.map((o) => (
-            <AccordionItem
-              key={o.name}
-              value={o.name}
-              className="border rounded-lg bg-background px-5"
-              style={{ borderColor: "rgba(201,168,76,0.2)" }}
-            >
-              <AccordionTrigger className="hover:no-underline">
-                <div className="flex flex-1 items-center gap-4 text-left">
-                  <span style={{ color: AMBER }}><OrderIcon /></span>
-                  <div className="flex-1">
-                    <div className="font-display text-lg text-foreground">
-                      {o.name} <span className="text-xs font-normal italic text-muted-foreground">({o.pron})</span>
+        <div className="relative">
+          <button
+            type="button"
+            aria-label="Scroll left"
+            onClick={() => scrollBy(-1)}
+            className="absolute left-0 top-1/2 z-20 -translate-y-1/2 -translate-x-2 rounded-full p-2 text-white transition-colors hover:text-amber-300"
+            style={{ backgroundColor: "rgba(0,0,0,0.55)" }}
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            aria-label="Scroll right"
+            onClick={() => scrollBy(1)}
+            className="absolute right-0 top-1/2 z-20 -translate-y-1/2 translate-x-2 rounded-full p-2 text-white transition-colors hover:text-amber-300"
+            style={{ backgroundColor: "rgba(0,0,0,0.55)" }}
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+
+          <div
+            ref={scrollerRef}
+            onScroll={onScroll}
+            className="flex gap-4 overflow-x-auto scroll-smooth pb-4"
+            style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none" }}
+          >
+            <style>{`.orders-carousel::-webkit-scrollbar{display:none}`}</style>
+            {ORDERS.map((o) => {
+              const cover = orderPhotos?.[o.name];
+              const count = cover?.count ?? 0;
+              return (
+                <Link
+                  key={o.name}
+                  to="/gallery/$order"
+                  params={{ order: o.name }}
+                  className="group relative flex-none overflow-hidden rounded-lg border transition-transform hover:-translate-y-1"
+                  style={{
+                    width: "min(85vw, 260px)",
+                    height: "340px",
+                    scrollSnapAlign: "start",
+                    borderColor: "rgba(201,168,76,0.25)",
+                    background: cover
+                      ? "#0a0a0a"
+                      : "linear-gradient(160deg,#1a1a2e 0%,#0f3460 100%)",
+                  }}
+                >
+                  {cover ? (
+                    <img
+                      src={cover.url}
+                      alt={o.name}
+                      loading="lazy"
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <OrderSilhouette name={o.name} />
+                  )}
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background:
+                        "linear-gradient(to top, rgba(0,0,0,0.92) 45%, rgba(0,0,0,0.15) 100%)",
+                    }}
+                  />
+                  <div className="absolute inset-x-0 bottom-0 p-4 text-white">
+                    <h3 className="font-display text-[1.1rem] font-bold leading-tight">
+                      {o.name}
+                    </h3>
+                    <div className="mt-0.5 text-[0.8rem] italic" style={{ color: AMBER }}>
+                      {o.pron}
                     </div>
-                    <div className="text-sm text-muted-foreground">{o.line}</div>
+                    <div className="mt-2 text-[11px] text-white/60">
+                      {o.count}
+                    </div>
+                    <p className="mt-2 line-clamp-2 text-[12px] text-white/80">{o.line}</p>
+                    <div
+                      className="mt-3 text-[11px] font-medium"
+                      style={{ color: count > 0 ? AMBER : "rgba(255,255,255,0.45)" }}
+                    >
+                      {count > 0 ? "Browse my photos →" : "No photos yet"}
+                    </div>
                   </div>
-                  <span
-                    className="hidden sm:inline-block rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap"
-                    style={{ backgroundColor: "rgba(201,168,76,0.12)", color: AMBER }}
-                  >
-                    {o.count}
-                  </span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-3">
-                  <div>
-                    <div className="text-xs uppercase tracking-wider mb-2" style={{ color: AMBER }}>About</div>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{o.about}</p>
-                  </div>
-                  <div>
-                    <div className="text-xs uppercase tracking-wider mb-2" style={{ color: AMBER }}>Key families in India</div>
-                    <ul className="space-y-2 text-sm text-foreground/80">
-                      {o.families.map((f) => <li key={f}>{f}</li>)}
-                    </ul>
-                  </div>
-                  <div>
-                    <div className="text-xs uppercase tracking-wider mb-2" style={{ color: AMBER }}>Field ID tips</div>
-                    <ul className="space-y-2 text-sm text-muted-foreground">
-                      {o.tips.map((t) => <li key={t} className="flex gap-2"><span style={{ color: AMBER }}>›</span><span>{t}</span></li>)}
-                    </ul>
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Position dots */}
+          <div className="mt-4 flex justify-center gap-1.5">
+            {Array.from({ length: dots }).map((_, i) => {
+              const segPct = (i + 0.5) / dots;
+              const active = Math.abs(scrollPct - segPct) < 0.5 / dots;
+              return (
+                <span
+                  key={i}
+                  className="h-1.5 rounded-full transition-all"
+                  style={{
+                    width: active ? 20 : 8,
+                    backgroundColor: active ? AMBER : "rgba(201,168,76,0.25)",
+                  }}
+                />
+              );
+            })}
+          </div>
+        </div>
       </div>
     </section>
   );
 }
+
 
 /* ─────────────────────────────────────────────
    Section 6 — Biogeographic Zones
