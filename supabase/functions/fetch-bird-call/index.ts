@@ -17,11 +17,13 @@ async function queryXC(q: string): Promise<any[]> {
   const url = `https://xeno-canto.org/api/3/recordings?query=${encodeURIComponent(q)}&key=${API_KEY}`;
   const res = await fetch(url, { headers: { "User-Agent": "coolkriss.in/1.0" } });
   if (!res.ok) {
-    console.warn("xeno-canto query failed", res.status, q);
+    const text = await res.text().catch(() => "");
+    console.warn("xeno-canto query failed", res.status, "keyLen=", API_KEY.length, "q=", q, "body=", text.slice(0, 200));
     return [];
   }
   const data = await res.json().catch(() => null);
   return Array.isArray(data?.recordings) ? data.recordings : [];
+
 }
 
 function pickBest(recs: any[]): any | null {
