@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Loader2, Upload } from "lucide-react";
+import { Check, Loader2, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSiteSettings } from "@/lib/site-settings";
 
@@ -16,37 +16,81 @@ export const Route = createFileRoute("/_authenticated/admin/settings")({
   component: AdminSettings,
 });
 
-const FIELDS: { key: string; label: string; hint?: string }[] = [
-  { key: "site_title", label: "Site title" },
-  { key: "photographer_name", label: "Photographer name" },
-  { key: "contact_email", label: "Contact email" },
-];
-
 function AdminSettings() {
-  const qc = useQueryClient();
   const { data: settings } = useSiteSettings();
   const [values, setValues] = useState<Record<string, string>>({});
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (settings) setValues((v) => ({ ...settings, ...v }));
   }, [settings]);
 
-  const saveKey = async (key: string, value: string) => {
-    const { error } = await supabase
-      .from("site_settings")
-      .upsert({ key, value }, { onConflict: "key" });
-    if (error) throw error;
-  };
+  const onChange = (k: string, v: string) => setValues((s) => ({ ...s, [k]: v }));
+
+  return (
+    <div className="mx-auto max-w-3xl px-6 py-12">
+      <h1 className="font-display text-3xl font-semibold text-foreground">Site Settings</h1>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Branding, contact info, and the editable About page.
+      </p>
+
+      <Section title="Site Branding" keys={["site_title"]} values={values} onChange={onChange}>
+        <div className="grid gap-6 md:grid-cols-2">
+          <AssetUploader label="Logo" settingKey="logo_url" currentUrl={values.logo_url || ""} hint="PNG/SVG/WEBP, transparent bg, ~ 200×60." />
+          <AssetUploader label="Favicon" settingKey="favicon_url" currentUrl={values.favicon_url || ""} hint="32×32 ICO/PNG/SVG." />
+        </div>
+        <Field label="Site title" k="site_title" values={values} onChange={onChange} placeholder="Coolkriss" />
+      </Section>
+
+      <Section title="Contact Info" keys={["contact_email", "instagram_url", "youtube_url"]} values={values} onChange={onChange}>
+        <Field label="Contact email" k="contact_email" values={values} onChange={onChange} placeholder="hello@coolkriss.in" />
+        <Field label="Instagram URL" k="instagram_url" values={values} onChange={onChange} placeholder="https://instagram.com/…" />
+        <Field label="YouTube URL" k="youtube_url" values={values} onChange={onChange} placeholder="https://youtube.com/@…" />
+      </Section>
+
+      <Section title="About Page" keys={["about_bio"]} values={values} onChange={onChange}>
+        <div>
+          <label className="block text-xs font-light uppercase tracking-[0.25em] text-muted-foreground">
+            Photographer bio
+          </label>
+          <textarea
+            value={values.about_bio ?? ""}
+            onChange={(e) => onChange("about_bio", e.target.value)}
+            rows={8}
+            className="mt-2 w-full rounded-sm border border-border bg-surface px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none"
+            placeholder="Tell the story…"
+          />
+        </div>
+      </Section>
+    </div>
+  );
+}
+
+function Section({
+  title,
+  keys,
+  values,
+  children,
+}: {
+  title: string;
+  keys: string[];
+  values: Record<string, string>;
+  onChange: (k: string, v: string) => void;
+  children: React.ReactNode;
+}) {
+  const qc = useQueryClient();
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   const onSave = async () => {
     setSaving(true);
     try {
-      await Promise.all(
-        FIELDS.map((f) => saveKey(f.key, values[f.key] ?? "")),
-      );
-      toast.success("Settings saved");
+      const rows = keys.map((k) => ({ key: k, value: values[k] ?? "" }));
+      const { error } = await supabase.from("site_settings").upsert(rows, { onConflict: "key" });
+      if (error) throw error;
       qc.invalidateQueries({ queryKey: ["site-settings"] });
+      setSaved(true);
+      toast.success(`${title} saved`);
+      setTimeout(() => setSaved(false), 2000);
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to save");
     } finally {
@@ -55,55 +99,52 @@ function AdminSettings() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-12">
-      <h1 className="font-display text-3xl font-semibold text-foreground">
-        Site Settings
-      </h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Logo, favicon, and site-wide identity.
-      </p>
-
-      <section className="mt-10 grid gap-6 md:grid-cols-2">
-        <AssetUploader
-          label="Logo"
-          settingKey="logo_url"
-          currentUrl={values.logo_url || ""}
-          hint="PNG/SVG with transparent background, ~ 200×60."
-        />
-        <AssetUploader
-          label="Favicon"
-          settingKey="favicon_url"
-          currentUrl={values.favicon_url || ""}
-          hint="32×32 ICO/PNG/SVG."
-        />
-      </section>
-
-      <section className="mt-10 space-y-4">
-        {FIELDS.map((f) => (
-          <div key={f.key}>
-            <label className="block text-xs font-light uppercase tracking-[0.25em] text-muted-foreground">
-              {f.label}
-            </label>
-            <input
-              type="text"
-              value={values[f.key] ?? ""}
-              onChange={(e) =>
-                setValues((v) => ({ ...v, [f.key]: e.target.value }))
-              }
-              className="mt-2 w-full rounded-sm border border-border bg-surface px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none"
-            />
-          </div>
-        ))}
+    <section className="mt-10 rounded-sm border border-border bg-surface p-6">
+      <h2 className="font-display text-lg text-foreground">{title}</h2>
+      <div className="mt-5 space-y-5">{children}</div>
+      <div className="mt-6 flex items-center gap-3">
         <button
           type="button"
-          disabled={saving}
           onClick={onSave}
-          className="mt-2 inline-flex items-center gap-2 rounded-sm border border-primary bg-primary/90 px-5 py-2.5 text-xs font-medium uppercase tracking-widest text-primary-foreground hover:bg-primary disabled:opacity-50"
+          disabled={saving}
+          className="inline-flex items-center gap-2 rounded-sm border border-primary bg-primary/90 px-5 py-2.5 text-xs font-medium uppercase tracking-widest text-primary-foreground hover:bg-primary disabled:opacity-50"
         >
           {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-          Save text settings
+          Save
         </button>
-      </section>
+        {saved && (
+          <span className="inline-flex items-center gap-1 text-xs text-primary">
+            <Check className="h-4 w-4" /> Saved
+          </span>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function Field({
+  label,
+  k,
+  values,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  k: string;
+  values: Record<string, string>;
+  onChange: (k: string, v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <div>
+      <label className="block text-xs font-light uppercase tracking-[0.25em] text-muted-foreground">{label}</label>
+      <input
+        type="text"
+        value={values[k] ?? ""}
+        placeholder={placeholder}
+        onChange={(e) => onChange(k, e.target.value)}
+        className="mt-2 w-full rounded-sm border border-border bg-surface px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none"
+      />
     </div>
   );
 }
@@ -123,10 +164,11 @@ function AssetUploader({
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [url, setUrl] = useState(currentUrl);
+  const [dragOver, setDragOver] = useState(false);
 
   useEffect(() => setUrl(currentUrl), [currentUrl]);
 
-  const onPick = async (file: File) => {
+  const upload = async (file: File) => {
     setUploading(true);
     try {
       const ext = file.name.split(".").pop() || "png";
@@ -152,38 +194,40 @@ function AssetUploader({
   };
 
   const onClear = async () => {
-    await supabase
-      .from("site_settings")
-      .upsert({ key: settingKey, value: "" }, { onConflict: "key" });
+    await supabase.from("site_settings").upsert({ key: settingKey, value: "" }, { onConflict: "key" });
     setUrl("");
     qc.invalidateQueries({ queryKey: ["site-settings"] });
     toast.success(`${label} cleared`);
   };
 
   return (
-    <div className="rounded-sm border border-border bg-surface p-5">
-      <div className="text-xs font-light uppercase tracking-[0.25em] text-muted-foreground">
-        {label}
-      </div>
-      <div className="mt-3 flex h-20 items-center justify-center rounded-sm border border-dashed border-border bg-background">
+    <div>
+      <div className="text-xs font-light uppercase tracking-[0.25em] text-muted-foreground">{label}</div>
+      <div
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault(); setDragOver(false);
+          const f = e.dataTransfer.files?.[0];
+          if (f) upload(f);
+        }}
+        onClick={() => inputRef.current?.click()}
+        className={`mt-2 flex h-24 cursor-pointer items-center justify-center rounded-sm border border-dashed bg-background transition-colors ${dragOver ? "border-primary" : "border-border hover:border-primary/60"}`}
+      >
         {url ? (
-          <img src={url} alt={label} className="max-h-16 max-w-full object-contain" />
+          <img src={url} alt={label} className="max-h-20 max-w-full object-contain" />
         ) : (
-          <span className="text-xs text-muted-foreground">No {label.toLowerCase()} set</span>
+          <span className="text-xs text-muted-foreground">Drag & drop or click to upload</span>
         )}
       </div>
       {hint && <p className="mt-2 text-[11px] text-muted-foreground">{hint}</p>}
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-2 flex gap-2">
         <input
           ref={inputRef}
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) onPick(f);
-            e.target.value = "";
-          }}
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }}
         />
         <button
           type="button"
@@ -195,11 +239,7 @@ function AssetUploader({
           {uploading ? "Uploading…" : "Upload"}
         </button>
         {url && (
-          <button
-            type="button"
-            onClick={onClear}
-            className="rounded-sm border border-border px-3 py-1.5 text-[11px] font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground"
-          >
+          <button type="button" onClick={onClear} className="rounded-sm border border-border px-3 py-1.5 text-[11px] font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground">
             Clear
           </button>
         )}
