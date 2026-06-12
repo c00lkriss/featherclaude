@@ -57,16 +57,19 @@ function AdminDashboard() {
     if (callsRunning) return;
     setCallsRunning(true);
     setCallsProgress({ done: 0, total: 0, found: 0, missing: 0, errors: 0 });
+    setCallsLog([]);
+    const log = (line: string) => setCallsLog((prev) => [...prev, line].slice(-200));
     try {
       const { data: photos } = await supabase
         .from("photos")
-        .select("id, species_name, common_name")
+        .select("id, species_name, common_name, created_at")
         .is("xeno_canto_id", null)
-        .or("species_name.not.is.null,common_name.not.is.null");
+        .or("species_name.not.is.null,common_name.not.is.null")
+        .order("created_at", { ascending: false });
 
       const rows = (photos ?? []) as { id: string; species_name: string | null; common_name: string | null }[];
 
-      // Group by species key to fetch once per unique species
+      // Group by species to fetch once per unique species
       const keyOf = (r: { species_name: string | null; common_name: string | null }) =>
         `${(r.species_name || "").trim().toLowerCase()}|${(r.common_name || "").trim().toLowerCase()}`;
       const byKey = new Map<string, { sci: string | null; common: string | null; ids: string[] }>();
@@ -78,10 +81,12 @@ function AdminDashboard() {
 
       const entries = Array.from(byKey.values());
       setCallsProgress({ done: 0, total: entries.length, found: 0, missing: 0, errors: 0 });
+      log(`Found ${entries.length} species across ${rows.length} photos needing bird calls. Starting…`);
 
       let found = 0, missing = 0, errors = 0;
       for (let i = 0; i < entries.length; i++) {
         const e = entries[i];
+        const name = e.common || e.sci || "(unknown)";
         try {
           const call = await fetchXenoCantoCall(e.sci, e.common);
           if (call) {
@@ -92,23 +97,28 @@ function AdminDashboard() {
               xeno_canto_license: call.license,
             }).in("id", e.ids);
             found++;
+            log(`✓ ${name} — XC${call.id} found${call.country ? ` (${call.country})` : ""}`);
           } else {
             await supabase.from("photos").update({ xeno_canto_id: "not_found" }).in("id", e.ids);
             missing++;
+            log(`✗ ${name} — not found`);
           }
         } catch (err: any) {
           errors++;
+          log(`⚠ ${name} — API error, skipping`);
           console.warn("xeno-canto fetch failed for", e.sci || e.common, err?.message || err);
-          toast.error(`Fetch failed for ${e.common || e.sci}: ${err?.message || "network error"}`);
         }
         setCallsProgress({ done: i + 1, total: entries.length, found, missing, errors });
-        await new Promise((r) => setTimeout(r, 1200));
+        await new Promise((r) => setTimeout(r, 1500));
       }
-      toast.success(`✓ Found calls: ${found} · Not found: ${missing}${errors ? ` · Errors: ${errors}` : ""}`);
+      log(`Complete: ${found} found · ${missing} not found · ${errors} errors`);
+      log(`Refresh a species page to hear calls.`);
+      toast.success(`✓ ${found} found · ${missing} not found${errors ? ` · ${errors} errors` : ""}`);
     } finally {
       setCallsRunning(false);
     }
   };
+
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-16">
