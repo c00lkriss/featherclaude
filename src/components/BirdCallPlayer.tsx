@@ -53,9 +53,10 @@ export function BirdCallPlayer({ photoId, scientificName, commonName, stored, vi
 
   const tooltip =
     state === "ready" ? "Play bird call" :
-    state === "loading" ? "Loading call..." :
-    state === "not_found" ? "No call recording available" :
-    "Click to find call recording";
+    state === "loading" ? "Finding recording..." :
+    state === "not_found" ? "No recording available" :
+    "Click to load bird call";
+
 
   const handleClick = async () => {
     if (state === "not_found" || state === "loading") return;
