@@ -7,7 +7,7 @@ const CORS = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const API_KEY = Deno.env.get("XENO_CANTO_KEY") ?? "";
+const API_KEY = (Deno.env.get("XENO_CANTO_KEY") ?? "").trim();
 
 async function queryXC(q: string): Promise<any[]> {
   if (!API_KEY) {
