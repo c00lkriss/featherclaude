@@ -199,6 +199,14 @@ function AdminDashboard() {
               </p>
             </div>
           )}
+          {callsLog.length > 0 && (
+            <div className="mt-4 max-h-64 overflow-y-auto rounded-sm border border-border bg-background p-3 font-mono text-[11px] leading-relaxed text-muted-foreground">
+              {callsLog.map((l, i) => (
+                <div key={i} className={l.startsWith("✓") ? "text-primary" : l.startsWith("⚠") ? "text-amber-500" : l.startsWith("✗") ? "text-red-400/70" : ""}>{l}</div>
+              ))}
+            </div>
+          )}
+
         </div>
       </section>
 
