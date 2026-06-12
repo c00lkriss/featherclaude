@@ -19,6 +19,8 @@ export const Route = createFileRoute("/_authenticated/admin/dashboard")({
 function AdminDashboard() {
   const [callsRunning, setCallsRunning] = useState(false);
   const [callsProgress, setCallsProgress] = useState({ done: 0, total: 0, found: 0, missing: 0, errors: 0 });
+  const [callsLog, setCallsLog] = useState<string[]>([]);
+
 
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
