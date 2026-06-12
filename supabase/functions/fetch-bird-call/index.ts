@@ -1,19 +1,37 @@
-// Server-side proxy for xeno-canto.org API (avoids browser CORS).
-// POST { species_name, common_name } → { found, id, recordist, license, type, country, embed_url }
+// Xeno-canto API v3 proxy with API key (avoids browser CORS, keeps key secret).
+// POST { species_name, common_name } → { found, id, embed_url, recordist, license, type, country }
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey, x-client-info",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const ALLOWED_LICENSES = ["by", "by-nc", "by-sa", "by-nc-sa"];
+const API_KEY = (Deno.env.get("XENO_CANTO_KEY") ?? "").trim();
 
-function licenseAllowed(lic: string | undefined | null): boolean {
-  if (!lic) return false;
-  const s = String(lic).toLowerCase();
-  return ALLOWED_LICENSES.some((t) => s.includes(`/licenses/${t}/`)) ||
-    ALLOWED_LICENSES.some((t) => s.includes(`cc-${t}`));
+async function queryXC(q: string): Promise<any[]> {
+  if (!API_KEY) {
+    console.error("XENO_CANTO_KEY not configured");
+    return [];
+  }
+  const url = `https://xeno-canto.org/api/3/recordings?query=${encodeURIComponent(q)}&key=${API_KEY}`;
+  const res = await fetch(url, { headers: { "User-Agent": "coolkriss.in/1.0" } });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    console.warn("xeno-canto query failed", res.status, "keyLen=", API_KEY.length, "q=", q, "body=", text.slice(0, 200));
+    return [];
+  }
+  const data = await res.json().catch(() => null);
+  return Array.isArray(data?.recordings) ? data.recordings : [];
+
+}
+
+function pickBest(recs: any[]): any | null {
+  if (recs.length === 0) return null;
+  const india = recs.find((r) => /india/i.test(r.cnt ?? ""));
+  if (india) return india;
+  const aQ = recs.find((r) => (r.q ?? "").toUpperCase() === "A");
+  return aQ ?? recs[0];
 }
 
 function formatLicense(lic: string): string {
@@ -21,23 +39,6 @@ function formatLicense(lic: string): string {
   const m = lic.match(/\/licenses\/([a-z-]+)\/([0-9.]+)/i);
   if (m) return `CC ${m[1].toUpperCase()} ${m[2]}`;
   return lic;
-}
-
-async function queryXC(q: string): Promise<any[]> {
-  const url = `https://www.xeno-canto.org/api/2/recordings?query=${encodeURIComponent(q)}`;
-  const res = await fetch(url, { headers: { "User-Agent": "coolkriss.in/1.0" } });
-  if (!res.ok) return [];
-  const data = await res.json().catch(() => null);
-  const recs = Array.isArray(data?.recordings) ? data.recordings : [];
-  return recs.filter((r: any) => r["file-mp3"] && licenseAllowed(r.lic));
-}
-
-function pickBest(recs: any[]): any | null {
-  if (recs.length === 0) return null;
-  const calls = recs.filter((r) => /call/i.test(r.type ?? ""));
-  const pool = calls.length ? calls : recs;
-  const india = pool.find((r) => /india/i.test(r.cnt ?? ""));
-  return india ?? pool[0];
 }
 
 Deno.serve(async (req: Request) => {
@@ -60,10 +61,34 @@ Deno.serve(async (req: Request) => {
     }
 
     let recs: any[] = [];
-    if (sci) recs = await queryXC(`${sci} q:A type:call`);
-    if (recs.length === 0 && common) recs = await queryXC(`${common} q:A type:call`);
-    if (recs.length === 0 && sci) recs = await queryXC(`${sci} q:A`);
-    if (recs.length === 0 && common) recs = await queryXC(`${common} q:A`);
+
+    // Step 1: common name + call filter
+    if (common) {
+      recs = await queryXC(`en:"${common}" q:A type:call`);
+    }
+
+    // Step 2: scientific name + call filter
+    if (recs.length === 0 && sci) {
+      const parts = sci.split(/\s+/);
+      const gen = parts[0];
+      const sp = parts[1];
+      if (gen && sp) {
+        recs = await queryXC(`gen:${gen} sp:${sp} q:A type:call`);
+      }
+    }
+
+    // Step 3: drop type filter, common name
+    if (recs.length === 0 && common) {
+      recs = await queryXC(`en:"${common}" q:A`);
+    }
+
+    // Step 4: drop type filter, scientific
+    if (recs.length === 0 && sci) {
+      const parts = sci.split(/\s+/);
+      const gen = parts[0];
+      const sp = parts[1];
+      if (gen && sp) recs = await queryXC(`gen:${gen} sp:${sp} q:A`);
+    }
 
     const pick = pickBest(recs);
     if (!pick) {
@@ -77,16 +102,17 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({
         found: true,
         id,
+        embed_url: `https://xeno-canto.org/${id}/embed?darkbg=1`,
         recordist: pick.rec ?? "Unknown",
         license: formatLicense(pick.lic ?? ""),
         type: pick.type ?? "call",
         country: pick.cnt ?? null,
         url: pick["file-mp3"] ?? null,
-        embed_url: `https://xeno-canto.org/${id}/embed?darkbg=1`,
       }),
       { headers: { ...CORS, "Content-Type": "application/json" } },
     );
   } catch (err) {
+    console.error("fetch-bird-call error", err);
     return new Response(JSON.stringify({ found: false, error: String(err) }), {
       status: 500,
       headers: { ...CORS, "Content-Type": "application/json" },
