@@ -3,6 +3,9 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" && s.next.startsWith("/") ? s.next : "",
+  }),
   head: () => ({
     meta: [
       { title: "Sign In — Coolkriss" },
@@ -16,6 +19,7 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,7 +36,7 @@ function AuthPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin },
+          options: { emailRedirectTo: next ? window.location.origin + next : window.location.origin },
         });
         if (error) throw error;
         setError("Check your email to confirm your account.");
@@ -42,7 +46,11 @@ function AuthPage() {
           password,
         });
         if (error) throw error;
-        navigate({ to: "/admin" });
+        if (next) {
+          window.location.href = next;
+        } else {
+          navigate({ to: "/admin" });
+        }
       }
     } catch (err: any) {
       setError(err.message || "Authentication failed.");
