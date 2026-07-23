@@ -212,7 +212,7 @@ function Hero() {
             to="/gallery"
             className="rounded-none border border-primary bg-primary/90 px-8 py-3 text-xs font-medium uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary"
           >
-            Enter the Gallery
+            Explore Gallery
           </Link>
           <Link
             to="/about-birds"
