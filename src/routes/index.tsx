@@ -23,6 +23,8 @@ type Photo = {
   order_name: string;
   species_slug?: string;
   species_identifier?: string;
+  hero_story?: string | null;
+  hero_location?: string | null;
 };
 
 type TaxonomyOrder = {
