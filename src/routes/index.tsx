@@ -84,7 +84,7 @@ function Hero() {
   const [idx, setIdx] = useState(0);
 
   useEffect(() => {
-    const t = setInterval(() => setIdx((i) => (i + 1) % count), 5000);
+    const t = setInterval(() => setIdx((i) => (i + 1) % count), 8000);
     return () => clearInterval(t);
   }, [count]);
 
