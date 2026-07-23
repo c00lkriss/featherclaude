@@ -95,6 +95,8 @@ function EditPage() {
       tags: (data.tags ?? []).join(", "),
       is_featured: !!data.is_featured,
       iucn_status: data.iucn_status ?? "",
+      hero_story: (data as { hero_story?: string | null }).hero_story ?? "",
+      hero_location: (data as { hero_location?: string | null }).hero_location ?? "",
     });
   }, [data]);
 
