@@ -64,7 +64,7 @@ function Hero() {
     queryFn: async (): Promise<Photo[]> => {
       const { data, error } = await supabase
         .from("photos")
-        .select("id, title, image_url, thumbnail_url, order_name, species_slug, species_identifier")
+        .select("id, title, image_url, thumbnail_url, order_name, species_slug, species_identifier, hero_story, hero_location")
         .eq("is_featured", true)
         .limit(6);
       if (error) throw error;
