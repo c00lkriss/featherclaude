@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "sdk_version": "0.24.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://vdqspyufborvsgcmnzmo.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "coolkriss-mcp",
+      "version": "0.1.0",
+      "title": "Coolkriss Birds MCP"
+    },
+    "tools": [
+      {
+        "name": "search_photos",
+        "title": "Search bird photos",
+        "description": "Search Coolkriss bird photos by common name, scientific name, family, or order. Returns matching photos with species, location, and image URL.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Search text matched against common/scientific/family/order name."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Maximum photos to return (default 20)."
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_species",
+        "title": "List photographed species",
+        "description": "List distinct bird species photographed on Coolkriss with photo counts. Optionally filter by order or family.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "order_name": {
+              "type": "string",
+              "description": "Filter by taxonomic order (e.g. Passeriformes)."
+            },
+            "family_name": {
+              "type": "string",
+              "description": "Filter by taxonomic family (e.g. Columbidae)."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Maximum species to return (default 100)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_species_photos",
+        "title": "Get photos for a species",
+        "description": "Return all Coolkriss photos for a given species_identifier (base slug shared by every photo of that species).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "species_identifier": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Species identifier slug, e.g. 'common-hawk-cuckoo'."
+            }
+          },
+          "required": [
+            "species_identifier"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_ebird_wishlist",
+        "title": "List eBird wishlist species",
+        "description": "List countable species from the eBird life list that have NOT yet been photographed on Coolkriss (the wishlist). Useful for planning next shoots.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500,
+              "description": "Maximum species to return (default 100)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
