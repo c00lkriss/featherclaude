@@ -23,6 +23,8 @@ type Photo = {
   order_name: string;
   species_slug?: string;
   species_identifier?: string;
+  hero_story?: string | null;
+  hero_location?: string | null;
 };
 
 type TaxonomyOrder = {
@@ -62,7 +64,7 @@ function Hero() {
     queryFn: async (): Promise<Photo[]> => {
       const { data, error } = await supabase
         .from("photos")
-        .select("id, title, image_url, thumbnail_url, order_name, species_slug, species_identifier")
+        .select("id, title, image_url, thumbnail_url, order_name, species_slug, species_identifier, hero_story, hero_location")
         .eq("is_featured", true)
         .limit(6);
       if (error) throw error;
@@ -82,7 +84,7 @@ function Hero() {
   const [idx, setIdx] = useState(0);
 
   useEffect(() => {
-    const t = setInterval(() => setIdx((i) => (i + 1) % count), 5000);
+    const t = setInterval(() => setIdx((i) => (i + 1) % count), 8000);
     return () => clearInterval(t);
   }, [count]);
 
@@ -94,7 +96,7 @@ function Hero() {
           ? slides.map((p, i) => (
               <div
                 key={p.id}
-                className="absolute inset-0 transition-opacity duration-[1500ms] ease-in-out"
+                className="absolute inset-0 transition-opacity duration-700 ease-in-out"
                 style={{ opacity: i === idx ? 1 : 0 }}
               >
                 <div
@@ -107,7 +109,7 @@ function Hero() {
           : Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="absolute inset-0 transition-opacity duration-[1500ms] ease-in-out"
+                className="absolute inset-0 transition-opacity duration-700 ease-in-out"
                 style={{ opacity: i === idx ? 1 : 0 }}
               >
                 <div
@@ -127,6 +129,9 @@ function Hero() {
 
       {/* Dark gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background/90 pointer-events-none" />
+
+      {/* Subtle radial darken behind text for readability */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.55)_0%,rgba(0,0,0,0.15)_55%,transparent_80%)] pointer-events-none" />
 
       {/* Clickable layer to open current slide */}
       {slides && slides[idx] && (
@@ -150,6 +155,28 @@ function Hero() {
         <p className="mt-8 max-w-xl text-base font-light leading-relaxed text-muted-foreground md:text-lg animate-fade-in-slow">
           Quiet moments in the wild — a visual archive of birds across the Indian subcontinent.
         </p>
+
+        {/* Photographer branding + optional field-note for current STAR image */}
+        {slides && slides[idx] && (
+          <div key={`meta-${slides[idx].id}`} className="mt-8 flex flex-col items-center gap-2 animate-fade-in-slow">
+            <p className="font-display text-lg font-medium text-foreground md:text-xl">
+              Gokul Krishna Addanki
+            </p>
+            <p className="text-[10px] font-light uppercase tracking-[0.3em] text-muted-foreground">
+              Wildlife Photographer • Birder • Conservationist
+            </p>
+            {slides[idx].hero_story && (
+              <p className="mt-3 max-w-lg font-display text-base italic leading-relaxed text-foreground/90 md:text-lg">
+                “{slides[idx].hero_story}”
+              </p>
+            )}
+            {slides[idx].hero_location && (
+              <p className="text-[11px] font-light uppercase tracking-[0.25em] text-primary/90">
+                {slides[idx].hero_location}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Social row */}
         <div className="mt-8 flex flex-wrap items-center justify-center gap-5 animate-fade-in-slow">
@@ -185,7 +212,7 @@ function Hero() {
             to="/gallery"
             className="rounded-none border border-primary bg-primary/90 px-8 py-3 text-xs font-medium uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary"
           >
-            Enter the Gallery
+            Explore Gallery
           </Link>
           <Link
             to="/about-birds"

@@ -153,6 +153,8 @@ export type Database = {
           family_name: string
           focal_length: string | null
           genus: string | null
+          hero_location: string | null
+          hero_story: string | null
           id: string
           image_height: number | null
           image_url: string
@@ -190,6 +192,8 @@ export type Database = {
           family_name: string
           focal_length?: string | null
           genus?: string | null
+          hero_location?: string | null
+          hero_story?: string | null
           id?: string
           image_height?: number | null
           image_url: string
@@ -227,6 +231,8 @@ export type Database = {
           family_name?: string
           focal_length?: string | null
           genus?: string | null
+          hero_location?: string | null
+          hero_story?: string | null
           id?: string
           image_height?: number | null
           image_url?: string

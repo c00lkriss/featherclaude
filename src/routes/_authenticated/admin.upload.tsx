@@ -89,6 +89,8 @@ type FormState = {
   tags: string;
   is_featured: boolean;
   iucn_status: string;
+  hero_story: string;
+  hero_location: string;
 };
 
 const EMPTY: FormState = {
@@ -98,6 +100,7 @@ const EMPTY: FormState = {
   camera: "", lens: "", iso: "", aperture: "", shutter_speed: "", focal_length: "",
   location: "", latitude: "", longitude: "", region: "", country: "",
   tags: "", is_featured: false, iucn_status: "",
+  hero_story: "", hero_location: "",
 };
 
 const IUCN_OPTIONS = [
@@ -385,6 +388,8 @@ function UploadPage() {
         tags,
         is_featured: form.is_featured,
         iucn_status: form.iucn_status || null,
+        hero_story: form.hero_story.trim() || null,
+        hero_location: form.hero_location.trim() || null,
       }).select("id").single();
       if (insErr) throw insErr;
 
@@ -718,6 +723,32 @@ function UploadPage() {
               Featured photograph — show in the landing page hero carousel
             </span>
           </label>
+
+          {form.is_featured && (
+            <div className="mt-6 space-y-5 rounded-sm border border-primary/30 bg-surface/60 p-5">
+              <p className="text-[10px] font-light uppercase tracking-[0.25em] text-primary">
+                Homepage Hero — optional
+              </p>
+              <Field label={`Hero Story (${form.hero_story.length}/80)`}>
+                <input
+                  value={form.hero_story}
+                  onChange={(e) => set("hero_story", e.target.value.slice(0, 80))}
+                  maxLength={80}
+                  className={inputCls}
+                  placeholder="One memorable sentence about this moment"
+                />
+              </Field>
+              <Field label={`Hero Location (${form.hero_location.length}/40)`}>
+                <input
+                  value={form.hero_location}
+                  onChange={(e) => set("hero_location", e.target.value.slice(0, 40))}
+                  maxLength={40}
+                  className={inputCls}
+                  placeholder="Hyderabad, Telangana"
+                />
+              </Field>
+            </div>
+          )}
         </Section>
 
         {/* Submit */}
