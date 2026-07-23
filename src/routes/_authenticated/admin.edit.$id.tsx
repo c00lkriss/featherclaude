@@ -199,6 +199,8 @@ function EditPage() {
           tags,
           is_featured: form.is_featured,
           iucn_status: form.iucn_status || null,
+          hero_story: form.hero_story.trim() || null,
+          hero_location: form.hero_location.trim() || null,
         })
         .eq("id", id);
       if (upErr) throw upErr;
