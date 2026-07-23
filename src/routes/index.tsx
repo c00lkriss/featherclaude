@@ -96,7 +96,7 @@ function Hero() {
           ? slides.map((p, i) => (
               <div
                 key={p.id}
-                className="absolute inset-0 transition-opacity duration-[1500ms] ease-in-out"
+                className="absolute inset-0 transition-opacity duration-700 ease-in-out"
                 style={{ opacity: i === idx ? 1 : 0 }}
               >
                 <div
@@ -109,7 +109,7 @@ function Hero() {
           : Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="absolute inset-0 transition-opacity duration-[1500ms] ease-in-out"
+                className="absolute inset-0 transition-opacity duration-700 ease-in-out"
                 style={{ opacity: i === idx ? 1 : 0 }}
               >
                 <div
