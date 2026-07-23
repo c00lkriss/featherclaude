@@ -332,6 +332,32 @@ function EditPage() {
               Featured photograph (max {MAX_FEATURED} site-wide)
             </span>
           </label>
+
+          {form.is_featured && (
+            <div className="mt-5 space-y-5 rounded-sm border border-primary/30 bg-surface/60 p-5">
+              <p className="text-[10px] font-light uppercase tracking-[0.25em] text-primary">
+                Homepage Hero — optional
+              </p>
+              <Field label={`Hero Story (${form.hero_story.length}/80)`}>
+                <input
+                  value={form.hero_story}
+                  onChange={(e) => set("hero_story", e.target.value.slice(0, 80))}
+                  maxLength={80}
+                  className={inputCls}
+                  placeholder="One memorable sentence about this moment"
+                />
+              </Field>
+              <Field label={`Hero Location (${form.hero_location.length}/40)`}>
+                <input
+                  value={form.hero_location}
+                  onChange={(e) => set("hero_location", e.target.value.slice(0, 40))}
+                  maxLength={40}
+                  className={inputCls}
+                  placeholder="Hyderabad, Telangana"
+                />
+              </Field>
+            </div>
+          )}
         </Section>
 
         <div className="flex items-center justify-end gap-4 border-t border-border pt-8">
