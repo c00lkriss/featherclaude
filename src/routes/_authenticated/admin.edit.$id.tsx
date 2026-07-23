@@ -44,6 +44,8 @@ type Form = {
   tags: string;
   is_featured: boolean;
   iucn_status: string;
+  hero_story: string;
+  hero_location: string;
 };
 
 const inputCls =
