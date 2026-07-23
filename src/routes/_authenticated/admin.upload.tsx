@@ -89,6 +89,8 @@ type FormState = {
   tags: string;
   is_featured: boolean;
   iucn_status: string;
+  hero_story: string;
+  hero_location: string;
 };
 
 const EMPTY: FormState = {
@@ -98,6 +100,7 @@ const EMPTY: FormState = {
   camera: "", lens: "", iso: "", aperture: "", shutter_speed: "", focal_length: "",
   location: "", latitude: "", longitude: "", region: "", country: "",
   tags: "", is_featured: false, iucn_status: "",
+  hero_story: "", hero_location: "",
 };
 
 const IUCN_OPTIONS = [
