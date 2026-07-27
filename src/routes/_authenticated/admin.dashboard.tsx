@@ -5,6 +5,7 @@ import { Upload, FileText, Images, Star, ListChecks, AlertCircle, Volume2, Loade
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchXenoCantoCall } from "@/lib/xeno-canto";
+import { sizedImage, lqip } from "@/lib/image-url";
 
 export const Route = createFileRoute("/_authenticated/admin/dashboard")({
   head: () => ({
@@ -220,11 +221,14 @@ function AdminDashboard() {
             {recent.map((p) => (
               <div
                 key={p.id}
-                className="group relative aspect-square overflow-hidden rounded-sm bg-surface"
+                className="group relative aspect-square overflow-hidden rounded-sm bg-surface bg-cover bg-center"
+                style={{ backgroundImage: lqip(p.thumbnail_url || p.image_url) ? `url("${lqip(p.thumbnail_url || p.image_url)}")` : undefined }}
               >
                 <img
-                  src={p.thumbnail_url || p.image_url}
+                  src={sizedImage(p.thumbnail_url || p.image_url, { width: 400, quality: 70, resize: "cover" }) || (p.thumbnail_url || p.image_url)}
                   alt={p.title}
+                  loading="lazy"
+                  decoding="async"
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/95 to-transparent p-2 opacity-0 transition-opacity group-hover:opacity-100">

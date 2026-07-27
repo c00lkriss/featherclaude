@@ -8,6 +8,7 @@ import { BIRD_ORDERS, FAMILIES_BY_ORDER, IUCN_OPTIONS, MAX_FEATURED, slugify } f
 import { LocationField } from "@/components/LocationField";
 import { geocodeWithNominatim } from "@/lib/ebird-suggestion";
 import { lookupTaxonomyByCommonName } from "@/lib/taxonomy-lookup";
+import { sizedImage } from "@/lib/image-url";
 
 
 
@@ -228,7 +229,13 @@ function EditPage() {
       </header>
 
       {imageUrl && (
-        <img src={imageUrl} alt="" className="mb-8 max-h-[400px] w-full rounded-sm border border-border object-contain" />
+        <img
+          src={sizedImage(imageUrl, { width: 1200, quality: 78 }) || imageUrl}
+          alt=""
+          loading="eager"
+          decoding="async"
+          className="mb-8 max-h-[400px] w-full rounded-sm border border-border object-contain"
+        />
       )}
 
       <form onSubmit={handleSubmit} className="space-y-8">
