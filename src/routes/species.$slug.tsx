@@ -6,6 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { BirdCallPlayer } from "@/components/BirdCallPlayer";
 import { getWikipediaUrl } from "@/lib/wikipedia";
+import { lqip, sizedImage } from "@/lib/image-url";
+
 
 type SpeciesSearch = { p?: string };
 
@@ -153,11 +155,41 @@ function SpeciesPage() {
     >
 
       {current ? (
-        <img
-          src={current.image_url}
-          alt={current.common_name || current.species_name}
-          className="absolute inset-0 m-auto h-full w-full object-contain"
-        />
+        <>
+          {/* Blurred LQIP fills instantly under the sharp image */}
+          {lqip(current.image_url) && (
+            <div
+              aria-hidden
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `url("${lqip(current.image_url)}")`,
+                backgroundSize: "contain",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                filter: "blur(24px)",
+                transform: "scale(1.05)",
+              }}
+            />
+          )}
+          <img
+            key={current.id}
+            src={sizedImage(current.image_url, { width: 1600, quality: 82 })}
+            srcSet={`${sizedImage(current.image_url, { width: 1200, quality: 80 })} 1200w, ${sizedImage(current.image_url, { width: 1600, quality: 82 })} 1600w, ${sizedImage(current.image_url, { width: 2400, quality: 82 })} 2400w`}
+            sizes="100vw"
+            alt={current.common_name || current.species_name}
+            // @ts-expect-error lowercase attr
+            fetchpriority="high"
+            decoding="async"
+            className="absolute inset-0 m-auto h-full w-full object-contain"
+          />
+          {/* Prefetch neighbours only */}
+          {next && (
+            <link rel="prefetch" as="image" href={sizedImage(next.image_url, { width: 1600, quality: 82 })} />
+          )}
+          {prev && (
+            <link rel="prefetch" as="image" href={sizedImage(prev.image_url, { width: 1600, quality: 82 })} />
+          )}
+        </>
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
           <p className="font-display text-2xl text-muted-foreground">
@@ -165,6 +197,7 @@ function SpeciesPage() {
           </p>
         </div>
       )}
+
 
       <div
         className={cn(

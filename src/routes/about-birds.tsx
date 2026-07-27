@@ -678,8 +678,10 @@ function OrdersSection() {
                       src={cover.url}
                       alt={o.name}
                       loading="lazy"
+                      decoding="async"
                       className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
+
                   ) : (
                     <OrderSilhouette name={o.name} />
                   )}
