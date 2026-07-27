@@ -441,11 +441,15 @@ function TaxonomyPreview() {
             >
               {o.coverImage ? (
                 <img
-                  src={o.coverImage}
+                  src={sizedImage(o.coverImage, { width: 600, quality: 70 })}
+                  srcSet={`${sizedImage(o.coverImage, { width: 600, quality: 70 })} 1x, ${sizedImage(o.coverImage, { width: 1200, quality: 70 })} 2x`}
+                  sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
                   alt={o.order_name}
                   className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                   loading="lazy"
+                  decoding="async"
                 />
+
               ) : (
                 <div
                   className="absolute inset-0 transition-transform duration-700 group-hover:scale-110"
@@ -460,8 +464,11 @@ function TaxonomyPreview() {
                   {o.order_name}
                 </h3>
                 <p className="mt-1 text-xs font-light uppercase tracking-widest text-primary">
-                  {o.count} {o.count === 1 ? "Photo" : "Photos"}
+                  {o.id.startsWith("placeholder-")
+                    ? "—"
+                    : `${o.count} ${o.count === 1 ? "Photo" : "Photos"}`}
                 </p>
+
               </div>
             </Link>
           ))}
@@ -528,11 +535,15 @@ function LatestBlog() {
               <div className="relative mb-6 aspect-[4/3] overflow-hidden rounded-sm bg-background">
                 {post.cover_image_url ? (
                   <img
-                    src={post.cover_image_url}
+                    src={sizedImage(post.cover_image_url, { width: 800, quality: 75 })}
+                    srcSet={`${sizedImage(post.cover_image_url, { width: 600, quality: 75 })} 600w, ${sizedImage(post.cover_image_url, { width: 1200, quality: 75 })} 1200w`}
+                    sizes="(min-width: 768px) 33vw, 100vw"
                     alt={post.title}
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                     loading="lazy"
+                    decoding="async"
                   />
+
                 ) : (
                   <div
                     className="h-full w-full transition-transform duration-700 group-hover:scale-105"
