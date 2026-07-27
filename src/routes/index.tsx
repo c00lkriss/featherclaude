@@ -328,12 +328,15 @@ function StripRow({ photos, direction, onPick }: { photos: Photo[]; direction: "
           >
             {p.image_url ? (
               <img
-                src={p.thumbnail_url || p.image_url}
+                src={sizedImage(p.thumbnail_url || p.image_url, { width: 400, quality: 70 })}
+                srcSet={`${sizedImage(p.thumbnail_url || p.image_url, { width: 400, quality: 70 })} 1x, ${sizedImage(p.thumbnail_url || p.image_url, { width: 800, quality: 70 })} 2x`}
                 alt={p.title}
                 className="h-full w-auto object-contain transition-transform duration-500 group-hover:scale-105"
                 loading="lazy"
+                decoding="async"
               />
             ) : (
+
               <div
                 className="h-full w-40"
                 style={{
