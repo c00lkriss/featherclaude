@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, Search, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { ProgressiveImage } from "@/components/ProgressiveImage";
+
 
 const PAGE_SIZE = 20;
 
@@ -442,12 +444,16 @@ function PhotoCard({ photo }: { photo: Photo }) {
       className="group mb-3 block break-inside-avoid overflow-hidden rounded-sm bg-surface transition-transform duration-[250ms] ease-out hover:scale-[1.02]"
     >
       <div className="relative overflow-hidden">
-        <img
+        <ProgressiveImage
           src={photo.thumbnail_url || photo.image_url}
           alt={photo.common_name || photo.species_name}
+          width={480}
+          quality={72}
+          sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
           loading="lazy"
-          className="block h-auto w-full"
+          wrapperClassName="block h-auto w-full"
         />
+
         {/* Desktop hover overlay with species name */}
         <div className="pointer-events-none absolute inset-0 hidden items-end bg-gradient-to-t from-background/95 via-background/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 md:flex">
           <div className="p-5">
