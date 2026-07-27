@@ -6,6 +6,7 @@ import { Pencil, Star, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { MAX_FEATURED } from "@/lib/bird-constants";
+import { sizedImage, lqip } from "@/lib/image-url";
 
 export const Route = createFileRoute("/_authenticated/admin/manage")({
   head: () => ({
@@ -119,10 +120,15 @@ function ManagePage() {
               key={row.id}
               className="group relative overflow-hidden rounded-sm border border-border bg-surface"
             >
-              <div className="relative aspect-square">
+              <div
+                className="relative aspect-square bg-cover bg-center"
+                style={{ backgroundImage: lqip(row.thumbnail_url || row.image_url) ? `url("${lqip(row.thumbnail_url || row.image_url)}")` : undefined }}
+              >
                 <img
-                  src={row.thumbnail_url || row.image_url}
+                  src={sizedImage(row.thumbnail_url || row.image_url, { width: 500, quality: 70, resize: "cover" }) || (row.thumbnail_url || row.image_url)}
                   alt={row.title}
+                  loading="lazy"
+                  decoding="async"
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 {row.is_featured && (

@@ -9,6 +9,7 @@ import {
   geocodeWithNominatim,
 } from "@/lib/ebird-suggestion";
 import { cn } from "@/lib/utils";
+import { sizedImage } from "@/lib/image-url";
 
 export const Route = createFileRoute("/_authenticated/admin/incomplete")({
   head: () => ({
@@ -173,8 +174,10 @@ function IncompletePage() {
                   <tr className="border-t border-border/60 text-foreground">
                     <td className="px-4 py-3">
                       <img
-                        src={row.thumbnail_url || row.image_url}
+                        src={sizedImage(row.thumbnail_url || row.image_url, { width: 96, quality: 65, resize: "cover" }) || (row.thumbnail_url || row.image_url)}
                         alt={row.title}
+                        loading="lazy"
+                        decoding="async"
                         className="h-12 w-12 rounded-sm object-cover"
                       />
                     </td>
