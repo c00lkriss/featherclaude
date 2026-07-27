@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { sizedImage } from "@/lib/image-url";
+
 
 export const Route = createFileRoute("/about-birds")({
   head: () => ({
@@ -675,11 +677,15 @@ function OrdersSection() {
                 >
                   {cover ? (
                     <img
-                      src={cover.url}
+                      src={sizedImage(cover.url, { width: 600, quality: 72 })}
+                      srcSet={`${sizedImage(cover.url, { width: 600, quality: 72 })} 1x, ${sizedImage(cover.url, { width: 1200, quality: 72 })} 2x`}
                       alt={o.name}
+
                       loading="lazy"
+                      decoding="async"
                       className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
+
                   ) : (
                     <OrderSilhouette name={o.name} />
                   )}

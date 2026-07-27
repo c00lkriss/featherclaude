@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ExternalLink, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { sizedImage } from "@/lib/image-url";
+
 
 export const Route = createFileRoute("/map")({
   head: () => ({
@@ -335,7 +337,7 @@ function MapView() {
         .slice(0, 3)
         .map(
           (p) =>
-            `<img src="${p.thumbnail_url || p.image_url}" alt="" style="width:50px;height:50px;object-fit:cover;border-radius:4px;margin-right:4px;"/>`,
+            `<img loading="lazy" decoding="async" src="${sizedImage(p.thumbnail_url || p.image_url, { width: 150, quality: 65 })}" alt="" style="width:50px;height:50px;object-fit:cover;border-radius:4px;margin-right:4px;"/>`,
         )
         .join("");
       const galleryHref = `/gallery?location=${encodeURIComponent(g.name)}`;
