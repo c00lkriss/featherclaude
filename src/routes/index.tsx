@@ -2,6 +2,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { sizedImage } from "@/lib/image-url";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -93,19 +95,27 @@ function Hero() {
       {/* Slides */}
       <div className="absolute inset-0">
         {slides
-          ? slides.map((p, i) => (
-              <div
-                key={p.id}
-                className="absolute inset-0 transition-opacity duration-700 ease-in-out"
-                style={{ opacity: i === idx ? 1 : 0 }}
-              >
+          ? slides.map((p, i) => {
+              const isActive = i === idx;
+              // Only render (and download) the active slide + immediate neighbour.
+              const isNext = i === (idx + 1) % count;
+              const shouldRender = isActive || isNext;
+              return (
                 <div
-                  key={`${p.id}-${idx === i ? "on" : "off"}`}
-                  className={`absolute inset-0 bg-cover bg-center ${i === idx ? "animate-ken-burns" : ""}`}
-                  style={{ backgroundImage: `url(${p.image_url})` }}
-                />
-              </div>
-            ))
+                  key={p.id}
+                  className="absolute inset-0 transition-opacity duration-700 ease-in-out"
+                  style={{ opacity: isActive ? 1 : 0 }}
+                >
+                  {shouldRender && (
+                    <div
+                      key={`${p.id}-${isActive ? "on" : "off"}`}
+                      className={`absolute inset-0 bg-cover bg-center ${isActive ? "animate-ken-burns" : ""}`}
+                      style={{ backgroundImage: `url(${sizedImage(p.image_url, { width: 1920, quality: 80 })})` }}
+                    />
+                  )}
+                </div>
+              );
+            })
           : Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
@@ -126,6 +136,20 @@ function Hero() {
               </div>
             ))}
       </div>
+
+      {/* Hidden preload for the active slide, high priority for LCP */}
+      {slides && slides[idx] && (
+        <img
+          src={sizedImage(slides[idx].image_url, { width: 1920, quality: 80 })}
+          alt=""
+          aria-hidden
+          // @ts-expect-error lowercase attr
+          fetchpriority="high"
+          decoding="async"
+          className="hidden"
+        />
+      )}
+
 
       {/* Dark gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background/90 pointer-events-none" />
