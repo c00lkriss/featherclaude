@@ -269,7 +269,7 @@ function Footer() {
     "transition-all duration-200 hover:scale-110 hover:brightness-125";
   return (
     <footer className="w-full border-t border-border/40 bg-surface">
-      <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="mx-auto max-w-[1800px] px-6 py-8">
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
           <span className="font-display text-lg font-semibold text-foreground">
             Coolkriss
