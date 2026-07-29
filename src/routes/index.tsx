@@ -113,7 +113,7 @@ function Hero() {
                     <div
                       key={`${p.id}-${isActive ? "on" : "off"}`}
                       className={`absolute inset-0 bg-cover bg-center ${isActive ? "animate-ken-burns" : ""}`}
-                      style={{ backgroundImage: `url(${sizedImage(p.image_url, { width: 1920, quality: 80 })})` }}
+                      style={{ backgroundImage: `url(${sizedImage(p.image_url, { width: 1920, quality: 85, resize: "cover" })})` }}
                     />
                   )}
                 </div>
