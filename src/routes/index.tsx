@@ -444,14 +444,15 @@ function TaxonomyPreview() {
             >
               {o.coverImage ? (
                 <img
-                  src={sizedImage(o.coverImage, { width: 600, quality: 70 })}
-                  srcSet={`${sizedImage(o.coverImage, { width: 600, quality: 70 })} 1x, ${sizedImage(o.coverImage, { width: 1200, quality: 70 })} 2x`}
+                  src={sizedImage(o.coverImage, { width: 800, quality: 75 })}
+                  srcSet={`${sizedImage(o.coverImage, { width: 800, quality: 75 })} 1x, ${sizedImage(o.coverImage, { width: 1600, quality: 75 })} 2x`}
                   sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
                   alt={o.order_name}
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  className="absolute inset-0 h-full w-full object-contain transition-transform duration-700 group-hover:scale-105"
                   loading="lazy"
                   decoding="async"
                 />
+
 
               ) : (
                 <div
