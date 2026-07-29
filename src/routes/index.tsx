@@ -91,7 +91,10 @@ function Hero() {
   }, [count]);
 
   return (
-    <section className="relative h-screen w-full overflow-hidden -mt-16">
+    <section
+      className="relative w-full overflow-hidden -mt-16"
+      style={{ height: "100vh", minHeight: "100vh" }}
+    >
       {/* Slides */}
       <div className="absolute inset-0">
         {slides
