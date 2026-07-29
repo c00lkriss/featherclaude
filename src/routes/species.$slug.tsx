@@ -166,6 +166,7 @@ function SpeciesPage() {
                 backgroundSize: "contain",
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
+                backgroundColor: "#0a0a0a",
                 filter: "blur(24px)",
                 transform: "scale(1.05)",
               }}
@@ -173,8 +174,8 @@ function SpeciesPage() {
           )}
           <img
             key={current.id}
-            src={sizedImage(current.image_url, { width: 1600, quality: 82 })}
-            srcSet={`${sizedImage(current.image_url, { width: 1200, quality: 80 })} 1200w, ${sizedImage(current.image_url, { width: 1600, quality: 82 })} 1600w, ${sizedImage(current.image_url, { width: 2400, quality: 82 })} 2400w`}
+            src={sizedImage(current.image_url, { width: 1600, quality: 82, resize: "contain" })}
+            srcSet={`${sizedImage(current.image_url, { width: 1200, quality: 80, resize: "contain" })} 1200w, ${sizedImage(current.image_url, { width: 1600, quality: 82, resize: "contain" })} 1600w, ${sizedImage(current.image_url, { width: 2400, quality: 82, resize: "contain" })} 2400w, ${current.image_url} 3840w`}
             sizes="100vw"
             alt={current.common_name || current.species_name}
             // @ts-expect-error lowercase attr
@@ -184,10 +185,10 @@ function SpeciesPage() {
           />
           {/* Prefetch neighbours only */}
           {next && (
-            <link rel="prefetch" as="image" href={sizedImage(next.image_url, { width: 1600, quality: 82 })} />
+            <link rel="prefetch" as="image" href={sizedImage(next.image_url, { width: 1600, quality: 82, resize: "contain" })} />
           )}
           {prev && (
-            <link rel="prefetch" as="image" href={sizedImage(prev.image_url, { width: 1600, quality: 82 })} />
+            <link rel="prefetch" as="image" href={sizedImage(prev.image_url, { width: 1600, quality: 82, resize: "contain" })} />
           )}
         </>
       ) : (
@@ -197,6 +198,7 @@ function SpeciesPage() {
           </p>
         </div>
       )}
+
 
 
       <div
@@ -227,7 +229,7 @@ function SpeciesPage() {
           onClick={() => goPhoto(prev)}
           aria-label="Previous"
           className={cn(
-            "absolute left-6 top-1/2 z-20 -translate-y-1/2 rounded-full bg-background/60 p-3 text-foreground backdrop-blur-md transition-all duration-300 hover:bg-background/80 hover:text-primary",
+            "absolute left-4 top-1/2 z-20 -translate-y-1/2 flex h-14 w-14 items-center justify-center rounded-full bg-background/60 text-foreground backdrop-blur-md transition-all duration-300 hover:bg-background/80 hover:text-primary md:left-6 md:h-12 md:w-12",
             chromeVisible ? "opacity-100" : "opacity-0",
           )}
         >
@@ -239,13 +241,14 @@ function SpeciesPage() {
           onClick={() => goPhoto(next)}
           aria-label="Next"
           className={cn(
-            "absolute right-6 top-1/2 z-20 -translate-y-1/2 rounded-full bg-background/60 p-3 text-foreground backdrop-blur-md transition-all duration-300 hover:bg-background/80 hover:text-primary",
+            "absolute right-4 top-1/2 z-20 -translate-y-1/2 flex h-14 w-14 items-center justify-center rounded-full bg-background/60 text-foreground backdrop-blur-md transition-all duration-300 hover:bg-background/80 hover:text-primary md:right-6 md:h-12 md:w-12",
             chromeVisible ? "opacity-100" : "opacity-0",
           )}
         >
           <ChevronRight className="h-6 w-6" />
         </button>
       )}
+
 
       <button
         onClick={() => setInfoOpen((v) => !v)}

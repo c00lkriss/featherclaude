@@ -128,6 +128,11 @@
     border-color: var(--color-border);
   }
 
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
   html {
     scroll-behavior: smooth;
   }
@@ -144,7 +149,32 @@
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
 }
+
+@media (min-width: 1920px) {
+  html { font-size: 17px; }
+  img { image-rendering: auto; }
+}
+@media (min-width: 2560px) {
+  html { font-size: 18px; }
+}
+@media (min-width: 3840px) {
+  html { font-size: 20px; }
+}
+
+@media (max-width: 768px) {
+  button, a {
+    min-height: 44px;
+  }
+}
+
 
 @keyframes ken-burns {
   0% { transform: scale(1) translate(0, 0); }

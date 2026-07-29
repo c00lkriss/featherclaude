@@ -52,7 +52,7 @@ export function GalleryView({ order, family, q = "", location }: Props) {
   }, [searchInput, q, navigate]);
 
   return (
-    <div className="mx-auto flex w-full max-w-[1600px] gap-10 px-6 py-12 lg:py-16">
+    <div className="mx-auto flex w-full max-w-[2000px] gap-10 px-6 py-12 lg:py-16">
       <TaxonomySidebar activeOrder={order} activeFamily={family} />
       <main className="min-w-0 flex-1">
         <header className="mb-10">
@@ -409,7 +409,7 @@ function PhotoGrid({
           Showing {total ?? photos.length} result{(total ?? photos.length) === 1 ? "" : "s"} for &ldquo;{q}&rdquo;
         </p>
       )}
-      <div className="columns-1 gap-3 md:columns-2 xl:columns-3">
+      <div className="columns-1 gap-3 sm:columns-2 lg:columns-3 2xl:columns-4">
         {photos.map((p) => (
           <PhotoCard key={p.id} photo={p} />
         ))}
@@ -441,18 +441,21 @@ function PhotoCard({ photo }: { photo: Photo }) {
           sessionStorage.setItem("gallery:lastPath", window.location.pathname + window.location.search);
         }
       }}
-      className="group mb-3 block break-inside-avoid overflow-hidden rounded-sm bg-surface transition-transform duration-[250ms] ease-out hover:scale-[1.02]"
+      className="group mb-3 block break-inside-avoid overflow-hidden rounded-sm transition-transform duration-[250ms] ease-out hover:scale-[1.02]"
+      style={{ backgroundColor: "#111111" }}
     >
       <div className="relative overflow-hidden">
         <ProgressiveImage
           src={photo.thumbnail_url || photo.image_url}
           alt={photo.common_name || photo.species_name}
-          width={480}
-          quality={72}
-          sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
+          width={800}
+          quality={75}
+          resize="contain"
+          sizes="(min-width: 1536px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           loading="lazy"
           wrapperClassName="block h-auto w-full"
         />
+
 
         {/* Desktop hover overlay with species name */}
         <div className="pointer-events-none absolute inset-0 hidden items-end bg-gradient-to-t from-background/95 via-background/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 md:flex">
