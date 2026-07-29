@@ -47,7 +47,15 @@ export function ProgressiveImage({
   const imgRef = useRef<HTMLImageElement | null>(null);
   const placeholder = lqip(src);
   const primary = sizedImage(src, { width, quality, resize });
-  const widths = srcSetWidths ?? Array.from(new Set([Math.round(width / 2), width, width * 2])).filter((w) => w > 0);
+  const widths =
+    srcSetWidths ??
+    Array.from(
+      new Set([
+        Math.round(width / 2), // mobile
+        width, // tablet / base
+        Math.min(width * 2, 2400), // HD / 2K, capped
+      ]),
+    ).filter((w) => w > 0);
   const srcSet = sizedSrcSet(src, widths, quality);
 
   // Handle images already in cache (onLoad won't fire).
@@ -63,10 +71,12 @@ export function ProgressiveImage({
         placeholder
           ? {
               backgroundImage: `url("${placeholder}")`,
-              backgroundSize: "cover",
+              backgroundSize: "contain",
               backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+              backgroundColor: "#111111",
             }
-          : undefined
+          : { backgroundColor: "#111111" }
       }
     >
       <img
@@ -94,3 +104,4 @@ export function ProgressiveImage({
     </span>
   );
 }
+
