@@ -150,10 +150,19 @@ function RootComponent() {
   );
 }
 
+const NAV_LINKS = [
+  { to: "/gallery", label: "Gallery" },
+  { to: "/map", label: "Map" },
+  { to: "/blog", label: "Blog" },
+  { to: "/about-birds", label: "Birds of India" },
+  { to: "/about-birds", label: "About" }, // temp: /about page not built yet
+] as const;
+
 function Header() {
   const { data: settings } = useSiteSettings();
   const logoUrl = settings?.logo_url || "";
   const [logoFailed, setLogoFailed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Apply favicon override from site_settings when present
   useEffect(() => {
@@ -169,9 +178,19 @@ function Header() {
     link.href = fav;
   }, [settings?.favicon_url]);
 
+  // Lock body scroll while mobile menu open
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const prev = document.body.style.overflow;
+    if (mobileMenuOpen) document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [mobileMenuOpen]);
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+      <div className="mx-auto flex h-16 max-w-[1800px] items-center justify-between px-6">
         <Link to="/" className="flex items-center gap-2">
           {logoUrl && !logoFailed ? (
             <img
@@ -188,51 +207,61 @@ function Header() {
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
-          <Link
-            to="/gallery"
-            activeProps={{ className: "text-primary" }}
-            inactiveProps={{ className: "text-muted-foreground hover:text-foreground" }}
-            className="text-sm font-medium transition-colors"
-          >
-            Gallery
-          </Link>
-          <Link
-            to="/map"
-            activeProps={{ className: "text-primary" }}
-            inactiveProps={{ className: "text-muted-foreground hover:text-foreground" }}
-            className="text-sm font-medium transition-colors"
-          >
-            Map
-          </Link>
-          <Link
-            to="/blog"
-            activeProps={{ className: "text-primary" }}
-            inactiveProps={{ className: "text-muted-foreground hover:text-foreground" }}
-            className="text-sm font-medium transition-colors"
-          >
-            Blog
-          </Link>
-          <Link
-            to="/about-birds"
-            activeProps={{ className: "text-primary" }}
-            inactiveProps={{ className: "text-muted-foreground hover:text-foreground" }}
-            className="text-sm font-medium transition-colors"
-          >
-            Birds of India
-          </Link>
-          <Link
-            to="/about-birds"
-            activeProps={{ className: "text-primary" }}
-            inactiveProps={{ className: "text-muted-foreground hover:text-foreground" }}
-            className="text-sm font-medium transition-colors"
-          >
-            About
-          </Link>
+          {NAV_LINKS.map((l) => (
+            <Link
+              key={l.label}
+              to={l.to}
+              activeProps={{ className: "text-primary" }}
+              inactiveProps={{ className: "text-muted-foreground hover:text-foreground" }}
+              className="text-sm font-medium transition-colors"
+            >
+              {l.label}
+            </Link>
+          ))}
         </nav>
+
+        {/* Mobile hamburger */}
+        <button
+          onClick={() => setMobileMenuOpen((v) => !v)}
+          className="relative z-[60] flex h-11 w-11 items-center justify-center md:hidden"
+          aria-label="Toggle menu"
+          aria-expanded={mobileMenuOpen}
+          style={{ color: "#c9a84c" }}
+        >
+          {mobileMenuOpen ? (
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          ) : (
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="7" x2="21" y2="7" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="17" x2="21" y2="17" />
+            </svg>
+          )}
+        </button>
       </div>
+
+      {/* Mobile menu overlay */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 top-16 z-40 flex flex-col items-center justify-start gap-8 overflow-y-auto bg-background/98 px-6 py-16 backdrop-blur-xl md:hidden">
+          {NAV_LINKS.map((l) => (
+            <Link
+              key={l.label}
+              to={l.to}
+              onClick={() => setMobileMenuOpen(false)}
+              className="font-display text-3xl font-semibold text-foreground transition-colors hover:text-primary"
+            >
+              {l.label}
+            </Link>
+          ))}
+        </div>
+      )}
     </header>
   );
 }
+
 
 
 function Footer() {
