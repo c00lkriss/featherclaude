@@ -113,7 +113,7 @@ function Hero() {
                     <div
                       key={`${p.id}-${isActive ? "on" : "off"}`}
                       className={`absolute inset-0 bg-cover bg-center ${isActive ? "animate-ken-burns" : ""}`}
-                      style={{ backgroundImage: `url(${sizedImage(p.image_url, { width: 1920, quality: 80 })})` }}
+                      style={{ backgroundImage: `url(${sizedImage(p.image_url, { width: 1920, quality: 85, resize: "cover" })})` }}
                     />
                   )}
                 </div>
@@ -143,7 +143,7 @@ function Hero() {
       {/* Hidden preload for the active slide, high priority for LCP */}
       {slides && slides[idx] && (
         <img
-          src={sizedImage(slides[idx].image_url, { width: 1920, quality: 80 })}
+          src={sizedImage(slides[idx].image_url, { width: 1920, quality: 85, resize: "cover" })}
           alt=""
           aria-hidden
           // @ts-expect-error lowercase attr
@@ -176,9 +176,10 @@ function Hero() {
         <p className="mb-6 text-xs font-light uppercase tracking-[0.4em] text-primary animate-fade-in-slow">
           Bird Photography · India
         </p>
-        <h1 className="font-display text-6xl font-bold leading-none text-foreground md:text-8xl lg:text-9xl animate-fade-in-slow">
+        <h1 className="font-display text-6xl font-bold leading-none text-foreground md:text-8xl lg:text-9xl 2xl:text-[10rem] animate-fade-in-slow">
           Coolkriss
         </h1>
+
         <p className="mt-8 max-w-xl text-base font-light leading-relaxed text-muted-foreground md:text-lg animate-fade-in-slow">
           Quiet moments in the wild — a visual archive of birds across the Indian subcontinent.
         </p>
@@ -326,18 +327,20 @@ function StripRow({ photos, direction, onPick }: { photos: Photo[]; direction: "
             key={`${p.id}-${i}`}
             onClick={() => onPick(p)}
             disabled={!(p.species_identifier || p.species_slug)}
-            className="group relative flex h-[220px] w-auto flex-shrink-0 items-center justify-center overflow-hidden rounded-sm shadow-md transition-all duration-300 hover:z-10 hover:-translate-y-2 hover:scale-105 hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.7)] disabled:cursor-default"
+            className="group relative flex h-[22vh] min-h-[160px] max-h-[280px] w-auto flex-shrink-0 items-center justify-center overflow-hidden rounded-sm shadow-md transition-all duration-300 hover:z-10 hover:-translate-y-2 hover:scale-105 hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.7)] disabled:cursor-default"
             style={{ backgroundColor: "#0a0a0a" }}
           >
             {p.image_url ? (
               <img
-                src={sizedImage(p.thumbnail_url || p.image_url, { width: 400, quality: 70 })}
-                srcSet={`${sizedImage(p.thumbnail_url || p.image_url, { width: 400, quality: 70 })} 1x, ${sizedImage(p.thumbnail_url || p.image_url, { width: 800, quality: 70 })} 2x`}
+                src={sizedImage(p.thumbnail_url || p.image_url, { height: 280, quality: 72, resize: "contain" })}
+                srcSet={`${sizedImage(p.thumbnail_url || p.image_url, { height: 220, quality: 72, resize: "contain" })} 480w, ${sizedImage(p.thumbnail_url || p.image_url, { height: 280, quality: 75, resize: "contain" })} 800w, ${p.thumbnail_url || p.image_url} 1600w`}
+                sizes="(min-width: 1024px) 20vw, 40vw"
                 alt={p.title}
                 className="h-full w-auto object-contain transition-transform duration-500 group-hover:scale-105"
                 loading="lazy"
                 decoding="async"
               />
+
             ) : (
 
               <div
