@@ -444,9 +444,9 @@ function PhotoCard({ photo }: { photo: Photo }) {
       className="group mb-3 block break-inside-avoid overflow-hidden rounded-sm transition-transform duration-[250ms] ease-out hover:scale-[1.02]"
       style={{ backgroundColor: "#111111" }}
     >
-      <div className="relative overflow-hidden">
+      <div className="relative">
         <ProgressiveImage
-          src={photo.thumbnail_url || photo.image_url}
+          src={photo.image_url}
           alt={photo.common_name || photo.species_name}
           width={800}
           quality={75}

@@ -153,14 +153,12 @@
   img {
     max-width: 100%;
     height: auto;
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
+    image-rendering: auto;
   }
 }
 
 @media (min-width: 1920px) {
   html { font-size: 17px; }
-  img { image-rendering: auto; }
 }
 @media (min-width: 2560px) {
   html { font-size: 18px; }

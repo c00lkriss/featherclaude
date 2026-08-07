@@ -121,15 +121,15 @@ function ManagePage() {
               className="group relative overflow-hidden rounded-sm border border-border bg-surface"
             >
               <div
-                className="relative aspect-square bg-cover bg-center"
+                className="relative bg-surface"
                 style={{ backgroundImage: lqip(row.thumbnail_url || row.image_url) ? `url("${lqip(row.thumbnail_url || row.image_url)}")` : undefined }}
               >
                 <img
-                  src={sizedImage(row.thumbnail_url || row.image_url, { width: 500, quality: 70, resize: "cover" }) || (row.thumbnail_url || row.image_url)}
+                  src={sizedImage(row.image_url, { width: 500, quality: 72, resize: "contain" }) || row.image_url}
                   alt={row.title}
                   loading="lazy"
                   decoding="async"
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="w-full h-auto object-contain transition-transform duration-500 group-hover:scale-105"
                 />
                 {row.is_featured && (
                   <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-background/85 px-2 py-1 text-[10px] font-medium uppercase tracking-wider text-amber-400 backdrop-blur-md">
