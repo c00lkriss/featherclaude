@@ -221,15 +221,15 @@ function AdminDashboard() {
             {recent.map((p) => (
               <div
                 key={p.id}
-                className="group relative aspect-square overflow-hidden rounded-sm bg-surface bg-cover bg-center"
+                className="group relative overflow-hidden rounded-sm bg-surface"
                 style={{ backgroundImage: lqip(p.thumbnail_url || p.image_url) ? `url("${lqip(p.thumbnail_url || p.image_url)}")` : undefined }}
               >
                 <img
-                  src={sizedImage(p.thumbnail_url || p.image_url, { width: 400, quality: 70, resize: "cover" }) || (p.thumbnail_url || p.image_url)}
+                  src={sizedImage(p.image_url, { width: 400, quality: 72, resize: "contain" }) || p.image_url}
                   alt={p.title}
                   loading="lazy"
                   decoding="async"
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="w-full h-auto object-contain transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/95 to-transparent p-2 opacity-0 transition-opacity group-hover:opacity-100">
                   <p className="truncate text-[10px] font-light text-foreground">

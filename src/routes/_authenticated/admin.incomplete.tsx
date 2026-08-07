@@ -174,11 +174,12 @@ function IncompletePage() {
                   <tr className="border-t border-border/60 text-foreground">
                     <td className="px-4 py-3">
                       <img
-                        src={sizedImage(row.thumbnail_url || row.image_url, { width: 96, quality: 65, resize: "cover" }) || (row.thumbnail_url || row.image_url)}
+                        src={sizedImage(row.image_url, { width: 96, quality: 65, resize: "contain" }) || row.image_url}
                         alt={row.title}
                         loading="lazy"
                         decoding="async"
-                        className="h-12 w-12 rounded-sm object-cover"
+                        className="h-12 w-12 rounded-sm object-contain"
+                        style={{ backgroundColor: "#111111" }}
                       />
                     </td>
                     <td className="px-4 py-3">

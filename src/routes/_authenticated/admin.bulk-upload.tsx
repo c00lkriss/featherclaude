@@ -542,8 +542,8 @@ function QueueCard({
   const canEdit = item.status !== "saving" && item.status !== "saved";
   return (
     <div className="group relative overflow-hidden rounded-sm border border-border bg-surface">
-      <div className="relative aspect-square">
-        <img src={item.preview} alt="" className="h-full w-full object-cover" />
+      <div className="relative flex min-h-[160px] items-center justify-center" style={{ backgroundColor: "#111111" }}>
+        <img src={item.preview} alt="" className="h-auto w-full object-contain" />
         {canEdit && (
           <button
             type="button"
@@ -667,7 +667,7 @@ function EditDrawer({
           </button>
         </div>
 
-        <img src={draft.preview} alt="" className="mb-4 max-h-56 w-full rounded-sm object-cover" />
+        <img src={draft.preview} alt="" className="mb-4 max-h-56 w-full rounded-sm object-contain" style={{ backgroundColor: "#111111" }} />
 
         <div className="space-y-3 text-sm">
           <Pair label="Common name">
