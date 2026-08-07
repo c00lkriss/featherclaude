@@ -252,9 +252,21 @@ function BulkUploadPage() {
       toast.error("No cards are ready to save.");
       return;
     }
+    const { count: currentFeatured } = await supabase
+      .from("photos")
+      .select("id", { count: "exact", head: true })
+      .eq("is_featured", true);
+    let featuredSavedInBatch = 0;
     for (const item of ready) {
       updateItem(item.id, { status: "saving" });
       try {
+        const canFeature =
+          !!item.is_featured && (currentFeatured ?? 0) + featuredSavedInBatch < 5;
+        if (item.is_featured && !canFeature) {
+          toast.warning(`"${item.common_name || item.title}" was not added to hero — limit of 5 reached.`);
+        }
+        if (canFeature) featuredSavedInBatch++;
+
         const meta = await readImageMeta(item.file);
 
         // Auto-geocode location if user typed one but no lat/long
