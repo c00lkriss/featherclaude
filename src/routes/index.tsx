@@ -112,10 +112,21 @@ function Hero() {
                   {shouldRender && (
                     <div
                       key={`${p.id}-${isActive ? "on" : "off"}`}
-                      className={`absolute inset-0 bg-cover bg-center ${isActive ? "animate-ken-burns" : ""}`}
-                      style={{ backgroundImage: `url(${sizedImage(p.image_url, { width: 1920, quality: 85, resize: "cover" })})` }}
-                    />
+                      className="absolute inset-0 flex items-center justify-center"
+                      style={{ backgroundColor: "#0a0a0a" }}
+                    >
+                      <img
+                        src={sizedImage(p.image_url, { width: 1920, quality: 85, resize: "contain" })}
+                        srcSet={`${sizedImage(p.image_url, { width: 1280, quality: 85, resize: "contain" })} 1280w, ${sizedImage(p.image_url, { width: 1920, quality: 85, resize: "contain" })} 1920w, ${p.image_url} 3840w`}
+                        sizes="100vw"
+                        alt={p.title || ""}
+                        className={`h-full w-full object-contain ${isActive ? "animate-ken-burns" : ""}`}
+                        loading={i === 0 ? "eager" : "lazy"}
+                        decoding="async"
+                      />
+                    </div>
                   )}
+
                 </div>
               );
             })
@@ -143,7 +154,7 @@ function Hero() {
       {/* Hidden preload for the active slide, high priority for LCP */}
       {slides && slides[idx] && (
         <img
-          src={sizedImage(slides[idx].image_url, { width: 1920, quality: 85, resize: "cover" })}
+          src={sizedImage(slides[idx].image_url, { width: 1920, quality: 85, resize: "contain" })}
           alt=""
           aria-hidden
           // @ts-expect-error lowercase attr
