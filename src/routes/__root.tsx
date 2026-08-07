@@ -82,6 +82,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "Coolkriss — Birds of India" },
       { name: "description", content: "Award-winning bird photography from India. Explore the beauty of avian life through stunning visual stories." },
       { name: "author", content: "Coolkriss" },
+      { name: "google-site-verification", content: "MimQJxeKYRmEOpiEpYuSfDiPm8HrTCGAsT2B709IHWA" },
       { property: "og:title", content: "Coolkriss — Birds of India" },
       { property: "og:description", content: "Award-winning bird photography from India. Explore the beauty of avian life through stunning visual stories." },
       { property: "og:type", content: "website" },
