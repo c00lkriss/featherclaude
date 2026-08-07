@@ -154,7 +154,7 @@ function Hero() {
       {/* Hidden preload for the active slide, high priority for LCP */}
       {slides && slides[idx] && (
         <img
-          src={sizedImage(slides[idx].image_url, { width: 1920, quality: 85, resize: "cover" })}
+          src={sizedImage(slides[idx].image_url, { width: 1920, quality: 85, resize: "contain" })}
           alt=""
           aria-hidden
           // @ts-expect-error lowercase attr

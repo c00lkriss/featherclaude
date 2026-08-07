@@ -134,6 +134,21 @@ function UploadPage() {
   const [aiLoading, setAiLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { data: featuredPhotos, refetch: refetchFeatured } = useQuery({
+    queryKey: ["admin", "featured-photos-upload"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("photos")
+        .select("id, common_name, title, image_url, thumbnail_url")
+        .eq("is_featured", true)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const featuredCount = featuredPhotos?.length ?? 0;
+  const atLimit = featuredCount >= MAX_FEATURED;
+
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
@@ -322,6 +337,18 @@ function UploadPage() {
 
     setSubmitting(true);
     try {
+      if (form.is_featured) {
+        const { count } = await supabase
+          .from("photos")
+          .select("id", { count: "exact", head: true })
+          .eq("is_featured", true);
+        if ((count ?? 0) >= MAX_FEATURED) {
+          toast.error("Hero limit still reached. Please remove one featured photo before saving.");
+          setSubmitting(false);
+          return;
+        }
+      }
+
       // Compute aspect ratio metadata
       const meta = await readImageMeta(file);
 
@@ -719,12 +746,62 @@ function UploadPage() {
               className="h-4 w-4 accent-[--color-primary]"
             />
             <Star className={cn("h-4 w-4", form.is_featured ? "text-primary" : "text-muted-foreground")} />
-            <span className="text-sm font-light text-foreground">
+            <span className="flex-1 text-sm font-light text-foreground">
               Featured photograph — show in the landing page hero carousel
+            </span>
+            <span className={cn("text-xs font-light tabular-nums", atLimit ? "text-destructive" : "text-muted-foreground")}>
+              {featuredCount}/{MAX_FEATURED}
             </span>
           </label>
 
-          {form.is_featured && (
+          {form.is_featured && atLimit && (
+            <div className="mt-3 rounded-sm border border-destructive/40 bg-destructive/5 p-4">
+              <p className="mb-3 text-xs font-medium text-destructive">
+                Hero limit reached ({MAX_FEATURED}/{MAX_FEATURED}). Unfeature one photo below to add this one.
+              </p>
+              <div className="space-y-2">
+                {(featuredPhotos ?? []).map((fp) => (
+                  <div
+                    key={fp.id}
+                    className="flex items-center gap-3 rounded-sm border border-border bg-surface p-2"
+                  >
+                    <img
+                      src={sizedImage(fp.image_url, { width: 80, quality: 70, resize: "contain" })}
+                      alt={fp.common_name || fp.title}
+                      className="h-10 w-14 flex-shrink-0 rounded-sm object-contain"
+                      style={{ backgroundColor: "#111" }}
+                    />
+                    <span className="flex-1 truncate text-sm font-light text-foreground">
+                      {fp.common_name || fp.title}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const { error } = await supabase
+                          .from("photos")
+                          .update({ is_featured: false })
+                          .eq("id", fp.id);
+                        if (error) {
+                          toast.error("Failed to unfeature photo");
+                        } else {
+                          toast.success(`"${fp.common_name || fp.title}" removed from hero`);
+                          refetchFeatured();
+                        }
+                      }}
+                      className="flex-shrink-0 rounded-sm border border-border px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-destructive hover:text-destructive"
+                    >
+                      Remove from hero
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-3 text-[10px] font-light text-muted-foreground">
+                After removing one, this photo will be saved as featured.
+              </p>
+            </div>
+          )}
+
+          {form.is_featured && !atLimit && (
             <div className="mt-6 space-y-5 rounded-sm border border-primary/30 bg-surface/60 p-5">
               <p className="text-[10px] font-light uppercase tracking-[0.25em] text-primary">
                 Homepage Hero — optional
