@@ -332,8 +332,8 @@ function StripRow({ photos, direction, onPick }: { photos: Photo[]; direction: "
           >
             {p.image_url ? (
               <img
-                src={sizedImage(p.thumbnail_url || p.image_url, { height: 280, quality: 72, resize: "contain" })}
-                srcSet={`${sizedImage(p.thumbnail_url || p.image_url, { height: 220, quality: 72, resize: "contain" })} 480w, ${sizedImage(p.thumbnail_url || p.image_url, { height: 280, quality: 75, resize: "contain" })} 800w, ${p.thumbnail_url || p.image_url} 1600w`}
+                src={sizedImage(p.image_url, { height: 280, quality: 72, resize: "contain" })}
+                srcSet={`${sizedImage(p.image_url, { height: 220, quality: 72, resize: "contain" })} 480w, ${sizedImage(p.image_url, { height: 280, quality: 75, resize: "contain" })} 800w, ${p.image_url} 1600w`}
                 sizes="(min-width: 1024px) 20vw, 40vw"
                 alt={p.title}
                 className="h-full w-auto object-contain transition-transform duration-500 group-hover:scale-105"
@@ -443,7 +443,7 @@ function TaxonomyPreview() {
               key={o.id}
               to="/gallery/$order"
               params={{ order: o.order_name }}
-              className="group relative block aspect-[3/4] overflow-hidden rounded-sm bg-surface"
+              className="group relative block overflow-hidden rounded-sm bg-surface"
             >
               {o.coverImage ? (
                 <img
@@ -451,7 +451,7 @@ function TaxonomyPreview() {
                   srcSet={`${sizedImage(o.coverImage, { width: 800, quality: 75 })} 1x, ${sizedImage(o.coverImage, { width: 1600, quality: 75 })} 2x`}
                   sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
                   alt={o.order_name}
-                  className="absolute inset-0 h-full w-full object-contain transition-transform duration-700 group-hover:scale-105"
+                  className="w-full h-auto object-contain transition-transform duration-700 group-hover:scale-105"
                   loading="lazy"
                   decoding="async"
                 />
@@ -459,14 +459,14 @@ function TaxonomyPreview() {
 
               ) : (
                 <div
-                  className="absolute inset-0 transition-transform duration-700 group-hover:scale-110"
+                  className="aspect-[4/3] w-full transition-transform duration-700 group-hover:scale-110"
                   style={{
                     background: `linear-gradient(${135 + i * 41}deg, oklch(0.22 0.06 ${(i * 60) % 360}), oklch(0.08 0.02 ${(i * 90) % 360}))`,
                   }}
                 />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/30 to-transparent transition-opacity duration-500 group-hover:opacity-70" />
-              <div className="absolute inset-x-0 bottom-0 p-5">
+              <div className="absolute inset-x-0 bottom-0 min-h-[100px] bg-gradient-to-t from-background/95 via-background/50 to-transparent p-5">ic
                 <h3 className="font-display text-xl font-semibold text-foreground">
                   {o.order_name}
                 </h3>
