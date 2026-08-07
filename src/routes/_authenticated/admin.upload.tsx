@@ -1,5 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { sizedImage } from "@/lib/image-url";
+
+const MAX_FEATURED = 5;
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import exifr from "exifr";
