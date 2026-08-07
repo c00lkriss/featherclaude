@@ -466,7 +466,7 @@ function TaxonomyPreview() {
                 />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/30 to-transparent transition-opacity duration-500 group-hover:opacity-70" />
-              <div className="absolute inset-x-0 bottom-0 min-h-[100px] bg-gradient-to-t from-background/95 via-background/50 to-transparent p-5">ic
+              <div className="absolute inset-x-0 bottom-0 min-h-[100px] bg-gradient-to-t from-background/95 via-background/50 to-transparent p-5">
                 <h3 className="font-display text-xl font-semibold text-foreground">
                   {o.order_name}
                 </h3>
