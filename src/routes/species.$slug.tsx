@@ -147,6 +147,113 @@ function SpeciesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prev, next]);
 
+  const { data: settings } = useSiteSettings();
+  const logoUrl = settings?.logo_url || "";
+  const [downloadOpen, setDownloadOpen] = useState(false);
+  const [downloadAgreed, setDownloadAgreed] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+
+  const { data: nearbyPhotos } = useQuery({
+    queryKey: ["nearby-species", current?.order_name, current?.species_identifier],
+    enabled: !!current?.order_name,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("photos")
+        .select("id, common_name, species_name, species_identifier, image_url, order_name")
+        .eq("order_name", current!.order_name)
+        .neq("species_identifier", current!.species_identifier)
+        .order("created_at", { ascending: false })
+        .limit(24);
+      const seen = new Set<string>();
+      return (data ?? [])
+        .filter((p: any) => {
+          if (seen.has(p.species_identifier)) return false;
+          seen.add(p.species_identifier);
+          return true;
+        })
+        .slice(0, 12);
+    },
+  });
+
+  async function handleDownload() {
+    if (!current) return;
+    setDownloading(true);
+    try {
+      const photoResp = await fetch(current.image_url);
+      const photoBlob = await photoResp.blob();
+      const photoBitmap = await createImageBitmap(photoBlob);
+
+      const canvas = document.createElement("canvas");
+      let w = photoBitmap.width;
+      let h = photoBitmap.height;
+      const maxDim = 1920;
+      if (w > maxDim || h > maxDim) {
+        const scale = maxDim / Math.max(w, h);
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
+      }
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(photoBitmap, 0, 0, w, h);
+
+      if (logoUrl) {
+        try {
+          const logoResp = await fetch(logoUrl);
+          const logoBlob = await logoResp.blob();
+          const logoBitmap = await createImageBitmap(logoBlob);
+          const logoW = Math.round(w * 0.18);
+          const logoH = Math.round((logoW / logoBitmap.width) * logoBitmap.height);
+          const padX = Math.round(w * 0.025);
+          const padY = Math.round(h * 0.025);
+          const logoX = w - logoW - padX;
+          const logoY = h - logoH - padY;
+          const backing = 14;
+          ctx.save();
+          ctx.fillStyle = "rgba(0,0,0,0.32)";
+          ctx.beginPath();
+          if ((ctx as any).roundRect) {
+            (ctx as any).roundRect(logoX - backing, logoY - backing, logoW + backing * 2, logoH + backing * 2, 8);
+          } else {
+            ctx.rect(logoX - backing, logoY - backing, logoW + backing * 2, logoH + backing * 2);
+          }
+          ctx.fill();
+          ctx.globalAlpha = 0.72;
+          ctx.drawImage(logoBitmap, logoX, logoY, logoW, logoH);
+          ctx.restore();
+        } catch {
+          addTextWatermark(ctx, w, h, current.common_name);
+        }
+      } else {
+        addTextWatermark(ctx, w, h, current.common_name);
+      }
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) return;
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          const slug2 = (current.common_name || current.species_name)
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "");
+          a.download = `${slug2}-coolkriss.jpg`;
+          a.click();
+          URL.revokeObjectURL(url);
+          setDownloadOpen(false);
+          setDownloadAgreed(false);
+        },
+        "image/jpeg",
+        0.9,
+      );
+    } catch {
+      alert("Download failed. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   return (
     <div
       className="fixed inset-0 z-[60]"
