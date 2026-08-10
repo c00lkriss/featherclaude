@@ -654,3 +654,23 @@ function InfoPanel({ photo }: { photo: Photo }) {
     </div>
   );
 }
+
+function addTextWatermark(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  name: string | null,
+) {
+  const fontSize = Math.max(16, Math.round(w * 0.018));
+  ctx.font = `${fontSize}px Inter, sans-serif`;
+  const text = "© coolkriss.in" + (name ? " · " + name : "");
+  const metrics = ctx.measureText(text);
+  const padX = Math.round(w * 0.025);
+  const padY = Math.round(h * 0.025);
+  const tx = w - metrics.width - padX - 12;
+  const ty = h - padY - 12;
+  ctx.fillStyle = "rgba(0,0,0,0.38)";
+  ctx.fillRect(tx - 8, ty - fontSize, metrics.width + 16, fontSize + 14);
+  ctx.fillStyle = "rgba(255,255,255,0.68)";
+  ctx.fillText(text, tx, ty);
+}
