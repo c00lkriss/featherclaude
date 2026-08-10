@@ -1,12 +1,13 @@
-import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouter, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Info, MapPin, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, MapPin, X, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { BirdCallPlayer } from "@/components/BirdCallPlayer";
 import { getWikipediaUrl } from "@/lib/wikipedia";
 import { lqip, sizedImage } from "@/lib/image-url";
+import { useSiteSettings } from "@/lib/site-settings";
 
 
 type SpeciesSearch = { p?: string };
@@ -146,6 +147,113 @@ function SpeciesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prev, next]);
 
+  const { data: settings } = useSiteSettings();
+  const logoUrl = settings?.logo_url || "";
+  const [downloadOpen, setDownloadOpen] = useState(false);
+  const [downloadAgreed, setDownloadAgreed] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+
+  const { data: nearbyPhotos } = useQuery({
+    queryKey: ["nearby-species", current?.order_name, current?.species_identifier],
+    enabled: !!current?.order_name,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("photos")
+        .select("id, common_name, species_name, species_identifier, image_url, order_name")
+        .eq("order_name", current!.order_name)
+        .neq("species_identifier", current!.species_identifier)
+        .order("created_at", { ascending: false })
+        .limit(24);
+      const seen = new Set<string>();
+      return (data ?? [])
+        .filter((p: any) => {
+          if (seen.has(p.species_identifier)) return false;
+          seen.add(p.species_identifier);
+          return true;
+        })
+        .slice(0, 12);
+    },
+  });
+
+  async function handleDownload() {
+    if (!current) return;
+    setDownloading(true);
+    try {
+      const photoResp = await fetch(current.image_url);
+      const photoBlob = await photoResp.blob();
+      const photoBitmap = await createImageBitmap(photoBlob);
+
+      const canvas = document.createElement("canvas");
+      let w = photoBitmap.width;
+      let h = photoBitmap.height;
+      const maxDim = 1920;
+      if (w > maxDim || h > maxDim) {
+        const scale = maxDim / Math.max(w, h);
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
+      }
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(photoBitmap, 0, 0, w, h);
+
+      if (logoUrl) {
+        try {
+          const logoResp = await fetch(logoUrl);
+          const logoBlob = await logoResp.blob();
+          const logoBitmap = await createImageBitmap(logoBlob);
+          const logoW = Math.round(w * 0.18);
+          const logoH = Math.round((logoW / logoBitmap.width) * logoBitmap.height);
+          const padX = Math.round(w * 0.025);
+          const padY = Math.round(h * 0.025);
+          const logoX = w - logoW - padX;
+          const logoY = h - logoH - padY;
+          const backing = 14;
+          ctx.save();
+          ctx.fillStyle = "rgba(0,0,0,0.32)";
+          ctx.beginPath();
+          if ((ctx as any).roundRect) {
+            (ctx as any).roundRect(logoX - backing, logoY - backing, logoW + backing * 2, logoH + backing * 2, 8);
+          } else {
+            ctx.rect(logoX - backing, logoY - backing, logoW + backing * 2, logoH + backing * 2);
+          }
+          ctx.fill();
+          ctx.globalAlpha = 0.72;
+          ctx.drawImage(logoBitmap, logoX, logoY, logoW, logoH);
+          ctx.restore();
+        } catch {
+          addTextWatermark(ctx, w, h, current.common_name);
+        }
+      } else {
+        addTextWatermark(ctx, w, h, current.common_name);
+      }
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) return;
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          const slug2 = (current.common_name || current.species_name)
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "");
+          a.download = `${slug2}-coolkriss.jpg`;
+          a.click();
+          URL.revokeObjectURL(url);
+          setDownloadOpen(false);
+          setDownloadAgreed(false);
+        },
+        "image/jpeg",
+        0.9,
+      );
+    } catch {
+      alert("Download failed. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   return (
     <div
       className="fixed inset-0 z-[60]"
@@ -283,6 +391,28 @@ function SpeciesPage() {
       )}
 
       {current && (
+        <button
+          onClick={() => {
+            setDownloadOpen(true);
+            setDownloadAgreed(false);
+          }}
+          aria-label="Download wallpaper"
+          style={{
+            borderColor: "#c9a84c",
+            color: "#c9a84c",
+            backgroundColor: "rgba(0,0,0,0.5)",
+            right: "88px",
+          }}
+          className={cn(
+            "absolute bottom-6 z-30 flex h-12 w-12 items-center justify-center rounded-full border-2 backdrop-blur-md transition-all duration-300",
+            chromeVisible || infoOpen ? "opacity-100" : "opacity-0",
+          )}
+        >
+          <Download className="h-5 w-5" />
+        </button>
+      )}
+
+      {current && (
         <div
           style={{
             backgroundColor: "rgba(0, 0, 0, 0.55)",
@@ -295,6 +425,118 @@ function SpeciesPage() {
           )}
         >
           <InfoPanel photo={current} />
+
+          {/* NEARBY SPECIES STRIP */}
+          {nearbyPhotos && nearbyPhotos.length > 0 && (
+            <div className="mx-auto mt-8 max-w-5xl border-t border-white/15 pt-6">
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-light uppercase tracking-[0.3em]" style={{ color: "#c9a84c" }}>
+                    Same Order
+                  </p>
+                  <p className="mt-1 text-sm font-light text-white/85">
+                    More {current.order_name} birds I've photographed
+                  </p>
+                </div>
+                <Link
+                  to="/gallery/$order"
+                  params={{ order: current.order_name }}
+                  className="whitespace-nowrap text-xs font-medium hover:underline"
+                  style={{ color: "#c9a84c" }}
+                >
+                  See all →
+                </Link>
+              </div>
+
+              <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
+                {nearbyPhotos.map((p: any) => (
+                  <Link
+                    key={p.id}
+                    to="/species/$slug"
+                    params={{ slug: p.species_identifier }}
+                    search={{ p: p.id }}
+                    className="w-32 flex-shrink-0 group"
+                  >
+                    <div className="flex h-24 w-32 items-center justify-center overflow-hidden rounded-sm" style={{ backgroundColor: "#111" }}>
+                      <img
+                        src={sizedImage(p.image_url, { width: 300, quality: 70, resize: "contain" })}
+                        alt={p.common_name || p.species_name}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                    <p className="mt-2 truncate text-[11px] font-medium text-white/90">
+                      {p.common_name || p.species_name}
+                    </p>
+                    <p className="truncate text-[10px] font-light italic text-white/60">
+                      {p.species_name}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* DOWNLOAD MODAL */}
+      {downloadOpen && current && (
+        <div
+          className="absolute inset-0 z-[70] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setDownloadOpen(false);
+          }}
+        >
+          <div className="relative w-full max-w-md rounded-sm border border-border bg-background p-8">
+            <button
+              onClick={() => setDownloadOpen(false)}
+              aria-label="Close"
+              className="absolute right-4 top-4 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <h3 className="font-display text-xl font-semibold text-foreground">
+              Download Wallpaper
+            </h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {current.common_name} · {current.species_name}
+            </p>
+
+            <div className="mt-6 rounded-sm border border-border/50 bg-surface p-4">
+              <p className="text-xs font-medium text-foreground">🖼️ Personal use only</p>
+              <p className="mt-2 text-xs font-light leading-relaxed text-muted-foreground">
+                This photo may not be used for commercial purposes, advertising, editorial
+                publication, or resale without prior written permission from Gokul Krishna Addanki.
+              </p>
+            </div>
+
+            <p className="mt-4 text-[10px] font-light uppercase tracking-[0.2em] text-muted-foreground">
+              © Gokul Krishna Addanki · coolkriss.in · All Rights Reserved · Personal use only
+            </p>
+
+            <label className="mt-6 flex items-start gap-3">
+              <input
+                type="checkbox"
+                checked={downloadAgreed}
+                onChange={(e) => setDownloadAgreed(e.target.checked)}
+                className="mt-0.5 h-4 w-4 flex-shrink-0 accent-[#c9a84c]"
+              />
+              <span className="text-xs font-light leading-relaxed text-muted-foreground">
+                I agree this download is for personal use only and will not be used for any
+                commercial or editorial purpose.
+              </span>
+            </label>
+
+            <button
+              onClick={handleDownload}
+              disabled={!downloadAgreed || downloading}
+              className="mt-6 w-full rounded-sm border border-primary bg-primary px-6 py-3 text-xs font-medium uppercase tracking-widest text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {downloading ? "Preparing download..." : "Download Wallpaper"}
+            </button>
+          </div>
         </div>
       )}
 
@@ -411,4 +653,24 @@ function InfoPanel({ photo }: { photo: Photo }) {
       )}
     </div>
   );
+}
+
+function addTextWatermark(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  name: string | null,
+) {
+  const fontSize = Math.max(16, Math.round(w * 0.018));
+  ctx.font = `${fontSize}px Inter, sans-serif`;
+  const text = "© coolkriss.in" + (name ? " · " + name : "");
+  const metrics = ctx.measureText(text);
+  const padX = Math.round(w * 0.025);
+  const padY = Math.round(h * 0.025);
+  const tx = w - metrics.width - padX - 12;
+  const ty = h - padY - 12;
+  ctx.fillStyle = "rgba(0,0,0,0.38)";
+  ctx.fillRect(tx - 8, ty - fontSize, metrics.width + 16, fontSize + 14);
+  ctx.fillStyle = "rgba(255,255,255,0.68)";
+  ctx.fillText(text, tx, ty);
 }

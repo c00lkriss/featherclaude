@@ -156,7 +156,7 @@ const NAV_LINKS = [
   { to: "/map", label: "Map" },
   { to: "/blog", label: "Blog" },
   { to: "/about-birds", label: "Birds of India" },
-  { to: "/about-birds", label: "About" }, // temp: /about page not built yet
+  { to: "/about", label: "About" },
 ] as const;
 
 function Header() {
@@ -285,7 +285,7 @@ function Footer() {
             <Link to="/blog" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               Blog
             </Link>
-            <Link to="/about-birds" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            <Link to="/about" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               About
             </Link>
             <a

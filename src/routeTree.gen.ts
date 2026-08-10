@@ -17,6 +17,7 @@ import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutBirdsRouteImport } from './routes/about-birds'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GalleryIndexRouteImport } from './routes/gallery.index'
@@ -76,6 +77,11 @@ const AdminRoute = AdminRouteImport.update({
 const AboutBirdsRoute = AboutBirdsRouteImport.update({
   id: '/about-birds',
   path: '/about-birds',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -190,6 +196,7 @@ const AuthenticatedAdminEditIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/about-birds': typeof AboutBirdsRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
@@ -219,6 +226,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/about-birds': typeof AboutBirdsRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
@@ -249,6 +257,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/about': typeof AboutRoute
   '/about-birds': typeof AboutBirdsRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
@@ -280,6 +289,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/about-birds'
     | '/admin'
     | '/auth'
@@ -309,6 +319,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/about-birds'
     | '/admin'
     | '/auth'
@@ -338,6 +349,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/about'
     | '/about-birds'
     | '/admin'
     | '/auth'
@@ -369,6 +381,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AboutRoute: typeof AboutRoute
   AboutBirdsRoute: typeof AboutBirdsRoute
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
@@ -440,6 +453,13 @@ declare module '@tanstack/react-router' {
       path: '/about-birds'
       fullPath: '/about-birds'
       preLoaderRoute: typeof AboutBirdsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -650,6 +670,7 @@ const GalleryRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AboutRoute: AboutRoute,
   AboutBirdsRoute: AboutBirdsRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
