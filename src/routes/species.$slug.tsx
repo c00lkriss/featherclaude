@@ -1,12 +1,13 @@
-import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouter, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Info, MapPin, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, MapPin, X, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { BirdCallPlayer } from "@/components/BirdCallPlayer";
 import { getWikipediaUrl } from "@/lib/wikipedia";
 import { lqip, sizedImage } from "@/lib/image-url";
+import { useSiteSettings } from "@/lib/site-settings";
 
 
 type SpeciesSearch = { p?: string };
