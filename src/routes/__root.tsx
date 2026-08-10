@@ -285,7 +285,7 @@ function Footer() {
             <Link to="/blog" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               Blog
             </Link>
-            <Link to="/about-birds" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            <Link to="/about" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               About
             </Link>
             <a
