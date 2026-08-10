@@ -156,7 +156,7 @@ const NAV_LINKS = [
   { to: "/map", label: "Map" },
   { to: "/blog", label: "Blog" },
   { to: "/about-birds", label: "Birds of India" },
-  { to: "/about-birds", label: "About" }, // temp: /about page not built yet
+  { to: "/about", label: "About" },
 ] as const;
 
 function Header() {
