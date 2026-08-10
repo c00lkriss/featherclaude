@@ -49,10 +49,134 @@ function LandingPage() {
   return (
     <div className="flex flex-col">
       <Hero />
+      <StatsStrip />
       <PhotoStrip />
       <TaxonomyPreview />
+      <YouTubeSection />
       <LatestBlog />
     </div>
+  );
+}
+
+/* ----------------------------- STATS STRIP ----------------------------- */
+
+function useAnimatedCount(target: number, duration = 1200) {
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    if (!target) {
+      setN(0);
+      return;
+    }
+    let raf = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const p = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - p, 3);
+      setN(Math.round(ease * target));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+  return n;
+}
+
+function StatBlock({ value, label }: { value: number; label: string }) {
+  const n = useAnimatedCount(value);
+  return (
+    <div className="flex flex-col items-center px-4 sm:px-12 md:px-16">
+      <span
+        className="font-display text-2xl font-semibold sm:text-3xl"
+        style={{ color: "#c9a84c" }}
+      >
+        {n}
+      </span>
+      <span className="mt-1 text-[9px] font-light uppercase tracking-[0.25em] text-muted-foreground sm:text-[10px]">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function StatsStrip() {
+  const { data } = useQuery({
+    queryKey: ["homepage-stats"],
+    queryFn: async () => {
+      const [speciesRes, ebirdRes, locRes] = await Promise.all([
+        supabase.from("photos").select("species_identifier").not("species_identifier", "is", null),
+        supabase
+          .from("ebird_lifelist")
+          .select("id", { count: "exact", head: true })
+          .eq("category", "species")
+          .eq("countable", 1),
+        supabase
+          .from("photos")
+          .select("location")
+          .not("location", "is", null)
+          .not("location", "eq", ""),
+      ]);
+      return {
+        speciesPhotographed: new Set((speciesRes.data ?? []).map((r: any) => r.species_identifier)).size,
+        speciesObserved: ebirdRes.count ?? 0,
+        locationsVisited: new Set((locRes.data ?? []).map((r: any) => r.location)).size,
+      };
+    },
+  });
+
+  return (
+    <section className="w-full border-y border-border/30 bg-surface/60 px-6 py-5 backdrop-blur-sm">
+      <div className="mx-auto flex max-w-[1800px] items-center justify-center gap-0 divide-x divide-border/40">
+        <StatBlock value={data?.speciesPhotographed ?? 0} label="Species Photographed" />
+        <StatBlock value={data?.speciesObserved ?? 0} label="Species Observed" />
+        <StatBlock value={data?.locationsVisited ?? 0} label="Locations Explored" />
+      </div>
+    </section>
+  );
+}
+
+/* ----------------------------- YOUTUBE ----------------------------- */
+
+function YouTubeSection() {
+  return (
+    <section className="w-full bg-background px-6 py-20">
+      <div className="mx-auto max-w-[1800px]">
+        <div className="grid items-center gap-10 md:grid-cols-5 md:gap-16">
+          <div className="md:col-span-3">
+            <div className="relative w-full overflow-hidden rounded-sm border border-border/30" style={{ aspectRatio: "16 / 9", backgroundColor: "#0a0a0a" }}>
+              <iframe
+                src="https://www.youtube.com/embed?listType=user_uploads&list=CoolKrissGokul"
+                title="Coolkriss on YouTube"
+                loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="absolute inset-0 h-full w-full"
+              />
+            </div>
+          </div>
+
+          <div className="md:col-span-2">
+            <p className="mb-3 text-xs font-light uppercase tracking-[0.3em] text-primary">
+              From the Field
+            </p>
+            <h2 className="font-display text-3xl font-semibold text-foreground md:text-4xl">
+              Watch on YouTube
+            </h2>
+            <p className="mt-5 text-sm font-light leading-relaxed text-muted-foreground">
+              Follow along for field craft tips, species identification guides, and behind-the-lens
+              stories from expeditions across India.
+            </p>
+            <a
+              href="https://www.youtube.com/@CoolKrissGokul"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-8 inline-flex items-center gap-2 border border-primary px-6 py-3 text-xs font-medium uppercase tracking-widest text-primary transition-colors hover:bg-primary hover:text-background"
+            >
+              Visit Channel →
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
