@@ -170,11 +170,13 @@ function AssetUploader({
   settingKey,
   currentUrl,
   hint,
+  circle,
 }: {
   label: string;
   settingKey: string;
   currentUrl: string;
   hint?: string;
+  circle?: boolean;
 }) {
   const qc = useQueryClient();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -231,7 +233,11 @@ function AssetUploader({
         className={`mt-2 flex h-24 cursor-pointer items-center justify-center rounded-sm border border-dashed bg-background transition-colors ${dragOver ? "border-primary" : "border-border hover:border-primary/60"}`}
       >
         {url ? (
-          <img src={url} alt={label} className="max-h-20 max-w-full object-contain" />
+          circle ? (
+            <img src={url} alt={label} className="h-[60px] w-[60px] rounded-full object-cover" />
+          ) : (
+            <img src={url} alt={label} className="max-h-20 max-w-full object-contain" />
+          )
         ) : (
           <span className="text-xs text-muted-foreground">Drag & drop or click to upload</span>
         )}
