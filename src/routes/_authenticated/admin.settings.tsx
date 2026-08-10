@@ -34,9 +34,10 @@ function AdminSettings() {
       </p>
 
       <Section title="Site Branding" keys={["site_title"]} values={values} onChange={onChange}>
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-3">
           <AssetUploader label="Logo" settingKey="logo_url" currentUrl={values.logo_url || ""} hint="PNG/SVG/WEBP, transparent bg, ~ 200×60." />
           <AssetUploader label="Favicon" settingKey="favicon_url" currentUrl={values.favicon_url || ""} hint="32×32 ICO/PNG/SVG." />
+          <AssetUploader label="Photographer Portrait" settingKey="portrait_url" currentUrl={values.portrait_url || ""} hint="JPG/PNG, square crop works best." circle />
         </div>
         <Field label="Site title" k="site_title" values={values} onChange={onChange} placeholder="Coolkriss" />
       </Section>
@@ -47,7 +48,7 @@ function AdminSettings() {
         <Field label="YouTube URL" k="youtube_url" values={values} onChange={onChange} placeholder="https://youtube.com/@…" />
       </Section>
 
-      <Section title="About Page" keys={["about_bio"]} values={values} onChange={onChange}>
+      <Section title="About Page" keys={["about_bio", "gear_list"]} values={values} onChange={onChange}>
         <div>
           <label className="block text-xs font-light uppercase tracking-[0.25em] text-muted-foreground">
             Photographer bio
@@ -59,6 +60,21 @@ function AdminSettings() {
             className="mt-2 w-full rounded-sm border border-border bg-surface px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none"
             placeholder="Tell the story…"
           />
+        </div>
+        <div>
+          <label className="block text-xs font-light uppercase tracking-[0.25em] text-muted-foreground">
+            Gear List (JSON)
+          </label>
+          <textarea
+            value={values.gear_list ?? ""}
+            onChange={(e) => onChange("gear_list", e.target.value)}
+            rows={8}
+            className="mt-2 w-full rounded-sm border border-border bg-surface px-4 py-2.5 font-mono text-xs text-foreground focus:border-primary focus:outline-none"
+            placeholder='[{"category":"Camera Bodies","items":["Canon R5"]}]'
+          />
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            Format: [{"{"}"category":"Camera Bodies","items":["Canon R5"]{"}"}]
+          </p>
         </div>
       </Section>
     </div>
