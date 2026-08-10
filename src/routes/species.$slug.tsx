@@ -391,6 +391,28 @@ function SpeciesPage() {
       )}
 
       {current && (
+        <button
+          onClick={() => {
+            setDownloadOpen(true);
+            setDownloadAgreed(false);
+          }}
+          aria-label="Download wallpaper"
+          style={{
+            borderColor: "#c9a84c",
+            color: "#c9a84c",
+            backgroundColor: "rgba(0,0,0,0.5)",
+            right: "88px",
+          }}
+          className={cn(
+            "absolute bottom-6 z-30 flex h-12 w-12 items-center justify-center rounded-full border-2 backdrop-blur-md transition-all duration-300",
+            chromeVisible || infoOpen ? "opacity-100" : "opacity-0",
+          )}
+        >
+          <Download className="h-5 w-5" />
+        </button>
+      )}
+
+      {current && (
         <div
           style={{
             backgroundColor: "rgba(0, 0, 0, 0.55)",
@@ -403,6 +425,118 @@ function SpeciesPage() {
           )}
         >
           <InfoPanel photo={current} />
+
+          {/* NEARBY SPECIES STRIP */}
+          {nearbyPhotos && nearbyPhotos.length > 0 && (
+            <div className="mx-auto mt-8 max-w-5xl border-t border-white/15 pt-6">
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-light uppercase tracking-[0.3em]" style={{ color: "#c9a84c" }}>
+                    Same Order
+                  </p>
+                  <p className="mt-1 text-sm font-light text-white/85">
+                    More {current.order_name} birds I've photographed
+                  </p>
+                </div>
+                <Link
+                  to="/gallery/$order"
+                  params={{ order: current.order_name }}
+                  className="whitespace-nowrap text-xs font-medium hover:underline"
+                  style={{ color: "#c9a84c" }}
+                >
+                  See all →
+                </Link>
+              </div>
+
+              <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
+                {nearbyPhotos.map((p: any) => (
+                  <Link
+                    key={p.id}
+                    to="/species/$slug"
+                    params={{ slug: p.species_identifier }}
+                    search={{ p: p.id }}
+                    className="w-32 flex-shrink-0 group"
+                  >
+                    <div className="flex h-24 w-32 items-center justify-center overflow-hidden rounded-sm" style={{ backgroundColor: "#111" }}>
+                      <img
+                        src={sizedImage(p.image_url, { width: 300, quality: 70, resize: "contain" })}
+                        alt={p.common_name || p.species_name}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                    <p className="mt-2 truncate text-[11px] font-medium text-white/90">
+                      {p.common_name || p.species_name}
+                    </p>
+                    <p className="truncate text-[10px] font-light italic text-white/60">
+                      {p.species_name}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* DOWNLOAD MODAL */}
+      {downloadOpen && current && (
+        <div
+          className="absolute inset-0 z-[70] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setDownloadOpen(false);
+          }}
+        >
+          <div className="relative w-full max-w-md rounded-sm border border-border bg-background p-8">
+            <button
+              onClick={() => setDownloadOpen(false)}
+              aria-label="Close"
+              className="absolute right-4 top-4 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <h3 className="font-display text-xl font-semibold text-foreground">
+              Download Wallpaper
+            </h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {current.common_name} · {current.species_name}
+            </p>
+
+            <div className="mt-6 rounded-sm border border-border/50 bg-surface p-4">
+              <p className="text-xs font-medium text-foreground">🖼️ Personal use only</p>
+              <p className="mt-2 text-xs font-light leading-relaxed text-muted-foreground">
+                This photo may not be used for commercial purposes, advertising, editorial
+                publication, or resale without prior written permission from Gokul Krishna Addanki.
+              </p>
+            </div>
+
+            <p className="mt-4 text-[10px] font-light uppercase tracking-[0.2em] text-muted-foreground">
+              © Gokul Krishna Addanki · coolkriss.in · All Rights Reserved · Personal use only
+            </p>
+
+            <label className="mt-6 flex items-start gap-3">
+              <input
+                type="checkbox"
+                checked={downloadAgreed}
+                onChange={(e) => setDownloadAgreed(e.target.checked)}
+                className="mt-0.5 h-4 w-4 flex-shrink-0 accent-[#c9a84c]"
+              />
+              <span className="text-xs font-light leading-relaxed text-muted-foreground">
+                I agree this download is for personal use only and will not be used for any
+                commercial or editorial purpose.
+              </span>
+            </label>
+
+            <button
+              onClick={handleDownload}
+              disabled={!downloadAgreed || downloading}
+              className="mt-6 w-full rounded-sm border border-primary bg-primary px-6 py-3 text-xs font-medium uppercase tracking-widest text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {downloading ? "Preparing download..." : "Download Wallpaper"}
+            </button>
+          </div>
         </div>
       )}
 
