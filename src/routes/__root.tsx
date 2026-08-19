@@ -90,10 +90,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@coolkriss" },
       { name: "twitter:title", content: "Coolkriss — Birds of India" },
       { name: "twitter:description", content: "Award-winning bird photography from India. Explore the beauty of avian life through stunning visual stories." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b64b28a9-453e-4fd3-beef-c8bd7fcf71d1/id-preview-50093d66--781b122a-b790-48fd-98fd-48a86aaa954e.lovable.app-1780496959354.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b64b28a9-453e-4fd3-beef-c8bd7fcf71d1/id-preview-50093d66--781b122a-b790-48fd-98fd-48a86aaa954e.lovable.app-1780496959354.png" },
+      { property: "og:image", content: "https://coolkriss.in/og-default.jpg" },
+      { name: "twitter:image", content: "https://coolkriss.in/og-default.jpg" },
     ],
     links: [
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap",
+      },
       {
         rel: "stylesheet",
         href: appCss,
