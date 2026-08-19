@@ -185,7 +185,7 @@ function StatsStrip() {
 
 function YouTubeSection() {
   return (
-    <section className="w-full bg-background px-6 py-20">
+    <section className="w-full bg-background px-4 py-12 sm:px-6 sm:py-20">
       <div className="mx-auto max-w-[1800px]">
         <div className="grid items-center gap-10 md:grid-cols-5 md:gap-16">
           <div className="md:col-span-3">
@@ -358,11 +358,11 @@ function Hero() {
         <p className="mb-6 text-xs font-light uppercase tracking-[0.4em] text-primary animate-fade-in-slow">
           Bird Photography · India
         </p>
-        <h1 className="font-display text-6xl font-bold leading-none text-foreground md:text-8xl lg:text-9xl 2xl:text-[10rem] animate-fade-in-slow">
+        <h1 className="font-display text-5xl font-bold leading-none text-foreground sm:text-6xl md:text-8xl lg:text-9xl 2xl:text-[10rem] animate-fade-in-slow">
           Coolkriss
         </h1>
 
-        <p className="mt-8 max-w-xl text-base font-light leading-relaxed text-muted-foreground md:text-lg animate-fade-in-slow">
+        <p className="mt-6 max-w-xl px-4 text-sm font-light leading-relaxed text-muted-foreground sm:mt-8 sm:px-0 sm:text-base md:text-lg animate-fade-in-slow">
           Quiet moments in the wild — a visual archive of birds across the Indian subcontinent.
         </p>
 
@@ -625,7 +625,7 @@ function TaxonomyPreview() {
               key={o.id}
               to="/gallery/$order"
               params={{ order: o.order_name }}
-              className="group relative block overflow-hidden rounded-sm bg-surface"
+              className="group relative block min-h-[160px] overflow-hidden rounded-sm bg-surface"
             >
               {o.coverImage ? (
                 <img

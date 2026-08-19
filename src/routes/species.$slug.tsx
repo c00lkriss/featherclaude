@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, useRouter, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Info, MapPin, X, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -95,6 +95,44 @@ function SpeciesPage() {
   const navigate = useNavigate();
   const [infoOpen, setInfoOpen] = useState(true);
   const [chromeVisible, setChromeVisible] = useState(true);
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const [showSwipeHint, setShowSwipeHint] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!window.matchMedia("(pointer: coarse)").matches) return;
+    if (localStorage.getItem("swipe-hint-seen")) return;
+    setShowSwipeHint(true);
+    const t = setTimeout(() => {
+      setShowSwipeHint(false);
+      localStorage.setItem("swipe-hint-seen", "1");
+    }, 3000);
+    return () => clearTimeout(t);
+  }, []);
+
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const dy = e.changedTouches[0].clientY - touchStartY.current;
+    touchStartX.current = null;
+    touchStartY.current = null;
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
+    if (absDx < 50 && absDy < 50) return;
+    if (absDx >= absDy) {
+      if (dx < 0 && next) goPhoto(next);
+      else if (dx > 0 && prev) goPhoto(prev);
+    } else {
+      if (dy < -60 && !infoOpen) setInfoOpen(true);
+      else if (dy > 60 && infoOpen) setInfoOpen(false);
+    }
+  }
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -283,7 +321,16 @@ function SpeciesPage() {
       style={{ backgroundColor: "#0a0a0a" }}
       onMouseMove={() => setChromeVisible(true)}
       onMouseLeave={() => setChromeVisible(false)}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
+      {showSwipeHint && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-24 z-30 flex justify-center px-6">
+          <span className="rounded-full bg-black/70 px-4 py-2 text-[11px] font-light tracking-wide text-white/90">
+            ← swipe to browse · swipe up for info
+          </span>
+        </div>
+      )}
       {current && (
         <script
           type="application/ld+json"
@@ -496,7 +543,7 @@ function SpeciesPage() {
             WebkitBackdropFilter: "blur(10px)",
           }}
           className={cn(
-            "absolute inset-x-0 bottom-0 z-10 max-h-[50vh] overflow-y-auto border-t border-white/10 px-5 py-6 transition-transform duration-300 ease-out md:max-h-[45vh] md:px-12 md:py-10",
+            "safe-bottom absolute inset-x-0 bottom-0 z-10 max-h-[45vh] overflow-y-auto border-t border-white/10 px-4 py-4 transition-transform duration-300 ease-out sm:px-5 sm:py-6 md:max-h-[42vh] md:px-12 md:py-10",
             infoOpen ? "translate-y-0" : "translate-y-full",
           )}
         >

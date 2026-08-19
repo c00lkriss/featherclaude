@@ -71,7 +71,7 @@ function StatCard({ value, label }: { value: number; label: string }) {
   return (
     <div
       ref={ref}
-      className="flex flex-col items-center border-l border-border/30 px-6 first:border-l-0 md:px-10"
+      className="flex flex-col items-center px-4 sm:border-l sm:border-border/30 sm:first:border-l-0 sm:px-6 md:px-10"
     >
       <span className="font-display text-4xl font-semibold" style={{ color: "#c9a84c" }}>
         {count}
@@ -192,7 +192,7 @@ function AboutPage() {
             </div>
           </div>
 
-          <div className="mt-12 flex flex-wrap items-center justify-center md:mt-16">
+          <div className="mt-12 grid grid-cols-2 gap-6 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-0 md:mt-16">
             <StatCard value={stats?.speciesPhotographed ?? 0} label="Species Photographed" />
             <StatCard value={stats?.photosPublished ?? 0} label="Photographs Published" />
             <StatCard value={stats?.speciesObserved ?? 0} label="Species Observed via eBird" />

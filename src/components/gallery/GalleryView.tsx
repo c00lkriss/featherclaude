@@ -156,7 +156,7 @@ function TaxonomySidebar({
       {/* Mobile toggle */}
       <button
         onClick={() => setMobileOpen((v) => !v)}
-        className="fixed bottom-6 right-6 z-40 rounded-full bg-primary px-5 py-3 text-xs font-medium uppercase tracking-widest text-primary-foreground shadow-lg lg:hidden"
+        className="safe-bottom fixed bottom-6 right-6 z-40 rounded-full bg-primary px-5 py-3 text-xs font-medium uppercase tracking-widest text-primary-foreground shadow-lg lg:hidden"
       >
         {mobileOpen ? "Close" : "Filter"}
       </button>
