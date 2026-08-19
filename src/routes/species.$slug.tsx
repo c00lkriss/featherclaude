@@ -16,12 +16,35 @@ export const Route = createFileRoute("/species/$slug")({
   validateSearch: (search: Record<string, unknown>): SpeciesSearch => ({
     p: typeof search.p === "string" && search.p.length > 0 ? search.p : undefined,
   }),
-  head: ({ params }) => ({
-    meta: [
-      { title: `${params.slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} — Coolkriss` },
-      { name: "description", content: "Full-screen bird photograph viewer with EXIF and taxonomy." },
-    ],
-  }),
+  head: ({ params }) => {
+    const slug = params.slug;
+    const cleanSlug = slug.replace(/-[a-z0-9]{4}$/, "");
+    const speciesName = cleanSlug
+      .split("-")
+      .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+
+    const title = `${speciesName} — Bird Photography · Coolkriss`;
+    const description = `Photograph of ${speciesName} by Gokul Krishna Addanki. Explore bird photography from India organised by taxonomy at coolkriss.in`;
+    const ogImage = `https://coolkriss.in/og-default.jpg`;
+
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "article" },
+        { property: "og:image", content: ogImage },
+        { property: "og:site_name", content: "Coolkriss" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:site", content: "@coolkriss" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "twitter:image", content: ogImage },
+      ],
+    };
+  },
   component: SpeciesPage,
 });
 
@@ -261,6 +284,59 @@ function SpeciesPage() {
       onMouseMove={() => setChromeVisible(true)}
       onMouseLeave={() => setChromeVisible(false)}
     >
+      {current && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "ImageObject",
+              "name": current.common_name || current.title,
+              "description": current.description ||
+                `Photograph of ${current.common_name} (${current.species_name}) by Gokul Krishna Addanki`,
+              "contentUrl": current.image_url,
+              "thumbnailUrl": current.thumbnail_url || current.image_url,
+              "creator": {
+                "@type": "Person",
+                "name": "Gokul Krishna Addanki",
+                "url": "https://coolkriss.in/about",
+                "sameAs": [
+                  "https://www.instagram.com/coolkriss/",
+                  "https://www.youtube.com/@CoolKrissGokul",
+                ],
+              },
+              "copyrightHolder": {
+                "@type": "Person",
+                "name": "Gokul Krishna Addanki",
+              },
+              "copyrightYear": current.date_taken
+                ? new Date(current.date_taken).getFullYear()
+                : new Date().getFullYear(),
+              "license": "https://coolkriss.in/about",
+              "acquireLicensePage": "https://coolkriss.in/about",
+              "creditText": "© Gokul Krishna Addanki · coolkriss.in",
+              "about": {
+                "@type": "Thing",
+                "name": current.common_name,
+                "description": current.species_name,
+                "sameAs": `https://en.wikipedia.org/wiki/${(current.common_name || "").replace(/\s+/g, "_")}`,
+              },
+              ...(current.latitude && current.longitude ? {
+                "locationCreated": {
+                  "@type": "Place",
+                  "name": current.location || "India",
+                  "geo": {
+                    "@type": "GeoCoordinates",
+                    "latitude": current.latitude,
+                    "longitude": current.longitude,
+                  },
+                },
+              } : {}),
+              ...(current.date_taken ? { "dateCreated": current.date_taken } : {}),
+            }),
+          }}
+        />
+      )}
 
       {current ? (
         <>

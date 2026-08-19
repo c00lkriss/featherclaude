@@ -48,6 +48,37 @@ type BlogPost = {
 function LandingPage() {
   return (
     <div className="flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ProfilePage",
+            "dateCreated": "2024-01-01",
+            "dateModified": new Date().toISOString().split("T")[0],
+            "mainEntity": {
+              "@type": "Person",
+              "name": "Gokul Krishna Addanki",
+              "alternateName": "Coolkriss",
+              "description": "Wildlife and bird photographer based in Hyderabad, India. Documenting India's avian diversity through the lens since 2014.",
+              "url": "https://coolkriss.in",
+              "image": "https://coolkriss.in/og-default.jpg",
+              "sameAs": [
+                "https://www.instagram.com/coolkriss/",
+                "https://www.youtube.com/@CoolKrissGokul",
+                "https://ebird.org/profile",
+              ],
+              "jobTitle": "Wildlife and Bird Photographer",
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "Hyderabad",
+                "addressRegion": "Telangana",
+                "addressCountry": "IN",
+              },
+            },
+          }),
+        }}
+      />
       <Hero />
       <StatsStrip />
       <PhotoStrip />
