@@ -321,7 +321,16 @@ function SpeciesPage() {
       style={{ backgroundColor: "#0a0a0a" }}
       onMouseMove={() => setChromeVisible(true)}
       onMouseLeave={() => setChromeVisible(false)}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
+      {showSwipeHint && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-24 z-30 flex justify-center px-6">
+          <span className="rounded-full bg-black/70 px-4 py-2 text-[11px] font-light tracking-wide text-white/90">
+            ← swipe to browse · swipe up for info
+          </span>
+        </div>
+      )}
       {current && (
         <script
           type="application/ld+json"
@@ -534,7 +543,7 @@ function SpeciesPage() {
             WebkitBackdropFilter: "blur(10px)",
           }}
           className={cn(
-            "absolute inset-x-0 bottom-0 z-10 max-h-[50vh] overflow-y-auto border-t border-white/10 px-5 py-6 transition-transform duration-300 ease-out md:max-h-[45vh] md:px-12 md:py-10",
+            "safe-bottom absolute inset-x-0 bottom-0 z-10 max-h-[45vh] overflow-y-auto border-t border-white/10 px-4 py-4 transition-transform duration-300 ease-out sm:px-5 sm:py-6 md:max-h-[42vh] md:px-12 md:py-10",
             infoOpen ? "translate-y-0" : "translate-y-full",
           )}
         >
