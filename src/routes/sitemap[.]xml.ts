@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const BASE_URL = "https://coolkriss.in";
 
@@ -26,6 +25,7 @@ export const Route = createFileRoute("/sitemap.xml")({
         // Fetch all unique species from database
         let speciesEntries: SitemapEntry[] = [];
         try {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { data } = await supabaseAdmin
             .from("photos")
             .select("species_identifier, created_at")
