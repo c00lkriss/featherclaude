@@ -380,7 +380,7 @@ function MapView() {
       <div
         ref={mapEl}
         className="w-full bg-surface"
-        style={{ height: "70vh" }}
+        style={{ height: "clamp(280px, 50vw, 580px)" }}
         aria-label="World map of bird photography locations"
       />
       {!ready && (
@@ -482,7 +482,51 @@ function Wishlist() {
         />
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-sm border border-border">
+      {/* Mobile cards */}
+      <div className="mt-6 space-y-3 md:hidden">
+        {pageRows.length === 0 ? (
+          <div className="rounded-sm border border-border bg-surface px-4 py-8 text-center text-sm font-light text-muted-foreground">
+            {wishlist.length === 0
+              ? "Upload your eBird life list in admin to populate the wishlist."
+              : "No matches."}
+          </div>
+        ) : (
+          pageRows.map((r: any) => (
+            <div key={r.id} className="rounded-sm border border-border bg-surface px-4 py-4">
+              <a
+                href={`https://en.wikipedia.org/wiki/${encodeURIComponent(
+                  (r.common_name || "").trim().replace(/\s+/g, "_"),
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-display text-sm font-semibold text-foreground hover:underline"
+              >
+                {r.common_name} ↗
+              </a>
+              <p className="mt-1 text-xs font-light italic text-muted-foreground">
+                {r.scientific_name}
+              </p>
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-light text-muted-foreground">
+                {r.date_observed && <span>📅 {r.date_observed}</span>}
+                {r.location && <span>📍 {r.location}</span>}
+                {r.state_province && <span>🗺 {r.state_province}</span>}
+              </div>
+              {r.checklist_id && (
+                <a
+                  href={`https://ebird.org/checklist/${r.checklist_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-block text-[11px] font-medium text-primary hover:underline"
+                >
+                  View checklist ↗
+                </a>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+
+      <div className="mt-6 hidden overflow-x-auto rounded-sm border border-border md:block">
         <table className="w-full text-sm">
           <thead className="bg-surface">
             <tr className="text-left text-[10px] font-light uppercase tracking-[0.2em] text-muted-foreground">
