@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { sizedImage } from "@/lib/image-url";
 
@@ -62,29 +62,45 @@ function LandingPage() {
 
 function useAnimatedCount(target: number, duration = 1200) {
   const [n, setN] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const triggered = useRef(false);
   useEffect(() => {
-    if (!target) {
-      setN(0);
-      return;
-    }
-    let raf = 0;
-    const start = performance.now();
-    const tick = (now: number) => {
-      const p = Math.min((now - start) / duration, 1);
-      const ease = 1 - Math.pow(1 - p, 3);
-      setN(Math.round(ease * target));
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    if (!target) return;
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting || triggered.current) return;
+        triggered.current = true;
+        obs.disconnect();
+        let raf = 0;
+        const start = performance.now();
+        const tick = (now: number) => {
+          const p = Math.min((now - start) / duration, 1);
+          const ease = 1 - Math.pow(1 - p, 3);
+          setN(Math.round(ease * target));
+          if (p < 1) raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(raf);
+      },
+      { threshold: 0.3 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
   }, [target, duration]);
-  return n;
+  return { n, ref };
 }
 
-function StatBlock({ value, label }: { value: number; label: string }) {
-  const n = useAnimatedCount(value);
+function StatBlock({ value, label }: {
+  value: number; label: string
+}) {
+  const { n, ref } = useAnimatedCount(value);
   return (
-    <div className="flex flex-col items-center px-4 sm:px-12 md:px-16">
+    <div
+      ref={ref}
+      className="flex flex-col items-center px-4 sm:px-12 md:px-16"
+    >
       <span
         className="font-display text-2xl font-semibold sm:text-3xl"
         style={{ color: "#c9a84c" }}
@@ -144,7 +160,7 @@ function YouTubeSection() {
           <div className="md:col-span-3">
             <div className="relative w-full overflow-hidden rounded-sm border border-border/30" style={{ aspectRatio: "16 / 9", backgroundColor: "#0a0a0a" }}>
               <iframe
-                src="https://www.youtube.com/embed?listType=user_uploads&list=CoolKrissGokul"
+                src="https://www.youtube.com/embed/5WxexOSekdM?rel=0&modestbranding=1&color=white"
                 title="Coolkriss on YouTube"
                 loading="lazy"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
