@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, useRouter, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Info, MapPin, X, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -95,6 +95,44 @@ function SpeciesPage() {
   const navigate = useNavigate();
   const [infoOpen, setInfoOpen] = useState(true);
   const [chromeVisible, setChromeVisible] = useState(true);
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const [showSwipeHint, setShowSwipeHint] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!window.matchMedia("(pointer: coarse)").matches) return;
+    if (localStorage.getItem("swipe-hint-seen")) return;
+    setShowSwipeHint(true);
+    const t = setTimeout(() => {
+      setShowSwipeHint(false);
+      localStorage.setItem("swipe-hint-seen", "1");
+    }, 3000);
+    return () => clearTimeout(t);
+  }, []);
+
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const dy = e.changedTouches[0].clientY - touchStartY.current;
+    touchStartX.current = null;
+    touchStartY.current = null;
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
+    if (absDx < 50 && absDy < 50) return;
+    if (absDx >= absDy) {
+      if (dx < 0 && next) goPhoto(next);
+      else if (dx > 0 && prev) goPhoto(prev);
+    } else {
+      if (dy < -60 && !infoOpen) setInfoOpen(true);
+      else if (dy > 60 && infoOpen) setInfoOpen(false);
+    }
+  }
 
   useEffect(() => {
     const prev = document.body.style.overflow;
