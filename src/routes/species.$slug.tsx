@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Info, MapPin, X, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { BirdCallPlayer } from "@/components/BirdCallPlayer";
+
 import { getWikipediaUrl } from "@/lib/wikipedia";
 import { lqip, sizedImage } from "@/lib/image-url";
 import { useSiteSettings } from "@/lib/site-settings";
@@ -72,10 +72,6 @@ type Photo = {
   shutter_speed: string | null;
   focal_length: string | null;
   iucn_status: string | null;
-  xeno_canto_id: string | null;
-  xeno_canto_url: string | null;
-  xeno_canto_recordist: string | null;
-  xeno_canto_license: string | null;
 };
 
 const IUCN_COLORS: Record<string, string> = {
@@ -148,7 +144,7 @@ function SpeciesPage() {
       const { data, error } = await supabase
         .from("photos")
         .select(
-          "id, title, description, common_name, species_name, species_slug, species_identifier, order_name, family_name, genus, image_url, thumbnail_url, location, latitude, longitude, date_taken, camera, lens, iso, aperture, shutter_speed, focal_length, iucn_status, xeno_canto_id, xeno_canto_url, xeno_canto_recordist, xeno_canto_license",
+          "id, title, description, common_name, species_name, species_slug, species_identifier, order_name, family_name, genus, image_url, thumbnail_url, location, latitude, longitude, date_taken, camera, lens, iso, aperture, shutter_speed, focal_length, iucn_status",
         )
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -263,23 +259,16 @@ function SpeciesPage() {
           const logoResp = await fetch(logoUrl);
           const logoBlob = await logoResp.blob();
           const logoBitmap = await createImageBitmap(logoBlob);
-          const logoW = Math.round(w * 0.18);
-          const logoH = Math.round((logoW / logoBitmap.width) * logoBitmap.height);
+          const logoW = Math.round(w * 0.126);
+          const logoH = Math.round(
+            (logoW / logoBitmap.width) * logoBitmap.height
+          );
           const padX = Math.round(w * 0.025);
           const padY = Math.round(h * 0.025);
           const logoX = w - logoW - padX;
           const logoY = h - logoH - padY;
-          const backing = 14;
           ctx.save();
-          ctx.fillStyle = "rgba(0,0,0,0.32)";
-          ctx.beginPath();
-          if ((ctx as any).roundRect) {
-            (ctx as any).roundRect(logoX - backing, logoY - backing, logoW + backing * 2, logoH + backing * 2, 8);
-          } else {
-            ctx.rect(logoX - backing, logoY - backing, logoW + backing * 2, logoH + backing * 2);
-          }
-          ctx.fill();
-          ctx.globalAlpha = 0.72;
+          ctx.globalAlpha = 0.85;
           ctx.drawImage(logoBitmap, logoX, logoY, logoW, logoH);
           ctx.restore();
         } catch {
@@ -498,20 +487,6 @@ function SpeciesPage() {
         {infoOpen ? <X className="h-5 w-5" /> : <Info className="h-5 w-5" />}
       </button>
 
-      {current && (
-        <BirdCallPlayer
-          photoId={current.id}
-          scientificName={current.species_name}
-          commonName={current.common_name}
-          stored={{
-            xeno_canto_id: current.xeno_canto_id,
-            xeno_canto_url: current.xeno_canto_url,
-            xeno_canto_recordist: current.xeno_canto_recordist,
-            xeno_canto_license: current.xeno_canto_license,
-          }}
-          visible={chromeVisible || infoOpen}
-        />
-      )}
 
       {current && (
         <button
@@ -524,7 +499,7 @@ function SpeciesPage() {
             borderColor: "#c9a84c",
             color: "#c9a84c",
             backgroundColor: "rgba(0,0,0,0.5)",
-            right: "88px",
+            right: "84px",
           }}
           className={cn(
             "absolute bottom-6 z-30 flex h-12 w-12 items-center justify-center rounded-full border-2 backdrop-blur-md transition-all duration-300",

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { sizedImage } from "@/lib/image-url";
+import { useSiteSettings } from "@/lib/site-settings";
 
 
 export const Route = createFileRoute("/")({
@@ -232,6 +233,8 @@ function YouTubeSection() {
 
 function Hero() {
   const navigate = useNavigate();
+  const { data: settings } = useSiteSettings();
+  const logoUrl = settings?.logo_url || "";
   const { data: featured } = useQuery({
     queryKey: ["featured-photos"],
     queryFn: async (): Promise<Photo[]> => {
@@ -283,15 +286,14 @@ function Hero() {
                   {shouldRender && (
                     <div
                       key={`${p.id}-${isActive ? "on" : "off"}`}
-                      className="absolute inset-0 flex items-center justify-center"
-                      style={{ backgroundColor: "#0a0a0a" }}
+                      className="absolute inset-0"
                     >
                       <img
-                        src={sizedImage(p.image_url, { width: 1920, quality: 85, resize: "contain" })}
-                        srcSet={`${sizedImage(p.image_url, { width: 1280, quality: 85, resize: "contain" })} 1280w, ${sizedImage(p.image_url, { width: 1920, quality: 85, resize: "contain" })} 1920w, ${p.image_url} 3840w`}
+                        src={sizedImage(p.image_url, { width: 1920, quality: 85, resize: "cover" })}
+                        srcSet={`${sizedImage(p.image_url, { width: 1280, quality: 85, resize: "cover" })} 1280w, ${sizedImage(p.image_url, { width: 1920, quality: 85, resize: "cover" })} 1920w, ${p.image_url} 3840w`}
                         sizes="100vw"
                         alt={p.title || ""}
-                        className={`h-full w-full object-contain ${isActive ? "animate-ken-burns" : ""}`}
+                        className={`h-full w-full object-cover ${isActive ? "animate-ken-burns" : ""}`}
                         loading={i === 0 ? "eager" : "lazy"}
                         decoding="async"
                       />
@@ -325,7 +327,7 @@ function Hero() {
       {/* Hidden preload for the active slide, high priority for LCP */}
       {slides && slides[idx] && (
         <img
-          src={sizedImage(slides[idx].image_url, { width: 1920, quality: 85, resize: "contain" })}
+          src={sizedImage(slides[idx].image_url, { width: 1920, quality: 85, resize: "cover" })}
           alt=""
           aria-hidden
           // @ts-expect-error lowercase attr
@@ -358,9 +360,13 @@ function Hero() {
         <p className="mb-6 text-xs font-light uppercase tracking-[0.4em] text-primary animate-fade-in-slow">
           Bird Photography · India
         </p>
-        <h1 className="font-display text-5xl font-bold leading-none text-foreground sm:text-6xl md:text-8xl lg:text-9xl 2xl:text-[10rem] animate-fade-in-slow">
-          Coolkriss
-        </h1>
+        {logoUrl ? (
+          <img src={logoUrl} alt="Coolkriss" className="h-24 w-auto max-w-[80vw] object-contain animate-fade-in-slow md:h-32" />
+        ) : (
+          <h1 className="font-display text-5xl font-bold leading-none text-foreground sm:text-6xl md:text-8xl lg:text-9xl 2xl:text-[10rem] animate-fade-in-slow">
+            Coolkriss
+          </h1>
+        )}
 
         <p className="mt-6 max-w-xl px-4 text-sm font-light leading-relaxed text-muted-foreground sm:mt-8 sm:px-0 sm:text-base md:text-lg animate-fade-in-slow">
           Quiet moments in the wild — a visual archive of birds across the Indian subcontinent.

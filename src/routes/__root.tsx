@@ -202,7 +202,7 @@ function Header() {
               src={logoUrl}
               alt="Coolkriss"
               onError={() => setLogoFailed(true)}
-              className="h-8 w-auto object-contain md:h-10"
+              className="h-10 w-auto object-contain md:h-12"
             />
           ) : (
             <span className="font-display text-xl font-bold tracking-tight text-foreground">
