@@ -16,17 +16,43 @@ export const Route = createFileRoute("/species/$slug")({
   validateSearch: (search: Record<string, unknown>): SpeciesSearch => ({
     p: typeof search.p === "string" && search.p.length > 0 ? search.p : undefined,
   }),
-  head: ({ params }) => {
+  loader: async ({ params }) => {
+    try {
+      const { data } = await supabase
+        .from("photos")
+        .select("image_url, description, common_name, is_featured, created_at")
+        .eq("species_identifier", params.slug)
+        .order("is_featured", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const row = data?.[0];
+      if (!row) return null;
+      return {
+        image_url: row.image_url as string,
+        description: (row.description as string | null) ?? null,
+        common_name: (row.common_name as string | null) ?? null,
+      };
+    } catch {
+      return null;
+    }
+  },
+  head: ({ params, loaderData }) => {
     const slug = params.slug;
     const cleanSlug = slug.replace(/-[a-z0-9]{4}$/, "");
-    const speciesName = cleanSlug
-      .split("-")
-      .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(" ");
+    const speciesName =
+      loaderData?.common_name ||
+      cleanSlug
+        .split("-")
+        .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
 
     const title = `${speciesName} — Bird Photography · Coolkriss`;
-    const description = `Photograph of ${speciesName} by Gokul Krishna Addanki. Explore bird photography from India organised by taxonomy at coolkriss.in`;
-    const ogImage = `https://coolkriss.in/og-default.jpg`;
+    const description =
+      loaderData?.description ||
+      `Photograph of ${speciesName} by Gokul Krishna Addanki. Explore bird photography from India organised by taxonomy at coolkriss.in`;
+    const ogImage = loaderData?.image_url
+      ? sizedImage(loaderData.image_url, { width: 1200, quality: 80 })
+      : `https://coolkriss.in/og-default.jpg`;
 
     return {
       meta: [
