@@ -77,6 +77,24 @@ function AdminSettings() {
           </p>
         </div>
       </Section>
+
+      <Section title="Awards & Recognition" keys={["awards_list"]} values={values} onChange={onChange}>
+        <div>
+          <label className="block text-xs font-light uppercase tracking-[0.25em] text-muted-foreground">
+            Awards List (JSON)
+          </label>
+          <textarea
+            value={values.awards_list ?? ""}
+            onChange={(e) => onChange("awards_list", e.target.value)}
+            rows={8}
+            className="mt-2 w-full rounded-sm border border-border bg-surface px-4 py-2.5 font-mono text-xs text-foreground focus:border-primary focus:outline-none"
+            placeholder='[{"year":"2024","title":"Bird Photographer of the Year — Finalist","issuer":"BPOTY","url":""}]'
+          />
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            Format: [{"{"}"year":"2024","title":"Award name","issuer":"Organisation","url":""{"}"}] — leave empty to hide the section.
+          </p>
+        </div>
+      </Section>
     </div>
   );
 }
