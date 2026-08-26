@@ -10,9 +10,9 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Coolkriss — Bird Photography by Gokul Krishna Addanki" },
-      { name: "description", content: "Award-winning bird photography from across the Indian subcontinent. Explore galleries by taxonomy, read field notes, and discover the beauty of avian life." },
+      { name: "description", content: "Fine-art bird photography from across the Indian subcontinent. Explore galleries by taxonomy, read field notes, and discover the beauty of avian life." },
       { property: "og:title", content: "Coolkriss — Bird Photography by Gokul Krishna Addanki" },
-      { property: "og:description", content: "Award-winning bird photography from across the Indian subcontinent." },
+      { property: "og:description", content: "Fine-art bird photography from across the Indian subcontinent." },
     ],
   }),
   component: LandingPage,
