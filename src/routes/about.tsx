@@ -30,18 +30,10 @@ export const Route = createFileRoute("/about")({
 
 type GearGroup = { category: string; items: string[] };
 
-const FALLBACK_GEAR: GearGroup[] = [
-  { category: "Camera Bodies", items: ["Canon EOS R5", "Nikon D500", "Sony A1"] },
-  { category: "Lenses", items: ["500mm f/4 L IS", "100-400mm f/4.5-5.6 zoom", "600mm f/4 L IS"] },
-  { category: "Support", items: ["Gitzo Series 5 Tripod", "Wimberley WH-200 Head", "Field hide / blind"] },
-  {
-    category: "Accessories",
-    items: ["Camouflage netting", "Binoculars 10x42", "Field guides (Grimmett & Inskipp)"],
-  },
-];
+type Award = { year?: string; title?: string; issuer?: string; url?: string };
 
 const FALLBACK_BIO =
-  "A passionate birder and photographer documenting the incredible avian diversity of India and beyond. Every photograph is a story of patience, light, and a fleeting moment in the wild. With over a decade behind the lens, I have chased birds from the Himalayan heights to the coastal wetlands of southern India — each expedition adding new chapters to an ongoing visual story of our remarkable avifauna.";
+  "Wildlife and bird photographer based in Hyderabad, India.";
 
 function useCountUp(target: number, duration = 1500) {
   const [count, setCount] = useState(0);
@@ -113,13 +105,23 @@ function AboutPage() {
     },
   });
 
-  let gear: GearGroup[] = FALLBACK_GEAR;
+  let gear: GearGroup[] = [];
   if (settings?.gear_list) {
     try {
       const parsed = JSON.parse(settings.gear_list);
-      if (Array.isArray(parsed) && parsed.length > 0) gear = parsed;
+      if (Array.isArray(parsed)) gear = parsed;
     } catch {
-      gear = FALLBACK_GEAR;
+      gear = [];
+    }
+  }
+
+  let awards: Award[] = [];
+  if (settings?.awards_list) {
+    try {
+      const parsed = JSON.parse(settings.awards_list);
+      if (Array.isArray(parsed)) awards = parsed;
+    } catch {
+      awards = [];
     }
   }
 
@@ -216,30 +218,86 @@ function AboutPage() {
         </div>
       </section>
 
-      {/* GEAR */}
-      <section className="w-full bg-background py-20">
-        <div className="mx-auto max-w-[1800px] px-6">
-          <p className="mb-3 text-xs uppercase tracking-[0.3em] text-primary">What's in the Bag</p>
-          <h2 className="mb-12 font-display text-4xl font-semibold text-foreground">The Kit</h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {gear.map((g) => (
-              <div key={g.category} className="rounded-sm border border-border/30 bg-surface p-6">
-                <p className="mb-3 text-xs uppercase tracking-[0.25em] text-primary">{g.category}</p>
-                <ul>
-                  {(g.items ?? []).map((it) => (
-                    <li
-                      key={it}
-                      className="border-b border-border/20 py-1 text-sm font-light text-muted-foreground last:border-0"
+      {/* AWARDS */}
+      {awards.length > 0 && (
+        <section className="w-full bg-background py-20">
+          <div className="mx-auto max-w-4xl px-6">
+            <p className="mb-3 text-xs uppercase tracking-[0.3em] text-primary">Recognition</p>
+            <h2 className="mb-12 font-display text-4xl font-semibold text-foreground">
+              Awards &amp; Recognition
+            </h2>
+            <ol className="border-l border-border/40">
+              {awards.map((a, i) => {
+                const body = (
+                  <>
+                    <span className="font-display text-lg text-foreground">{a.title}</span>
+                    {a.issuer && (
+                      <span className="mt-1 block text-sm font-light text-muted-foreground">
+                        {a.issuer}
+                      </span>
+                    )}
+                  </>
+                );
+                return (
+                  <li key={`${a.year}-${a.title}-${i}`} className="relative py-5 pl-8">
+                    <span
+                      className="absolute -left-[5px] top-7 h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: "#c9a84c" }}
+                    />
+                    <span
+                      className="block text-xs uppercase tracking-[0.25em]"
+                      style={{ color: "#c9a84c" }}
                     >
-                      {it}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+                      {a.year}
+                    </span>
+                    <div className="mt-2">
+                      {a.url ? (
+                        <a
+                          href={a.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="transition-opacity hover:opacity-80"
+                        >
+                          {body}
+                        </a>
+                      ) : (
+                        body
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {/* GEAR */}
+      {gear.length > 0 && (
+        <section className="w-full bg-background py-20">
+          <div className="mx-auto max-w-[1800px] px-6">
+            <p className="mb-3 text-xs uppercase tracking-[0.3em] text-primary">What's in the Bag</p>
+            <h2 className="mb-12 font-display text-4xl font-semibold text-foreground">The Kit</h2>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {gear.map((g) => (
+                <div key={g.category} className="rounded-sm border border-border/30 bg-surface p-6">
+                  <p className="mb-3 text-xs uppercase tracking-[0.25em] text-primary">{g.category}</p>
+                  <ul>
+                    {(g.items ?? []).map((it) => (
+                      <li
+                        key={it}
+                        className="border-b border-border/20 py-1 text-sm font-light text-muted-foreground last:border-0"
+                      >
+                        {it}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA */}
       <section className="w-full bg-surface py-20 text-center">
