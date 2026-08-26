@@ -22,6 +22,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GalleryIndexRouteImport } from './routes/gallery.index'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as SpeciesSlugRouteImport } from './routes/species.$slug'
 import { Route as GalleryOrderRouteImport } from './routes/gallery.$order'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
@@ -103,6 +104,11 @@ const GalleryIndexRoute = GalleryIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => GalleryRoute,
+} as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BlogRoute,
 } as any)
 const SpeciesSlugRoute = SpeciesSlugRouteImport.update({
   id: '/species/$slug',
@@ -217,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/blog/$slug': typeof BlogSlugRoute
   '/gallery/$order': typeof GalleryOrderRouteWithChildren
   '/species/$slug': typeof SpeciesSlugRoute
+  '/blog/': typeof BlogIndexRoute
   '/gallery/': typeof GalleryIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -237,7 +244,6 @@ export interface FileRoutesByTo {
   '/about-birds': typeof AboutBirdsRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
-  '/blog': typeof BlogRouteWithChildren
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
   '/robots.txt': typeof RobotsDottxtRoute
@@ -247,6 +253,7 @@ export interface FileRoutesByTo {
   '/blog/$slug': typeof BlogSlugRoute
   '/gallery/$order': typeof GalleryOrderRouteWithChildren
   '/species/$slug': typeof SpeciesSlugRoute
+  '/blog': typeof BlogIndexRoute
   '/gallery': typeof GalleryIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -280,6 +287,7 @@ export interface FileRoutesById {
   '/blog/$slug': typeof BlogSlugRoute
   '/gallery/$order': typeof GalleryOrderRouteWithChildren
   '/species/$slug': typeof SpeciesSlugRoute
+  '/blog/': typeof BlogIndexRoute
   '/gallery/': typeof GalleryIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -313,6 +321,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/gallery/$order'
     | '/species/$slug'
+    | '/blog/'
     | '/gallery/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -333,7 +342,6 @@ export interface FileRouteTypes {
     | '/about-birds'
     | '/admin'
     | '/auth'
-    | '/blog'
     | '/map'
     | '/mcp'
     | '/robots.txt'
@@ -343,6 +351,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/gallery/$order'
     | '/species/$slug'
+    | '/blog'
     | '/gallery'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -375,6 +384,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/gallery/$order'
     | '/species/$slug'
+    | '/blog/'
     | '/gallery/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -502,6 +512,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/gallery/'
       preLoaderRoute: typeof GalleryIndexRouteImport
       parentRoute: typeof GalleryRoute
+    }
+    '/blog/': {
+      id: '/blog/'
+      path: '/'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof BlogRoute
     }
     '/species/$slug': {
       id: '/species/$slug'
@@ -654,10 +671,12 @@ const AuthenticatedRouteRouteWithChildren =
 
 interface BlogRouteChildren {
   BlogSlugRoute: typeof BlogSlugRoute
+  BlogIndexRoute: typeof BlogIndexRoute
 }
 
 const BlogRouteChildren: BlogRouteChildren = {
   BlogSlugRoute: BlogSlugRoute,
+  BlogIndexRoute: BlogIndexRoute,
 }
 
 const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
