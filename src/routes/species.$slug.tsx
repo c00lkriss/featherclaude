@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 import { getWikipediaUrl } from "@/lib/wikipedia";
 import { lqip, sizedImage } from "@/lib/image-url";
 import { useSiteSettings } from "@/lib/site-settings";
+import { ShareRow } from "@/components/ShareRow";
+import { tagsMatchPhoto } from "@/lib/related";
 
 
 type SpeciesSearch = { p?: string };
@@ -255,6 +257,21 @@ function SpeciesPage() {
           return true;
         })
         .slice(0, 12);
+    },
+  });
+
+  const { data: fieldNotes } = useQuery({
+    queryKey: ["species-field-notes", current?.common_name, current?.species_name],
+    enabled: !!current,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("blog_posts")
+        .select("id, title, slug, cover_image_url, tags, created_at")
+        .eq("published", true)
+        .order("created_at", { ascending: false });
+      return (data ?? [])
+        .filter((post: any) => tagsMatchPhoto(post.tags, current!))
+        .slice(0, 3);
     },
   });
 
