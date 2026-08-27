@@ -29,6 +29,7 @@ import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as GalleryOrderFamilyRouteImport } from './routes/gallery.$order.$family'
+import { Route as BlogTagTagRouteImport } from './routes/blog.tag.$tag'
 import { Route as AuthenticatedAdminUploadRouteImport } from './routes/_authenticated/admin.upload'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedAdminManageRouteImport } from './routes/_authenticated/admin.manage'
@@ -142,6 +143,11 @@ const GalleryOrderFamilyRoute = GalleryOrderFamilyRouteImport.update({
   path: '/$family',
   getParentRoute: () => GalleryOrderRoute,
 } as any)
+const BlogTagTagRoute = BlogTagTagRouteImport.update({
+  id: '/tag/$tag',
+  path: '/tag/$tag',
+  getParentRoute: () => BlogRoute,
+} as any)
 const AuthenticatedAdminUploadRoute =
   AuthenticatedAdminUploadRouteImport.update({
     id: '/admin/upload',
@@ -235,6 +241,7 @@ export interface FileRoutesByFullPath {
   '/admin/manage': typeof AuthenticatedAdminManageRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/upload': typeof AuthenticatedAdminUploadRoute
+  '/blog/tag/$tag': typeof BlogTagTagRoute
   '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
   '/admin/edit/$id': typeof AuthenticatedAdminEditIdRoute
 }
@@ -265,6 +272,7 @@ export interface FileRoutesByTo {
   '/admin/manage': typeof AuthenticatedAdminManageRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/upload': typeof AuthenticatedAdminUploadRoute
+  '/blog/tag/$tag': typeof BlogTagTagRoute
   '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
   '/admin/edit/$id': typeof AuthenticatedAdminEditIdRoute
 }
@@ -299,6 +307,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/manage': typeof AuthenticatedAdminManageRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/upload': typeof AuthenticatedAdminUploadRoute
+  '/blog/tag/$tag': typeof BlogTagTagRoute
   '/gallery/$order/$family': typeof GalleryOrderFamilyRoute
   '/_authenticated/admin/edit/$id': typeof AuthenticatedAdminEditIdRoute
 }
@@ -333,6 +342,7 @@ export interface FileRouteTypes {
     | '/admin/manage'
     | '/admin/settings'
     | '/admin/upload'
+    | '/blog/tag/$tag'
     | '/gallery/$order/$family'
     | '/admin/edit/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -363,6 +373,7 @@ export interface FileRouteTypes {
     | '/admin/manage'
     | '/admin/settings'
     | '/admin/upload'
+    | '/blog/tag/$tag'
     | '/gallery/$order/$family'
     | '/admin/edit/$id'
   id:
@@ -396,6 +407,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/manage'
     | '/_authenticated/admin/settings'
     | '/_authenticated/admin/upload'
+    | '/blog/tag/$tag'
     | '/gallery/$order/$family'
     | '/_authenticated/admin/edit/$id'
   fileRoutesById: FileRoutesById
@@ -562,6 +574,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GalleryOrderFamilyRouteImport
       parentRoute: typeof GalleryOrderRoute
     }
+    '/blog/tag/$tag': {
+      id: '/blog/tag/$tag'
+      path: '/tag/$tag'
+      fullPath: '/blog/tag/$tag'
+      preLoaderRoute: typeof BlogTagTagRouteImport
+      parentRoute: typeof BlogRoute
+    }
     '/_authenticated/admin/upload': {
       id: '/_authenticated/admin/upload'
       path: '/admin/upload'
@@ -672,11 +691,13 @@ const AuthenticatedRouteRouteWithChildren =
 interface BlogRouteChildren {
   BlogSlugRoute: typeof BlogSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
+  BlogTagTagRoute: typeof BlogTagTagRoute
 }
 
 const BlogRouteChildren: BlogRouteChildren = {
   BlogSlugRoute: BlogSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
+  BlogTagTagRoute: BlogTagTagRoute,
 }
 
 const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)

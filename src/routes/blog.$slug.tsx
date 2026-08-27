@@ -1,9 +1,11 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { sizedImage } from "@/lib/image-url";
+import { ShareRow } from "@/components/ShareRow";
+import { safeFilterTags, tagsMatchPhoto } from "@/lib/related";
 
 const SITE_OG_DEFAULT = "https://coolkriss.in/og-default.jpg";
 
@@ -11,6 +13,17 @@ const formatDate = (d: string | null) =>
   d
     ? new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
     : "";
+
+type RelatedBird = {
+  id: string;
+  common_name: string | null;
+  species_name: string;
+  species_identifier: string;
+  image_url: string;
+  thumbnail_url: string | null;
+};
+
+type Neighbour = { slug: string; title: string } | null;
 
 export const Route = createFileRoute("/blog/$slug")({
   loader: async ({ params }) => {
@@ -21,14 +34,65 @@ export const Route = createFileRoute("/blog/$slug")({
       .eq("published", true)
       .maybeSingle();
     if (error || !data) throw notFound();
-    return data;
+    const post = data;
+
+    // --- Birds in this story (exact, case-insensitive tag == name) ---
+    let birds: RelatedBird[] = [];
+    const filterTags = safeFilterTags(post.tags);
+    if (filterTags.length > 0) {
+      const orFilter = filterTags
+        .map((t) => `common_name.ilike.${t},species_name.ilike.${t}`)
+        .join(",");
+      const { data: photoRows } = await supabase
+        .from("photos")
+        .select("id, common_name, species_name, species_identifier, image_url, thumbnail_url")
+        .or(orFilter)
+        .order("is_featured", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(60);
+      const seen = new Set<string>();
+      for (const row of (photoRows ?? []) as RelatedBird[]) {
+        if (!tagsMatchPhoto(post.tags, row)) continue;
+        if (seen.has(row.species_identifier)) continue;
+        seen.add(row.species_identifier);
+        birds.push(row);
+        if (birds.length >= 6) break;
+      }
+    }
+
+    // --- Prev (older) / next (newer) published posts ---
+    let prev: Neighbour = null;
+    let next: Neighbour = null;
+    if (post.created_at) {
+      const [older, newer] = await Promise.all([
+        supabase
+          .from("blog_posts")
+          .select("slug, title")
+          .eq("published", true)
+          .lt("created_at", post.created_at)
+          .order("created_at", { ascending: false })
+          .limit(1),
+        supabase
+          .from("blog_posts")
+          .select("slug, title")
+          .eq("published", true)
+          .gt("created_at", post.created_at)
+          .order("created_at", { ascending: true })
+          .limit(1),
+      ]);
+      prev = (older.data?.[0] as Neighbour) ?? null;
+      next = (newer.data?.[0] as Neighbour) ?? null;
+    }
+
+    return { post, birds, prev, next };
   },
   head: ({ loaderData }) => {
-    const title = loaderData ? `${loaderData.title} — Coolkriss` : "Field Notes — Coolkriss";
+    const post = loaderData?.post;
+    const title = post ? `${post.title} — Coolkriss` : "Field Notes — Coolkriss";
     const description =
-      loaderData?.excerpt ?? "Stories, field notes, and photography tips from the wild.";
-    const image = loaderData?.cover_image_url
-      ? sizedImage(loaderData.cover_image_url, { width: 1200, quality: 80, resize: "cover" })
+      post?.excerpt ?? "Stories, field notes, and photography tips from the wild.";
+    const image = post?.cover_image_url
+      ? sizedImage(post.cover_image_url, { width: 1200, quality: 80, resize: "cover" })
       : SITE_OG_DEFAULT;
 
     return {
@@ -42,16 +106,16 @@ export const Route = createFileRoute("/blog/$slug")({
         { name: "twitter:card", content: "summary_large_image" },
         { name: "twitter:image", content: image },
       ],
-      scripts: loaderData
+      scripts: post
         ? [
             {
               type: "application/ld+json",
               children: JSON.stringify({
                 "@context": "https://schema.org",
                 "@type": "BlogPosting",
-                headline: loaderData.title,
+                headline: post.title,
                 image: image,
-                datePublished: loaderData.created_at,
+                datePublished: post.created_at,
                 description,
                 author: { "@type": "Person", name: "Gokul Krishna Addanki" },
                 publisher: { "@type": "Organization", name: "Coolkriss" },
@@ -79,7 +143,7 @@ function PostMissing() {
 }
 
 function BlogPostPage() {
-  const post = Route.useLoaderData();
+  const { post, birds, prev, next } = Route.useLoaderData();
 
   return (
     <article className="mx-auto max-w-3xl px-6 py-12">
@@ -111,15 +175,18 @@ function BlogPostPage() {
         {post.tags && post.tags.length > 0 && (
           <div className="mt-5 flex flex-wrap gap-2">
             {post.tags.map((t: string) => (
-              <span
+              <Link
                 key={t}
-                className="rounded-sm border border-border px-2 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground"
+                to="/blog/tag/$tag"
+                params={{ tag: t }}
+                className="rounded-sm border border-border px-2 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:border-primary/60 hover:text-primary"
               >
                 {t}
-              </span>
+              </Link>
             ))}
           </div>
         )}
+        <ShareRow className="mt-6" path={`/blog/${post.slug}`} title={post.title} />
       </header>
 
       <div className="mt-10 space-y-6 text-[17px] leading-[1.85] text-foreground/90">
@@ -164,6 +231,86 @@ function BlogPostPage() {
           {post.content ?? ""}
         </ReactMarkdown>
       </div>
+
+      {birds.length > 0 && (
+        <section className="mt-16 border-t border-border pt-10">
+          <h2 className="font-display text-2xl text-foreground">Birds in this story</h2>
+          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
+            {birds.map((b) => (
+              <Link
+                key={b.id}
+                to="/species/$slug"
+                params={{ slug: b.species_identifier }}
+                className="group overflow-hidden rounded-sm border border-border bg-surface transition-colors hover:border-primary/60"
+              >
+                <div
+                  className="flex h-28 w-full items-center justify-center overflow-hidden"
+                  style={{ backgroundColor: "#111" }}
+                >
+                  <img
+                    src={sizedImage(b.thumbnail_url || b.image_url, {
+                      width: 400,
+                      quality: 72,
+                      resize: "contain",
+                    })}
+                    alt={b.common_name || b.species_name}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <div className="p-3">
+                  <p className="truncate text-sm font-medium text-foreground group-hover:text-primary">
+                    {b.common_name || b.species_name}
+                  </p>
+                  <p className="truncate text-[11px] font-light italic text-muted-foreground">
+                    {b.species_name}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <div className="mt-14 border-t border-border pt-8">
+        <ShareRow path={`/blog/${post.slug}`} title={post.title} />
+      </div>
+
+      {(prev || next) && (
+        <nav className="mt-8 grid gap-4 border-t border-border pt-8 sm:grid-cols-2">
+          {prev ? (
+            <Link
+              to="/blog/$slug"
+              params={{ slug: prev.slug }}
+              className="group rounded-sm border border-border bg-surface p-4 transition-colors hover:border-primary/60"
+            >
+              <span className="flex items-center gap-1 text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+                <ChevronLeft className="h-3 w-3" /> Previous
+              </span>
+              <span className="mt-2 block font-display text-base text-foreground group-hover:text-primary">
+                {prev.title}
+              </span>
+            </Link>
+          ) : (
+            <span />
+          )}
+          {next && (
+            <Link
+              to="/blog/$slug"
+              params={{ slug: next.slug }}
+              className="group rounded-sm border border-border bg-surface p-4 text-right transition-colors hover:border-primary/60 sm:col-start-2"
+            >
+              <span className="flex items-center justify-end gap-1 text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+                Next <ChevronRight className="h-3 w-3" />
+              </span>
+              <span className="mt-2 block font-display text-base text-foreground group-hover:text-primary">
+                {next.title}
+              </span>
+            </Link>
+          )}
+        </nav>
+      )}
     </article>
   );
 }

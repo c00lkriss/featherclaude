@@ -1,7 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { sizedImage } from "@/lib/image-url";
+import { PostCard, type BlogCardPost, formatPostDate } from "@/components/blog/PostCard";
+
+export { formatPostDate };
 
 export const Route = createFileRoute("/blog/")({
   head: () => ({
@@ -17,32 +19,17 @@ export const Route = createFileRoute("/blog/")({
   component: BlogPage,
 });
 
-type Post = {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string | null;
-  cover_image_url: string | null;
-  tags: string[] | null;
-  created_at: string | null;
-};
-
-export const formatPostDate = (d: string | null) =>
-  d
-    ? new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
-    : "";
-
 function BlogPage() {
   const { data: posts, isLoading } = useQuery({
     queryKey: ["blog-posts", "published"],
-    queryFn: async (): Promise<Post[]> => {
+    queryFn: async (): Promise<BlogCardPost[]> => {
       const { data, error } = await supabase
         .from("blog_posts")
         .select("id, title, slug, excerpt, cover_image_url, tags, created_at")
         .eq("published", true)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as BlogCardPost[];
     },
   });
 
@@ -77,53 +64,7 @@ function BlogPage() {
       ) : (
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((p) => (
-            <Link
-              key={p.id}
-              to="/blog/$slug"
-              params={{ slug: p.slug }}
-              className="group flex flex-col overflow-hidden rounded-sm border border-border bg-surface transition-colors hover:border-primary/60"
-            >
-              <div className="aspect-[3/2] w-full overflow-hidden bg-background">
-                {p.cover_image_url ? (
-                  <img
-                    src={sizedImage(p.cover_image_url, { width: 800, quality: 75, resize: "cover" })}
-                    alt={p.title}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-background to-surface">
-                    <span className="font-display text-2xl text-primary/40">Coolkriss</span>
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-1 flex-col p-5">
-                <div className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
-                  {formatPostDate(p.created_at)}
-                </div>
-                <h2 className="mt-2 font-display text-xl text-foreground group-hover:text-primary">
-                  {p.title}
-                </h2>
-                {p.excerpt && (
-                  <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
-                    {p.excerpt}
-                  </p>
-                )}
-                {p.tags && p.tags.length > 0 && (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {p.tags.map((t) => (
-                      <span
-                        key={t}
-                        className="rounded-sm border border-border px-2 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground"
-                      >
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </Link>
+            <PostCard key={p.id} post={p} />
           ))}
         </div>
       )}

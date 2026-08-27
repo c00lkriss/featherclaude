@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 import { getWikipediaUrl } from "@/lib/wikipedia";
 import { lqip, sizedImage } from "@/lib/image-url";
 import { useSiteSettings } from "@/lib/site-settings";
+import { ShareRow } from "@/components/ShareRow";
+import { tagsMatchPhoto } from "@/lib/related";
 
 
 type SpeciesSearch = { p?: string };
@@ -255,6 +257,21 @@ function SpeciesPage() {
           return true;
         })
         .slice(0, 12);
+    },
+  });
+
+  const { data: fieldNotes } = useQuery({
+    queryKey: ["species-field-notes", current?.common_name, current?.species_name],
+    enabled: !!current,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("blog_posts")
+        .select("id, title, slug, cover_image_url, tags, created_at")
+        .eq("published", true)
+        .order("created_at", { ascending: false });
+      return (data ?? [])
+        .filter((post: any) => tagsMatchPhoto(post.tags, current!))
+        .slice(0, 3);
     },
   });
 
@@ -550,6 +567,14 @@ function SpeciesPage() {
         >
           <InfoPanel photo={current} />
 
+          <div className="mx-auto mt-6 max-w-5xl">
+            <ShareRow
+              variant="overlay"
+              path={`/species/${current.species_identifier}`}
+              title={`${current.common_name || current.species_name} — Coolkriss`}
+            />
+          </div>
+
           {/* NEARBY SPECIES STRIP */}
           {nearbyPhotos && nearbyPhotos.length > 0 && (
             <div className="mx-auto mt-8 max-w-5xl border-t border-white/15 pt-6">
@@ -596,6 +621,54 @@ function SpeciesPage() {
                     <p className="truncate text-[10px] font-light italic text-white/60">
                       {p.species_name}
                     </p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* FIELD NOTES */}
+          {fieldNotes && fieldNotes.length > 0 && (
+            <div className="mx-auto mt-8 max-w-5xl border-t border-white/15 pt-6">
+              <p className="text-[10px] font-light uppercase tracking-[0.3em]" style={{ color: "#c9a84c" }}>
+                Field Notes
+              </p>
+              <p className="mt-1 text-sm font-light text-white/85">
+                Stories featuring this bird
+              </p>
+              <div className="mt-4 grid gap-4 sm:grid-cols-3">
+                {fieldNotes.map((post: any) => (
+                  <Link
+                    key={post.id}
+                    to="/blog/$slug"
+                    params={{ slug: post.slug }}
+                    className="group flex gap-3 rounded-sm border border-white/15 p-2 transition-colors hover:border-[#c9a84c]/60"
+                  >
+                    <div className="h-14 w-20 flex-shrink-0 overflow-hidden rounded-sm" style={{ backgroundColor: "#111" }}>
+                      {post.cover_image_url && (
+                        <img
+                          src={sizedImage(post.cover_image_url, { width: 600, quality: 70, resize: "cover" })}
+                          alt={post.title}
+                          loading="lazy"
+                          decoding="async"
+                          className="h-full w-full object-cover"
+                        />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="line-clamp-2 text-[12px] font-medium text-white/90 group-hover:text-[#c9a84c]">
+                        {post.title}
+                      </p>
+                      <p className="mt-1 text-[10px] font-light uppercase tracking-widest text-white/55">
+                        {post.created_at
+                          ? new Date(post.created_at).toLocaleDateString("en-IN", {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            })
+                          : ""}
+                      </p>
+                    </div>
                   </Link>
                 ))}
               </div>
