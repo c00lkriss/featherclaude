@@ -85,11 +85,21 @@ type LifelistRow = {
 };
 
 function MapPage() {
+  const groups = useLocationGroups();
+  const [activeLocation, setActiveLocation] = useState<ActiveLocation | null>(null);
+
   return (
     <div className="bg-background">
       <Header />
       <StatsBar />
-      <MapView />
+      <MapView groups={groups} onSelect={setActiveLocation} />
+      {activeLocation && (
+        <LocationPanel
+          active={activeLocation}
+          onClose={() => setActiveLocation(null)}
+        />
+      )}
+      <LocationsList groups={groups} onSelect={setActiveLocation} />
       <Wishlist />
     </div>
   );
