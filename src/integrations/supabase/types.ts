@@ -151,6 +151,7 @@ export type Database = {
           date_taken: string | null
           description: string | null
           family_name: string
+          file_hash: string | null
           focal_length: string | null
           genus: string | null
           hero_location: string | null
@@ -190,6 +191,7 @@ export type Database = {
           date_taken?: string | null
           description?: string | null
           family_name: string
+          file_hash?: string | null
           focal_length?: string | null
           genus?: string | null
           hero_location?: string | null
@@ -229,6 +231,7 @@ export type Database = {
           date_taken?: string | null
           description?: string | null
           family_name?: string
+          file_hash?: string | null
           focal_length?: string | null
           genus?: string | null
           hero_location?: string | null
