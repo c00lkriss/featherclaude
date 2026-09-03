@@ -19,6 +19,7 @@ import { readImageMeta } from "@/lib/image-meta";
 import { parseSpeciesFromFilename } from "@/lib/filename-species";
 import { fetchXenoCantoCall } from "@/lib/xeno-canto";
 import { lookupTaxonomyByCommonName } from "@/lib/taxonomy-lookup";
+import { hashFile } from "@/lib/file-hash";
 
 
 export const Route = createFileRoute("/_authenticated/admin/bulk-upload")({
@@ -78,6 +79,17 @@ type Item = {
   // detection source
   source?: "filename" | "ai" | null;
   filename_guess?: string | null;
+  file_hash?: string;
+  duplicate?: DuplicatePhoto | null;
+};
+
+type DuplicatePhoto = {
+  id: string;
+  common_name: string | null;
+  title: string | null;
+  image_url: string;
+  created_at: string | null;
+  species_identifier: string | null;
 };
 
 const MAX_FILES = 20;
@@ -122,6 +134,35 @@ function BulkUploadPage() {
       country: "India",
     }));
     setItems((prev) => [...prev, ...newItems]);
+
+    // Hash each file and check both the database and this batch for exact duplicates.
+    void Promise.all(
+      newItems.map(async (item) => {
+        try {
+          const hash = await hashFile(item.file);
+          const { data } = await supabase
+            .from("photos")
+            .select("id, common_name, title, image_url, created_at, species_identifier")
+            .eq("file_hash", hash)
+            .limit(1)
+            .maybeSingle();
+          const existingBatch = [...items, ...newItems].find(
+            (candidate) => candidate.id !== item.id && candidate.file_hash === hash,
+          );
+          const duplicate = data ?? (existingBatch ? {
+            id: existingBatch.id,
+            common_name: existingBatch.common_name ?? null,
+            title: existingBatch.title ?? null,
+            image_url: existingBatch.preview,
+            created_at: null,
+            species_identifier: null,
+          } : null);
+          updateItem(item.id, { file_hash: hash, duplicate });
+        } catch {
+          // silent — duplicate checking is advisory only
+        }
+      }),
+    );
   };
 
   const updateItem = (id: string, patch: Partial<Item>) =>

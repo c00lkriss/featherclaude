@@ -143,7 +143,7 @@ function UploadPage() {
     common_name: string | null;
     title: string | null;
     image_url: string;
-    created_at: string;
+    created_at: string | null;
     species_identifier: string | null;
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -445,6 +445,7 @@ function UploadPage() {
         aspect_ratio: meta?.aspect_ratio ?? null,
         tags,
         is_featured: form.is_featured,
+        file_hash: fileHash ?? undefined,
         iucn_status: form.iucn_status || null,
         hero_story: form.hero_story.trim() || null,
         hero_location: form.hero_location.trim() || null,
@@ -533,9 +534,52 @@ function UploadPage() {
           ) : (
             <div className="relative overflow-hidden rounded-sm border border-border bg-background">
               <img src={preview} alt="Preview" className="mx-auto max-h-[300px] w-auto object-contain" />
+              {duplicate && (
+                <div className="m-3 rounded-sm border border-destructive/50 bg-destructive/5 p-4">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-destructive">
+                    Duplicate detected
+                  </p>
+                  <p className="mb-3 text-xs font-light text-muted-foreground">
+                    This exact image was already uploaded. You can still proceed if intentional.
+                  </p>
+                  <div className="flex items-center gap-3 rounded-sm border border-border bg-surface p-3">
+                    <img
+                      src={sizedImage(duplicate.image_url, { width: 120, quality: 70, resize: "contain" })}
+                      alt={duplicate.common_name || "Previously uploaded photo"}
+                      className="h-14 w-20 flex-shrink-0 rounded-sm object-contain"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {duplicate.common_name || duplicate.title || "Unknown species"}
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-muted-foreground">
+                        Uploaded: {duplicate.created_at
+                          ? new Date(duplicate.created_at).toLocaleDateString("en-IN", {
+                              day: "numeric", month: "short", year: "numeric",
+                            })
+                          : "Date unavailable"}
+                      </p>
+                    </div>
+                    <Link
+                      to="/species/$slug"
+                      params={{ slug: duplicate.species_identifier || duplicate.id }}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-shrink-0 rounded-sm border border-border px-3 py-1.5 text-[11px] font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                    >
+                      View ↗
+                    </Link>
+                  </div>
+                </div>
+              )}
               <button
                 type="button"
-                onClick={() => { setFile(null); setPreview(null); }}
+                onClick={() => {
+                  setFile(null);
+                  setPreview(null);
+                  setFileHash(null);
+                  setDuplicate(null);
+                }}
                 className="absolute right-3 top-3 rounded-full bg-background/80 p-2 text-foreground backdrop-blur-md hover:text-primary"
                 aria-label="Remove image"
               >
