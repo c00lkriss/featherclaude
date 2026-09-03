@@ -85,11 +85,21 @@ type LifelistRow = {
 };
 
 function MapPage() {
+  const groups = useLocationGroups();
+  const [activeLocation, setActiveLocation] = useState<ActiveLocation | null>(null);
+
   return (
     <div className="bg-background">
       <Header />
       <StatsBar />
-      <MapView />
+      <MapView groups={groups} onSelect={setActiveLocation} />
+      {activeLocation && (
+        <LocationPanel
+          active={activeLocation}
+          onClose={() => setActiveLocation(null)}
+        />
+      )}
+      <LocationsList groups={groups} onSelect={setActiveLocation} />
       <Wishlist />
     </div>
   );
@@ -218,10 +228,42 @@ function StatCard({
 
 /* ---------------- Map ---------------- */
 
-function MapView() {
-  const mapEl = useRef<HTMLDivElement | null>(null);
-  const [ready, setReady] = useState(false);
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
+function normalizeLocation(loc: string | null): string {
+  if (!loc) return "";
+  return loc
+    .replace(
+      /,?\s*(India|Telangana|Maharashtra|Karnataka|Kerala|Rajasthan|Gujarat|Uttarakhand|Jammu|Kashmir|Ladakh|Assam|West Bengal|Tamil Nadu|Andhra Pradesh|Delhi|Goa|Himachal Pradesh|Odisha|Madhya Pradesh|Uttar Pradesh|Haryana|Punjab|Bihar|Jharkhand|Chhattisgarh)\s*$/gi,
+      "",
+    )
+    .replace(/,?\s*(IN|TS|MH|KA|KL|RJ|GJ|UK|HP|AS|WB|TN|AP|DL|PB|HR|OR|JK)\s*$/gi, "")
+    .replace(/,\s*$/, "")
+    .trim();
+}
+
+type Loc = {
+  name: string;
+  lat: number;
+  lng: number;
+  photos: PhotoRow[];
+  species: Set<string>;
+};
+
+const MERGE_RADIUS_KM = 10;
+
+function useLocationGroups() {
   const { data: photos } = useQuery({
     queryKey: ["map-photos"],
     queryFn: async (): Promise<PhotoRow[]> => {
@@ -236,6 +278,56 @@ function MapView() {
       return (data ?? []) as PhotoRow[];
     },
   });
+
+  return useMemo<Loc[]>(() => {
+    const groups: Loc[] = [];
+    (photos ?? []).forEach((p) => {
+      if (p.latitude == null || p.longitude == null) return;
+      const existing = groups.find(
+        (g) => haversineKm(g.lat, g.lng, p.latitude!, p.longitude!) < MERGE_RADIUS_KM,
+      );
+      if (existing) {
+        existing.photos.push(p);
+        existing.species.add(p.species_identifier);
+        const norm = normalizeLocation(p.location);
+        if (norm && (!existing.name || existing.name.includes(","))) {
+          existing.name = norm;
+        }
+      } else {
+        groups.push({
+          name:
+            normalizeLocation(p.location) ||
+            `${p.latitude.toFixed(2)}, ${p.longitude.toFixed(2)}`,
+          lat: p.latitude,
+          lng: p.longitude,
+          photos: [p],
+          species: new Set([p.species_identifier]),
+        });
+      }
+    });
+    return groups;
+  }, [photos]);
+}
+
+export type ActiveLocation = {
+  name: string;
+  lat: number;
+  lng: number;
+  photos: PhotoRow[];
+  speciesCount: number;
+};
+
+function MapView({
+  groups,
+  onSelect,
+}: {
+  groups: Loc[];
+  onSelect: (loc: ActiveLocation) => void;
+}) {
+  const mapEl = useRef<HTMLDivElement | null>(null);
+  const [ready, setReady] = useState(false);
+  const selectRef = useRef(onSelect);
+  selectRef.current = onSelect;
 
   // Load Leaflet + cluster
   useEffect(() => {
@@ -258,7 +350,7 @@ function MapView() {
   }, []);
 
   useEffect(() => {
-    if (!ready || !mapEl.current || !photos) return;
+    if (!ready || !mapEl.current || groups.length === 0) return;
     const L = (window as any).L;
     if (!L) return;
 
@@ -268,47 +360,30 @@ function MapView() {
       worldCopyJump: true,
     });
 
-    L.tileLayer(
-      "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png",
-      {
-        attribution: "© OpenStreetMap contributors © CARTO",
-        subdomains: "abcd",
-        maxZoom: 19,
-      },
-    ).addTo(map);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution:
+        '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19,
+    }).addTo(map);
 
-    // Group by location
-    type Loc = {
-      name: string;
-      lat: number;
-      lng: number;
-      photos: PhotoRow[];
-      species: Set<string>;
-    };
-    const groups = new Map<string, Loc>();
-    photos.forEach((p) => {
-      if (p.latitude == null || p.longitude == null) return;
-      const key = (p.location ?? `${p.latitude.toFixed(3)},${p.longitude.toFixed(3)}`).trim();
-      if (!groups.has(key)) {
-        groups.set(key, {
-          name: key || "Unknown",
-          lat: p.latitude,
-          lng: p.longitude,
-          photos: [],
-          species: new Set(),
-        });
-      }
-      const g = groups.get(key)!;
-      g.photos.push(p);
-      g.species.add(p.species_identifier);
-    });
+    // Dark theme for OSM tiles via CSS filter
+    if (!document.getElementById("coolkriss-map-dark")) {
+      const style = document.createElement("style");
+      style.id = "coolkriss-map-dark";
+      style.textContent = `
+        .leaflet-tile-pane {
+          filter: invert(1) hue-rotate(200deg) brightness(0.7) contrast(1.1) saturate(0.4);
+        }
+      `;
+      document.head.appendChild(style);
+    }
 
     const cluster = L.markerClusterGroup({
       showCoverageOnHover: false,
       spiderfyOnMaxZoom: true,
     });
 
-    Array.from(groups.values()).forEach((g) => {
+    groups.forEach((g) => {
       const count = g.photos.length;
       const html = `
         <div style="
@@ -354,16 +429,28 @@ function MapView() {
           ">View photos →</a>
         </div>`;
       marker.bindPopup(popup);
+      marker.on("click", () => {
+        selectRef.current({
+          name: g.name,
+          lat: g.lat,
+          lng: g.lng,
+          photos: g.photos,
+          speciesCount: g.species.size,
+        });
+        setTimeout(() => {
+          document
+            .getElementById("location-panel")
+            ?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 150);
+      });
       cluster.addLayer(marker);
     });
 
     map.addLayer(cluster);
 
-    if (groups.size > 0) {
+    if (groups.length > 0) {
       try {
-        const bounds = L.latLngBounds(
-          Array.from(groups.values()).map((g) => [g.lat, g.lng]),
-        );
+        const bounds = L.latLngBounds(groups.map((g) => [g.lat, g.lng]));
         map.fitBounds(bounds.pad(0.3), { maxZoom: 8 });
       } catch {
         // ignore
@@ -373,7 +460,7 @@ function MapView() {
     return () => {
       map.remove();
     };
-  }, [ready, photos]);
+  }, [ready, groups]);
 
   return (
     <section className="mt-14 w-full">
@@ -388,6 +475,134 @@ function MapView() {
           Loading map…
         </p>
       )}
+    </section>
+  );
+}
+
+function LocationPanel({
+  active,
+  onClose,
+}: {
+  active: ActiveLocation;
+  onClose: () => void;
+}) {
+  return (
+    <section
+      id="location-panel"
+      className="mt-0 border-t border-border/30 bg-surface px-6 py-12"
+    >
+      <div className="mx-auto max-w-[1800px]">
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <p className="mb-1 text-[10px] font-light uppercase tracking-[0.3em] text-primary">
+              📍 Location
+            </p>
+            <h2 className="font-display text-3xl font-semibold text-foreground">
+              {active.name}
+            </h2>
+            <p className="mt-1 text-sm font-light text-muted-foreground">
+              {active.speciesCount} species · {active.photos.length} photo
+              {active.photos.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+          <div className="flex flex-shrink-0 items-center gap-3">
+            <Link
+              to="/gallery"
+              search={{ location: active.name } as never}
+              className="rounded-sm border border-primary px-4 py-2 text-xs font-medium uppercase tracking-widest text-primary transition-colors hover:bg-primary hover:text-background"
+            >
+              All photos →
+            </Link>
+            <button
+              onClick={onClose}
+              className="rounded-sm border border-border px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+            >
+              ✕ Close
+            </button>
+          </div>
+        </div>
+
+        <div className="columns-2 gap-3 sm:columns-3 lg:columns-4 xl:columns-5">
+          {active.photos.map((p) => (
+            <Link
+              key={p.id}
+              to="/species/$slug"
+              params={{ slug: p.species_identifier }}
+              className="group mb-3 block overflow-hidden rounded-sm border border-border/20 transition-colors hover:border-primary/50"
+              style={{ backgroundColor: "#111" }}
+            >
+              <img
+                src={sizedImage(p.image_url, {
+                  width: 400,
+                  quality: 75,
+                  resize: "contain",
+                })}
+                alt={p.common_name || ""}
+                className="h-auto w-full object-contain transition-transform duration-300 group-hover:scale-[1.02]"
+                style={{ backgroundColor: "#111" }}
+                loading="lazy"
+              />
+              <div className="px-2 py-2">
+                <p className="truncate text-[11px] font-medium text-foreground">
+                  {p.common_name}
+                </p>
+                <p className="truncate text-[10px] italic text-muted-foreground">
+                  {p.species_name}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        <p className="mt-8 text-[10px] text-muted-foreground">
+          {active.lat.toFixed(4)}°N, {active.lng.toFixed(4)}°E
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function LocationsList({
+  groups,
+  onSelect,
+}: {
+  groups: Loc[];
+  onSelect: (loc: ActiveLocation) => void;
+}) {
+  if (groups.length === 0) return null;
+  return (
+    <section className="mx-auto mb-4 mt-12 max-w-6xl border-t border-border/30 px-6 pt-10">
+      <p className="mb-2 text-[10px] font-light uppercase tracking-[0.3em] text-primary">
+        All Locations
+      </p>
+      <h3 className="mb-6 font-display text-2xl font-semibold text-foreground">
+        Where I've Photographed
+      </h3>
+      <div className="flex flex-wrap gap-2">
+        {groups.map((g) => (
+          <button
+            key={g.name}
+            onClick={() => {
+              onSelect({
+                name: g.name,
+                lat: g.lat,
+                lng: g.lng,
+                photos: g.photos,
+                speciesCount: g.species.size,
+              });
+              setTimeout(() => {
+                document
+                  .getElementById("location-panel")
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }, 150);
+            }}
+            className="rounded-full border border-border px-4 py-1.5 text-xs font-light text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+          >
+            📍 {g.name}
+            <span className="ml-2 text-[10px] opacity-60">{g.photos.length}</span>
+          </button>
+        ))}
+      </div>
     </section>
   );
 }
