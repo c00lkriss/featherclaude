@@ -22,6 +22,7 @@ import { parseSpeciesFromFilename } from "@/lib/filename-species";
 import { fetchXenoCantoCall } from "@/lib/xeno-canto";
 import { identifyBird } from "@/lib/identify-bird.functions";
 import { fileToDownscaledDataURL } from "@/lib/bird-constants";
+import { hashFile } from "@/lib/file-hash";
 
 
 export const Route = createFileRoute("/_authenticated/admin/upload")({
@@ -136,6 +137,15 @@ function UploadPage() {
   const [filenameStatus, setFilenameStatus] = useState<"pending" | "accepted" | "rejected" | "none">("none");
   const [ebirdMatchBadge, setEbirdMatchBadge] = useState<"hit" | "miss" | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [fileHash, setFileHash] = useState<string | null>(null);
+  const [duplicate, setDuplicate] = useState<{
+    id: string;
+    common_name: string | null;
+    title: string | null;
+    image_url: string;
+    created_at: string;
+    species_identifier: string | null;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: featuredPhotos, refetch: refetchFeatured } = useQuery({
