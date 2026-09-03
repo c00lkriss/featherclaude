@@ -374,8 +374,9 @@ function BulkUploadPage() {
           aspect_ratio: meta?.aspect_ratio ?? null,
           country: item.country || "India",
           tags: [],
-          is_featured: canFeature,
-          iucn_status: item.iucn_status || null,
+           is_featured: canFeature,
+           iucn_status: item.iucn_status || null,
+           file_hash: savedFileHash,
         }).select("id").single();
         if (insErr) throw insErr;
 
