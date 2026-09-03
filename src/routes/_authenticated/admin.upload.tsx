@@ -271,6 +271,23 @@ function UploadPage() {
     } catch {
       // silent — EXIF is optional
     }
+
+    // Duplicate check via SHA-256 hash
+    setDuplicate(null);
+    setFileHash(null);
+    try {
+      const hash = await hashFile(f);
+      setFileHash(hash);
+      const { data } = await supabase
+        .from("photos")
+        .select("id, common_name, title, image_url, created_at, species_identifier")
+        .eq("file_hash", hash)
+        .limit(1)
+        .maybeSingle();
+      if (data) setDuplicate(data);
+    } catch {
+      // silent — duplicate check is advisory only
+    }
   };
 
   const acceptFilename = async () => {
