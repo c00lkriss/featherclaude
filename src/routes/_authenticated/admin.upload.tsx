@@ -380,6 +380,10 @@ function UploadPage() {
         }
       }
 
+      // Ensure the fingerprint is available even if the advisory check is still running.
+      const savedFileHash = fileHash ?? await hashFile(file);
+      if (!fileHash) setFileHash(savedFileHash);
+
       // Compute aspect ratio metadata
       const meta = await readImageMeta(file);
 
@@ -445,7 +449,7 @@ function UploadPage() {
         aspect_ratio: meta?.aspect_ratio ?? null,
         tags,
         is_featured: form.is_featured,
-        file_hash: fileHash ?? undefined,
+        file_hash: savedFileHash,
         iucn_status: form.iucn_status || null,
         hero_story: form.hero_story.trim() || null,
         hero_location: form.hero_location.trim() || null,

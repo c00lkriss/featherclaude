@@ -309,6 +309,7 @@ function BulkUploadPage() {
     let featuredSavedInBatch = 0;
     for (const item of ready) {
       updateItem(item.id, { status: "saving" });
+      const savedFileHash = item.file_hash ?? await hashFile(item.file);
       try {
         const canFeature =
           !!item.is_featured && (currentFeatured ?? 0) + featuredSavedInBatch < 5;
