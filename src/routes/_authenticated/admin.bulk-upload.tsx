@@ -6,6 +6,7 @@ import exifr from "exifr";
 import { CheckCircle2, ImagePlus, Loader2, MapPin, Pencil, Save, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { sizedImage } from "@/lib/image-url";
 import { buildPhotoSlug, fileToDownscaledDataURL, formatShutter, slugify } from "@/lib/bird-constants";
 import { identifyBird } from "@/lib/identify-bird.functions";
 import {
@@ -19,6 +20,7 @@ import { readImageMeta } from "@/lib/image-meta";
 import { parseSpeciesFromFilename } from "@/lib/filename-species";
 import { fetchXenoCantoCall } from "@/lib/xeno-canto";
 import { lookupTaxonomyByCommonName } from "@/lib/taxonomy-lookup";
+import { hashFile } from "@/lib/file-hash";
 
 
 export const Route = createFileRoute("/_authenticated/admin/bulk-upload")({
@@ -78,6 +80,17 @@ type Item = {
   // detection source
   source?: "filename" | "ai" | null;
   filename_guess?: string | null;
+  file_hash?: string;
+  duplicate?: DuplicatePhoto | null;
+};
+
+type DuplicatePhoto = {
+  id: string;
+  common_name: string | null;
+  title: string | null;
+  image_url: string;
+  created_at: string | null;
+  species_identifier: string | null;
 };
 
 const MAX_FILES = 20;
@@ -122,6 +135,43 @@ function BulkUploadPage() {
       country: "India",
     }));
     setItems((prev) => [...prev, ...newItems]);
+
+    // Hash each file and check both the database and this batch for exact duplicates.
+    void (async () => {
+      const hashEntries = await Promise.all(
+        newItems.map(async (item) => [item.id, await hashFile(item.file)] as const),
+      );
+      const hashes = new Map(hashEntries);
+
+      await Promise.all(
+        newItems.map(async (item) => {
+          try {
+            const hash = hashes.get(item.id);
+            if (!hash) return;
+            const { data } = await supabase
+              .from("photos")
+              .select("id, common_name, title, image_url, created_at, species_identifier")
+              .eq("file_hash", hash)
+              .limit(1)
+              .maybeSingle();
+            const existingBatch = [...items, ...newItems].find(
+              (candidate) => candidate.id !== item.id && (hashes.get(candidate.id) ?? candidate.file_hash) === hash,
+            );
+            const duplicate = data ?? (existingBatch ? {
+              id: existingBatch.id,
+              common_name: existingBatch.common_name ?? null,
+              title: existingBatch.title ?? null,
+              image_url: existingBatch.preview,
+              created_at: null,
+              species_identifier: null,
+            } : null);
+            updateItem(item.id, { file_hash: hash, duplicate });
+          } catch {
+            // silent — duplicate checking is advisory only
+          }
+        }),
+      );
+    })();
   };
 
   const updateItem = (id: string, patch: Partial<Item>) =>
@@ -259,6 +309,7 @@ function BulkUploadPage() {
     let featuredSavedInBatch = 0;
     for (const item of ready) {
       updateItem(item.id, { status: "saving" });
+      const savedFileHash = item.file_hash ?? await hashFile(item.file);
       try {
         const canFeature =
           !!item.is_featured && (currentFeatured ?? 0) + featuredSavedInBatch < 5;
@@ -323,8 +374,9 @@ function BulkUploadPage() {
           aspect_ratio: meta?.aspect_ratio ?? null,
           country: item.country || "India",
           tags: [],
-          is_featured: canFeature,
-          iucn_status: item.iucn_status || null,
+           is_featured: canFeature,
+           iucn_status: item.iucn_status || null,
+           file_hash: savedFileHash,
         }).select("id").single();
         if (insErr) throw insErr;
 
@@ -434,7 +486,13 @@ function BulkUploadPage() {
             {readyCount} ready · {items.filter((i) => i.status === "saved").length} saved ·{" "}
             {items.filter((i) => i.status === "error").length} errors
           </p>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col items-end gap-3">
+            {items.filter((i) => i.duplicate).length > 0 && (
+              <p className="text-xs font-light text-destructive">
+                {items.filter((i) => i.duplicate).length} duplicate{items.filter((i) => i.duplicate).length > 1 ? "s" : ""} detected — remove them or proceed if intentional
+              </p>
+            )}
+            <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => {
@@ -454,6 +512,7 @@ function BulkUploadPage() {
               <Save className="h-4 w-4" />
               Save All Ready ({readyCount})
             </button>
+            </div>
           </div>
         </div>
       )}
@@ -594,6 +653,21 @@ function QueueCard({
           </span>
         )}
         {item.status === "ready" && <EbirdLocPill item={item} />}
+        {item.duplicate && (
+          <div className="mt-2 rounded-sm border border-destructive/40 bg-destructive/5 p-2">
+            <p className="mb-1 text-[10px] font-semibold text-destructive">Duplicate</p>
+            <div className="flex items-center gap-2">
+              <img
+                src={sizedImage(item.duplicate.image_url, { width: 60, quality: 65, resize: "contain" })}
+                alt="Previously uploaded photo"
+                className="h-8 w-10 flex-shrink-0 rounded-sm object-contain"
+              />
+              <p className="min-w-0 truncate text-[10px] text-muted-foreground">
+                {item.duplicate.common_name || item.duplicate.title || "Already uploaded"}
+              </p>
+            </div>
+          </div>
+        )}
         {item.errorMsg && <p className="text-[10px] text-destructive">{item.errorMsg}</p>}
       </div>
     </div>

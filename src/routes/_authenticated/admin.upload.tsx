@@ -22,6 +22,7 @@ import { parseSpeciesFromFilename } from "@/lib/filename-species";
 import { fetchXenoCantoCall } from "@/lib/xeno-canto";
 import { identifyBird } from "@/lib/identify-bird.functions";
 import { fileToDownscaledDataURL } from "@/lib/bird-constants";
+import { hashFile } from "@/lib/file-hash";
 
 
 export const Route = createFileRoute("/_authenticated/admin/upload")({
@@ -136,6 +137,15 @@ function UploadPage() {
   const [filenameStatus, setFilenameStatus] = useState<"pending" | "accepted" | "rejected" | "none">("none");
   const [ebirdMatchBadge, setEbirdMatchBadge] = useState<"hit" | "miss" | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [fileHash, setFileHash] = useState<string | null>(null);
+  const [duplicate, setDuplicate] = useState<{
+    id: string;
+    common_name: string | null;
+    title: string | null;
+    image_url: string;
+    created_at: string | null;
+    species_identifier: string | null;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: featuredPhotos, refetch: refetchFeatured } = useQuery({
@@ -261,6 +271,23 @@ function UploadPage() {
     } catch {
       // silent — EXIF is optional
     }
+
+    // Duplicate check via SHA-256 hash
+    setDuplicate(null);
+    setFileHash(null);
+    try {
+      const hash = await hashFile(f);
+      setFileHash(hash);
+      const { data } = await supabase
+        .from("photos")
+        .select("id, common_name, title, image_url, created_at, species_identifier")
+        .eq("file_hash", hash)
+        .limit(1)
+        .maybeSingle();
+      if (data) setDuplicate(data);
+    } catch {
+      // silent — duplicate check is advisory only
+    }
   };
 
   const acceptFilename = async () => {
@@ -353,6 +380,10 @@ function UploadPage() {
         }
       }
 
+      // Ensure the fingerprint is available even if the advisory check is still running.
+      const savedFileHash = fileHash ?? await hashFile(file);
+      if (!fileHash) setFileHash(savedFileHash);
+
       // Compute aspect ratio metadata
       const meta = await readImageMeta(file);
 
@@ -418,6 +449,7 @@ function UploadPage() {
         aspect_ratio: meta?.aspect_ratio ?? null,
         tags,
         is_featured: form.is_featured,
+        file_hash: savedFileHash,
         iucn_status: form.iucn_status || null,
         hero_story: form.hero_story.trim() || null,
         hero_location: form.hero_location.trim() || null,
@@ -506,9 +538,52 @@ function UploadPage() {
           ) : (
             <div className="relative overflow-hidden rounded-sm border border-border bg-background">
               <img src={preview} alt="Preview" className="mx-auto max-h-[300px] w-auto object-contain" />
+              {duplicate && (
+                <div className="m-3 rounded-sm border border-destructive/50 bg-destructive/5 p-4">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-destructive">
+                    Duplicate detected
+                  </p>
+                  <p className="mb-3 text-xs font-light text-muted-foreground">
+                    This exact image was already uploaded. You can still proceed if intentional.
+                  </p>
+                  <div className="flex items-center gap-3 rounded-sm border border-border bg-surface p-3">
+                    <img
+                      src={sizedImage(duplicate.image_url, { width: 120, quality: 70, resize: "contain" })}
+                      alt={duplicate.common_name || "Previously uploaded photo"}
+                      className="h-14 w-20 flex-shrink-0 rounded-sm object-contain"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {duplicate.common_name || duplicate.title || "Unknown species"}
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-muted-foreground">
+                        Uploaded: {duplicate.created_at
+                          ? new Date(duplicate.created_at).toLocaleDateString("en-IN", {
+                              day: "numeric", month: "short", year: "numeric",
+                            })
+                          : "Date unavailable"}
+                      </p>
+                    </div>
+                    <Link
+                      to="/species/$slug"
+                      params={{ slug: duplicate.species_identifier || duplicate.id }}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-shrink-0 rounded-sm border border-border px-3 py-1.5 text-[11px] font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                    >
+                      View ↗
+                    </Link>
+                  </div>
+                </div>
+              )}
               <button
                 type="button"
-                onClick={() => { setFile(null); setPreview(null); }}
+                onClick={() => {
+                  setFile(null);
+                  setPreview(null);
+                  setFileHash(null);
+                  setDuplicate(null);
+                }}
                 className="absolute right-3 top-3 rounded-full bg-background/80 p-2 text-foreground backdrop-blur-md hover:text-primary"
                 aria-label="Remove image"
               >
