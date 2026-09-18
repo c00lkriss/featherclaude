@@ -168,7 +168,6 @@ function Header() {
   const { data: settings } = useSiteSettings();
   const logoUrl = settings?.logo_url || "";
   const [logoFailed, setLogoFailed] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Apply favicon override from site_settings when present
   useEffect(() => {
@@ -227,6 +226,7 @@ function Header() {
         </nav>
 
         {/* Mobile navigation lives in the bottom bar */}
+      </div>
     </header>
   );
 }
