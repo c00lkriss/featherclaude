@@ -59,7 +59,7 @@ export function GalleryView({ order, family, q = "", location }: Props) {
           <p className="mb-3 text-xs font-light uppercase tracking-[0.3em] text-primary">
             Gallery
           </p>
-          <h1 className="font-display text-4xl font-semibold text-foreground md:text-5xl">
+          <h1 className="font-display text-2xl font-semibold text-foreground sm:text-4xl md:text-5xl">
             {location ?? family ?? order ?? "All Photographs"}
           </h1>
           {(order || family) && (
@@ -88,7 +88,7 @@ export function GalleryView({ order, family, q = "", location }: Props) {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search birds by name, species, order or family..."
-            className="w-full rounded-sm border border-border bg-surface px-12 py-4 text-sm text-foreground placeholder:font-light placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-0"
+            className="w-full rounded-sm border border-border bg-surface px-10 py-3 text-sm text-foreground placeholder:font-light placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-0 sm:px-12 sm:py-4"
           />
           {searchInput && (
             <button
@@ -409,7 +409,7 @@ function PhotoGrid({
           Showing {total ?? photos.length} result{(total ?? photos.length) === 1 ? "" : "s"} for &ldquo;{q}&rdquo;
         </p>
       )}
-      <div className="columns-1 gap-3 sm:columns-2 lg:columns-3 2xl:columns-4">
+      <div className="columns-1 gap-2 sm:columns-2 sm:gap-3 lg:columns-3 2xl:columns-4">
         {photos.map((p) => (
           <PhotoCard key={p.id} photo={p} />
         ))}
@@ -470,11 +470,11 @@ function PhotoCard({ photo }: { photo: Photo }) {
         </div>
       </div>
       {/* Mobile: always-visible name below image */}
-      <div className="p-3 md:hidden">
-        <h3 className="font-display text-base font-semibold leading-tight text-foreground">
+      <div className="px-2 pb-2 pt-1.5 md:hidden">
+        <h3 className="font-display text-[13px] font-semibold leading-tight text-foreground">
           {photo.common_name || photo.species_name}
         </h3>
-        <p className="mt-0.5 text-xs font-light italic text-muted-foreground">
+        <p className="mt-0.5 line-clamp-1 text-[11px] font-light italic text-muted-foreground">
           {photo.species_name}
         </p>
       </div>
