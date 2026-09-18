@@ -183,16 +183,6 @@ function Header() {
     link.href = fav;
   }, [settings?.favicon_url]);
 
-  // Lock body scroll while mobile menu open
-  useEffect(() => {
-    if (typeof document === "undefined") return;
-    const prev = document.body.style.overflow;
-    if (mobileMenuOpen) document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [mobileMenuOpen]);
-
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-[1800px] items-center justify-between px-6">
