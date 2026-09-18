@@ -146,9 +146,10 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <div className="flex min-h-screen flex-col bg-background">
         <Header />
-        <main className="flex-1">
+        <main className="flex-1 pb-16 md:pb-0">
           <Outlet />
         </main>
+        <MobileBottomNav />
         <Footer />
       </div>
     </QueryClientProvider>
@@ -225,48 +226,89 @@ function Header() {
           ))}
         </nav>
 
-        {/* Mobile hamburger */}
-        <button
-          onClick={() => setMobileMenuOpen((v) => !v)}
-          className="relative z-[60] flex h-11 w-11 items-center justify-center md:hidden"
-          aria-label="Toggle menu"
-          aria-expanded={mobileMenuOpen}
-          style={{ color: "#c9a84c" }}
-        >
-          {mobileMenuOpen ? (
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          ) : (
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="3" y1="7" x2="21" y2="7" />
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="17" x2="21" y2="17" />
-            </svg>
-          )}
-        </button>
-      </div>
-
-      {/* Mobile menu overlay */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 top-16 z-40 flex flex-col items-center justify-start gap-8 overflow-y-auto bg-background/98 px-6 py-16 backdrop-blur-xl md:hidden">
-          {NAV_LINKS.map((l) => (
-            <Link
-              key={l.label}
-              to={l.to}
-              onClick={() => setMobileMenuOpen(false)}
-              className="font-display text-3xl font-semibold text-foreground transition-colors hover:text-primary"
-            >
-              {l.label}
-            </Link>
-          ))}
-        </div>
-      )}
+        {/* Mobile navigation lives in the bottom bar */}
     </header>
   );
 }
 
+
+const BOTTOM_NAV = [
+  { to: "/", icon: "home", label: "Home" },
+  { to: "/gallery", icon: "grid", label: "Gallery" },
+  { to: "/map", icon: "map", label: "Map" },
+  { to: "/blog", icon: "book", label: "Blog" },
+  { to: "/about", icon: "user", label: "About" },
+] as const;
+
+function NavIcon({ icon }: { icon: string }) {
+  const common = {
+    width: 22,
+    height: 22,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+  if (icon === "home")
+    return (
+      <svg {...common}>
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <polyline points="9 22 9 12 15 12 15 22" />
+      </svg>
+    );
+  if (icon === "grid")
+    return (
+      <svg {...common}>
+        <rect x="3" y="3" width="7" height="7" />
+        <rect x="14" y="3" width="7" height="7" />
+        <rect x="3" y="14" width="7" height="7" />
+        <rect x="14" y="14" width="7" height="7" />
+      </svg>
+    );
+  if (icon === "map")
+    return (
+      <svg {...common}>
+        <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+        <line x1="8" y1="2" x2="8" y2="18" />
+        <line x1="16" y1="6" x2="16" y2="22" />
+      </svg>
+    );
+  if (icon === "book")
+    return (
+      <svg {...common}>
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+      </svg>
+    );
+  return (
+    <svg {...common}>
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
+
+function MobileBottomNav() {
+  return (
+    <nav className="safe-bottom fixed inset-x-0 bottom-0 z-50 flex items-center justify-around border-t border-border/40 bg-background/95 px-2 pb-1 pt-2 backdrop-blur-xl md:hidden">
+      {BOTTOM_NAV.map(({ to, icon, label }) => (
+        <Link
+          key={to}
+          to={to}
+          activeOptions={{ exact: to === "/" }}
+          activeProps={{ className: "text-primary" }}
+          inactiveProps={{ className: "text-muted-foreground" }}
+          className="flex flex-col items-center gap-0.5 px-3 py-1.5 transition-colors"
+        >
+          <NavIcon icon={icon} />
+          <span className="text-[9px] font-medium uppercase tracking-[0.15em]">{label}</span>
+        </Link>
+      ))}
+    </nav>
+  );
+}
 
 
 function Footer() {
