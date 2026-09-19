@@ -131,10 +131,10 @@ function StatBlock({ value, label }: {
   return (
     <div
       ref={ref}
-      className="flex flex-col items-center px-4 sm:px-12 md:px-16"
+      className="flex min-w-[100px] flex-col items-center px-4 sm:px-12 md:px-16"
     >
       <span
-        className="font-display text-2xl font-semibold sm:text-3xl"
+        className="font-display text-3xl font-bold sm:text-3xl"
         style={{ color: "#c9a84c" }}
       >
         {n}
@@ -266,7 +266,7 @@ function Hero() {
 
   return (
     <section
-      className="relative w-full overflow-hidden -mt-16"
+      className="hero-section relative w-full overflow-hidden -mt-16"
       style={{ height: "100vh", minHeight: "100vh" }}
     >
       {/* Slides */}
@@ -375,12 +375,14 @@ function Hero() {
         {/* Photographer branding + optional field-note for current STAR image */}
         {slides && slides[idx] && (
           <div key={`meta-${slides[idx].id}`} className="mt-8 flex flex-col items-center gap-2 animate-fade-in-slow">
-            <p className="font-display text-lg font-medium text-foreground md:text-xl">
-              Gokul Krishna Addanki
-            </p>
-            <p className="text-[10px] font-light uppercase tracking-[0.3em] text-muted-foreground">
-              Wildlife Photographer • Birder • Conservationist
-            </p>
+            <div className="hidden sm:flex sm:flex-col sm:items-center sm:gap-2">
+              <p className="font-display text-lg font-medium text-foreground md:text-xl">
+                Gokul Krishna Addanki
+              </p>
+              <p className="text-[10px] font-light uppercase tracking-[0.3em] text-muted-foreground">
+                Wildlife Photographer • Birder • Conservationist
+              </p>
+            </div>
             {slides[idx].hero_story && (
               <p className="mt-3 max-w-lg font-display text-base italic leading-relaxed text-foreground/90 md:text-lg">
                 “{slides[idx].hero_story}”
@@ -410,7 +412,7 @@ function Hero() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Watch latest video"
-            className="group relative flex h-14 w-24 items-center justify-center overflow-hidden rounded-sm border border-white/20 bg-black/40 backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:border-white/50"
+            className="group relative flex h-10 w-16 items-center justify-center overflow-hidden rounded-sm border border-white/20 bg-black/40 backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:border-white/50 sm:h-14 sm:w-24"
           >
             <img
               src="https://img.youtube.com/vi/5WxexOSekdM/mqdefault.jpg"
@@ -423,7 +425,7 @@ function Hero() {
             </span>
           </a>
         </div>
-        <div className="mt-12 flex items-center gap-6 animate-fade-in-slow">
+        <div className="mt-8 flex flex-col items-center gap-3 animate-fade-in-slow sm:mt-12 sm:flex-row sm:gap-6">
           <Link
             to="/gallery"
             className="rounded-none border border-primary bg-primary/90 px-8 py-3 text-xs font-medium uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary"
@@ -606,20 +608,20 @@ function TaxonomyPreview() {
         );
 
   return (
-    <section className="bg-background px-6 py-24">
+    <section className="bg-background px-4 py-12 sm:px-6 sm:py-24">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-16 flex items-end justify-between">
+        <div className="mb-8 flex items-end justify-between sm:mb-16">
           <div>
             <p className="mb-3 text-xs font-light uppercase tracking-[0.3em] text-primary">
               Taxonomy
             </p>
-            <h2 className="font-display text-4xl font-semibold text-foreground md:text-5xl">
+            <h2 className="font-display text-2xl font-semibold text-foreground sm:text-4xl md:text-5xl">
               Explore by Order
             </h2>
           </div>
           <Link
             to="/gallery"
-            className="hidden text-xs font-medium uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary md:block"
+            className="shrink-0 text-xs font-medium uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary"
           >
             View All →
           </Link>
@@ -700,20 +702,20 @@ function LatestBlog() {
         ];
 
   return (
-    <section className="border-t border-border/30 bg-surface px-6 py-24">
+    <section className="border-t border-border/30 bg-surface px-4 py-12 sm:px-6 sm:py-24">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-16 flex items-end justify-between">
+        <div className="mb-8 flex items-end justify-between sm:mb-16">
           <div>
             <p className="mb-3 text-xs font-light uppercase tracking-[0.3em] text-primary">
               Field Notes
             </p>
-            <h2 className="font-display text-4xl font-semibold text-foreground md:text-5xl">
+            <h2 className="font-display text-2xl font-semibold text-foreground sm:text-4xl md:text-5xl">
               Latest from the Blog
             </h2>
           </div>
           <Link
             to="/blog"
-            className="hidden text-xs font-medium uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary md:block"
+            className="shrink-0 text-xs font-medium uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary"
           >
             All Posts →
           </Link>
@@ -749,11 +751,14 @@ function LatestBlog() {
                 )}
               </div>
               <p className="mb-2 text-[11px] font-light uppercase tracking-[0.25em] text-muted-foreground">
-                {new Date(post.created_at ?? Date.now()).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
+                {post.created_at
+                  ? new Date(post.created_at).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                      timeZone: "UTC",
+                    })
+                  : ""}
               </p>
               <h3 className="font-display text-2xl font-semibold leading-tight text-foreground transition-colors group-hover:text-primary">
                 {post.title}

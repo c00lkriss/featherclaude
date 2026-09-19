@@ -636,7 +636,7 @@ function SpeciesPage() {
               <p className="mt-1 text-sm font-light text-white/85">
                 Stories featuring this bird
               </p>
-              <div className="mt-4 grid gap-4 sm:grid-cols-3">
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {fieldNotes.map((post: any) => (
                   <Link
                     key={post.id}
@@ -685,7 +685,7 @@ function SpeciesPage() {
             if (e.target === e.currentTarget) setDownloadOpen(false);
           }}
         >
-          <div className="relative w-full max-w-md rounded-sm border border-border bg-background p-8">
+          <div className="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-sm border border-border bg-background p-5 sm:p-8">
             <button
               onClick={() => setDownloadOpen(false)}
               aria-label="Close"
