@@ -440,7 +440,7 @@ function PhotoGrid({
       )}
       <div className="columns-1 gap-2 sm:columns-2 sm:gap-3 lg:columns-3 2xl:columns-4">
         {photos.map((p) => (
-          <PhotoCard key={p.id} photo={p} />
+          <PhotoCard key={p.id} photo={p} q={searchTerm} />
         ))}
       </div>
 
@@ -459,7 +459,18 @@ function PhotoGrid({
   );
 }
 
-function PhotoCard({ photo }: { photo: Photo }) {
+function PhotoCard({ photo, q }: { photo: Photo; q?: string }) {
+  const matchLabel = (() => {
+    if (!q) return null;
+    const term = q.toLowerCase();
+    if (photo.location?.toLowerCase().includes(term)) return `📍 ${photo.location}`;
+    if (photo.camera?.toLowerCase().includes(term)) return `📷 ${photo.camera}`;
+    if (photo.lens?.toLowerCase().includes(term)) return `🔭 ${photo.lens}`;
+    if (photo.date_taken?.includes(term)) return `📅 ${photo.date_taken.slice(0, 4)}`;
+    if (photo.description?.toLowerCase().includes(term)) return "📝 Field note match";
+    return null;
+  })();
+
   return (
     <Link
       to="/species/$slug"
