@@ -351,7 +351,7 @@ function PhotoGrid({
       let req = supabase
         .from("photos")
         .select(
-          "id, title, common_name, species_name, species_slug, species_identifier, order_name, family_name, image_url, thumbnail_url, tags",
+          "id, title, common_name, species_name, species_slug, species_identifier, order_name, family_name, image_url, thumbnail_url, tags, description, location, date_taken, camera, lens",
           { count: searchTerm || location ? "exact" : undefined },
         )
         .order("created_at", { ascending: false })
@@ -362,9 +362,25 @@ function PhotoGrid({
       if (location) req = req.ilike("location", `%${location}%`);
       if (searchTerm) {
         const safe = searchTerm.replace(/[%,()]/g, " ");
-        req = req.or(
-          `common_name.ilike.%${safe}%,species_name.ilike.%${safe}%,order_name.ilike.%${safe}%,family_name.ilike.%${safe}%,tags.cs.{${safe}}`,
-        );
+        const isYear = /^\d{4}$/.test(safe.trim());
+        if (isYear) {
+          const year = safe.trim();
+          req = req.gte("date_taken", `${year}-01-01`).lte("date_taken", `${year}-12-31`);
+        } else {
+          req = req.or(
+            [
+              `common_name.ilike.%${safe}%`,
+              `species_name.ilike.%${safe}%`,
+              `order_name.ilike.%${safe}%`,
+              `family_name.ilike.%${safe}%`,
+              `description.ilike.%${safe}%`,
+              `location.ilike.%${safe}%`,
+              `camera.ilike.%${safe}%`,
+              `lens.ilike.%${safe}%`,
+              `tags.cs.{${safe}}`,
+            ].join(","),
+          );
+        }
       }
       const { data, error, count } = await req;
       if (error) throw error;
