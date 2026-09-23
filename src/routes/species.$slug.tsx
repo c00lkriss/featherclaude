@@ -349,7 +349,7 @@ function SpeciesPage() {
 
   return (
     <div
-      className="fixed inset-0 z-[60]"
+      className="fixed inset-x-0 bottom-[calc(3.65rem+env(safe-area-inset-bottom,0px))] top-0 z-[60] md:inset-0"
       style={{ backgroundColor: "#0a0a0a" }}
       onMouseMove={() => setChromeVisible(true)}
       onMouseLeave={() => setChromeVisible(false)}
@@ -358,7 +358,7 @@ function SpeciesPage() {
     >
       {showSwipeHint && (
         <div className="pointer-events-none absolute inset-x-0 bottom-24 z-30 flex justify-center px-6">
-          <span className="rounded-full bg-black/70 px-4 py-2 text-[11px] font-light tracking-wide text-white/90">
+          <span className="rounded-full bg-background/70 px-4 py-2 text-[11px] font-light tracking-wide text-foreground/90">
             ← swipe to browse · swipe up for info
           </span>
         </div>
@@ -444,7 +444,7 @@ function SpeciesPage() {
             // @ts-expect-error lowercase attr
             fetchpriority="high"
             decoding="async"
-            className="absolute inset-0 m-auto h-full w-full object-contain"
+            className="absolute inset-0 m-auto h-full w-full object-contain md:h-full"
           />
           {/* Prefetch neighbours only */}
           {next && (
@@ -466,16 +466,17 @@ function SpeciesPage() {
 
       <div
         className={cn(
-          "absolute inset-x-0 top-0 z-20 flex items-center justify-between bg-gradient-to-b from-background/80 to-transparent px-6 py-5 transition-opacity duration-300",
+          "absolute inset-x-0 top-0 z-20 flex items-center justify-between bg-gradient-to-b from-background/80 to-transparent px-4 py-4 transition-opacity duration-300 md:px-6 md:py-5",
           chromeVisible ? "opacity-100" : "opacity-0",
         )}
       >
         <button
           onClick={handleBackToGallery}
-          className="flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-foreground/80 transition-colors hover:text-primary"
+          className="flex items-center gap-1 text-xs font-medium uppercase tracking-widest text-foreground/80 transition-colors hover:text-primary md:gap-2"
         >
           <ChevronLeft className="h-4 w-4" />
-          Back to Gallery
+          <span className="md:hidden">Back</span>
+          <span className="hidden md:inline">Back to Gallery</span>
         </button>
         {current && (
           <p className="hidden text-xs font-light uppercase tracking-[0.3em] text-muted-foreground md:block">
@@ -492,7 +493,7 @@ function SpeciesPage() {
           onClick={() => goPhoto(prev)}
           aria-label="Previous"
           className={cn(
-            "absolute left-4 top-1/2 z-20 -translate-y-1/2 flex h-14 w-14 items-center justify-center rounded-full bg-background/60 text-foreground backdrop-blur-md transition-all duration-300 hover:bg-background/80 hover:text-primary md:left-6 md:h-12 md:w-12",
+            "absolute left-4 top-1/2 z-20 hidden h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full bg-background/60 text-foreground backdrop-blur-md transition-all duration-300 hover:bg-background/80 hover:text-primary md:left-6 md:flex md:h-12 md:w-12",
             chromeVisible ? "opacity-100" : "opacity-0",
           )}
         >
@@ -504,7 +505,7 @@ function SpeciesPage() {
           onClick={() => goPhoto(next)}
           aria-label="Next"
           className={cn(
-            "absolute right-4 top-1/2 z-20 -translate-y-1/2 flex h-14 w-14 items-center justify-center rounded-full bg-background/60 text-foreground backdrop-blur-md transition-all duration-300 hover:bg-background/80 hover:text-primary md:right-6 md:h-12 md:w-12",
+            "absolute right-4 top-1/2 z-20 hidden h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full bg-background/60 text-foreground backdrop-blur-md transition-all duration-300 hover:bg-background/80 hover:text-primary md:right-6 md:flex md:h-12 md:w-12",
             chromeVisible ? "opacity-100" : "opacity-0",
           )}
         >
@@ -523,7 +524,7 @@ function SpeciesPage() {
           boxShadow: infoOpen ? "0 0 24px 4px rgba(201,168,76,0.55)" : "0 0 0 rgba(0,0,0,0)",
         }}
         className={cn(
-          "absolute bottom-6 right-6 z-30 flex h-12 w-12 items-center justify-center rounded-full border-2 backdrop-blur-md transition-all duration-300",
+          "absolute bottom-3 right-4 z-30 flex h-11 w-11 items-center justify-center rounded-full border-2 backdrop-blur-md transition-all duration-300 md:bottom-6 md:right-6 md:h-12 md:w-12",
           chromeVisible || infoOpen ? "opacity-100" : "opacity-0",
         )}
       >
@@ -542,10 +543,9 @@ function SpeciesPage() {
             borderColor: "#c9a84c",
             color: "#c9a84c",
             backgroundColor: "rgba(0,0,0,0.5)",
-            right: "84px",
           }}
           className={cn(
-            "absolute bottom-6 z-30 flex h-12 w-12 items-center justify-center rounded-full border-2 backdrop-blur-md transition-all duration-300",
+            "absolute bottom-3 right-[4.25rem] z-30 flex h-11 w-11 items-center justify-center rounded-full border-2 backdrop-blur-md transition-all duration-300 md:bottom-6 md:right-[84px] md:h-12 md:w-12",
             chromeVisible || infoOpen ? "opacity-100" : "opacity-0",
           )}
         >
@@ -561,13 +561,13 @@ function SpeciesPage() {
             WebkitBackdropFilter: "blur(10px)",
           }}
           className={cn(
-            "safe-bottom absolute inset-x-0 bottom-0 z-10 max-h-[45vh] overflow-y-auto border-t border-white/10 px-4 py-4 transition-transform duration-300 ease-out sm:px-5 sm:py-6 md:max-h-[42vh] md:px-12 md:py-10",
+            "absolute inset-x-0 bottom-[4.25rem] z-10 max-h-[28vh] overflow-y-auto border-t border-foreground/10 px-4 py-3 transition-transform duration-300 ease-out sm:px-5 md:bottom-0 md:max-h-[42vh] md:px-12 md:py-10",
             infoOpen ? "translate-y-0" : "translate-y-full",
           )}
         >
           <InfoPanel photo={current} />
 
-          <div className="mx-auto mt-6 max-w-5xl">
+          <div className="mx-auto mt-6 hidden max-w-5xl md:block">
             <ShareRow
               variant="overlay"
               path={`/species/${current.species_identifier}`}
@@ -577,7 +577,7 @@ function SpeciesPage() {
 
           {/* NEARBY SPECIES STRIP */}
           {nearbyPhotos && nearbyPhotos.length > 0 && (
-            <div className="mx-auto mt-8 max-w-5xl border-t border-white/15 pt-6">
+            <div className="mx-auto mt-8 hidden max-w-5xl border-t border-white/15 pt-6 md:block">
               <div className="flex items-end justify-between gap-4">
                 <div>
                   <p className="text-[10px] font-light uppercase tracking-[0.3em]" style={{ color: "#c9a84c" }}>
@@ -629,7 +629,7 @@ function SpeciesPage() {
 
           {/* FIELD NOTES */}
           {fieldNotes && fieldNotes.length > 0 && (
-            <div className="mx-auto mt-8 max-w-5xl border-t border-white/15 pt-6">
+            <div className="mx-auto mt-8 hidden max-w-5xl border-t border-white/15 pt-6 md:block">
               <p className="text-[10px] font-light uppercase tracking-[0.3em]" style={{ color: "#c9a84c" }}>
                 Field Notes
               </p>
@@ -741,18 +741,21 @@ function SpeciesPage() {
   );
 }
 
-function IucnBadge({ status }: { status: string }) {
+function IucnBadge({ status, compact = false }: { status: string; compact?: boolean }) {
   const color = IUCN_COLORS[status] ?? "#9E9E9E";
   return (
     <span
-      className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-white"
+      className={cn(
+        "inline-flex items-center rounded-full font-semibold uppercase text-white",
+        compact ? "gap-1 px-2 py-0.5 text-[9px] tracking-wide" : "gap-2 px-4 py-1.5 text-xs tracking-widest",
+      )}
       style={{
         backgroundColor: color,
         boxShadow: `0 4px 20px ${color}66, 0 1px 3px rgba(0,0,0,0.4)`,
       }}
     >
-      <span className="h-2 w-2 rounded-full bg-white/90" />
-      IUCN · {status}
+      <span className={cn("rounded-full bg-white/90", compact ? "h-1.5 w-1.5" : "h-2 w-2")} />
+      {compact ? status : `IUCN · ${status}`}
     </span>
   );
 }
@@ -760,6 +763,7 @@ function IucnBadge({ status }: { status: string }) {
 const TEXT_SHADOW = "0 1px 3px rgba(0,0,0,0.8)";
 
 function InfoPanel({ photo }: { photo: Photo }) {
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const exif: { label: string; value: string | null }[] = [
     { label: "Camera", value: photo.camera },
     { label: "Lens", value: photo.lens },
@@ -780,23 +784,48 @@ function InfoPanel({ photo }: { photo: Photo }) {
   const tax = [photo.order_name, photo.family_name, photo.genus].filter(Boolean).join(" › ");
 
   return (
-    <div className="mx-auto max-w-5xl text-white" style={{ textShadow: TEXT_SHADOW }}>
-      <h2 className="font-display text-[1.1rem] font-semibold leading-tight md:text-5xl">
+    <div className="mx-auto max-w-5xl text-foreground" style={{ textShadow: TEXT_SHADOW }}>
+      <h2 className="font-display text-xl font-semibold leading-tight md:text-5xl">
         {photo.common_name || photo.species_name}
       </h2>
-      <p className="mt-1 font-body text-[0.85rem] font-light italic text-white/80 md:mt-2 md:text-lg">
-        {photo.species_name}
-      </p>
+      <div className="mt-1 flex flex-wrap items-center gap-2">
+        <p className="font-body text-[0.8rem] font-light italic text-foreground/80 md:text-lg">
+          {photo.species_name}
+        </p>
+        {photo.iucn_status && (
+          <div className="md:hidden" style={{ textShadow: "none" }}>
+            <IucnBadge status={photo.iucn_status} compact />
+          </div>
+        )}
+      </div>
 
       {photo.iucn_status && (
-        <div className="mt-4 md:mt-5" style={{ textShadow: "none" }}>
+        <div className="mt-5 hidden md:block" style={{ textShadow: "none" }}>
           <IucnBadge status={photo.iucn_status} />
         </div>
       )}
 
-      <p className="mt-4 text-[10px] font-light uppercase tracking-[0.3em] text-white/85 md:mt-6 md:text-xs">
+      <p className="mt-2 text-[10px] font-light uppercase tracking-[0.2em] text-foreground/85 md:mt-6 md:text-xs md:tracking-[0.3em]">
         {tax}
       </p>
+
+      {photo.location && (
+        <p className="mt-2 flex items-center gap-1.5 text-xs font-light text-foreground/85 md:hidden">
+          <MapPin className="h-3.5 w-3.5 text-primary" />
+          {photo.location}
+        </p>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setDetailsOpen((open) => !open)}
+        className="mt-2 text-xs font-medium text-primary md:hidden"
+        aria-expanded={detailsOpen}
+      >
+        {detailsOpen ? "Less details ↑" : "More details ↓"}
+      </button>
+
+      <div className={cn(detailsOpen ? "block" : "hidden", "md:block")}>
 
       {(photo.common_name || photo.species_name) && (
         <a
@@ -811,20 +840,20 @@ function InfoPanel({ photo }: { photo: Photo }) {
       )}
 
       {photo.description && (
-        <p className="mt-4 max-w-prose text-xs font-light leading-relaxed text-white/90 md:mt-5 md:text-sm">
+        <p className="mt-4 max-w-prose text-xs font-light leading-relaxed text-foreground/90 md:mt-5 md:text-sm">
           {photo.description}
         </p>
       )}
 
-      <div className="my-5 h-px w-full bg-white/20 md:my-8" />
+      <div className="my-5 h-px w-full bg-foreground/20 md:my-8" />
 
       <dl className="grid grid-cols-2 gap-x-4 gap-y-4 text-[0.75rem] md:grid-cols-6 md:gap-x-6 md:gap-y-5 md:text-sm">
         {exif.map((row) => (
           <div key={row.label} className="border-l-2 border-white/30 pl-3">
-            <dt className="text-[10px] font-light uppercase tracking-widest text-white/70">
+            <dt className="text-[10px] font-light uppercase tracking-widest text-foreground/70">
               {row.label}
             </dt>
-            <dd className="mt-1 font-display text-xs text-white md:text-sm">
+            <dd className="mt-1 font-display text-xs text-foreground md:text-sm">
               {row.value || "—"}
             </dd>
           </div>
@@ -833,13 +862,13 @@ function InfoPanel({ photo }: { photo: Photo }) {
       </dl>
 
       {(photo.location || date) && (
-        <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-light text-white/85">
+        <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-light text-foreground/85">
           {photo.location && (
             <span className="flex items-center gap-2">
               <MapPin className="h-3.5 w-3.5" style={{ color: "#c9a84c" }} />
               {photo.location}
               {photo.latitude != null && photo.longitude != null && (
-                <span className="text-white/60">
+                <span className="text-foreground/60">
                   ({photo.latitude.toFixed(3)}, {photo.longitude.toFixed(3)})
                 </span>
               )}
@@ -848,6 +877,7 @@ function InfoPanel({ photo }: { photo: Photo }) {
           {date && <span className="uppercase tracking-widest">{date}</span>}
         </div>
       )}
+      </div>
     </div>
   );
 }
