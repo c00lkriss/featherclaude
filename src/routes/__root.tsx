@@ -282,7 +282,7 @@ function NavIcon({ icon }: { icon: string }) {
 
 function MobileBottomNav() {
   return (
-    <nav className="safe-bottom fixed inset-x-0 bottom-0 z-50 flex items-center justify-around border-t border-border/40 bg-background/95 px-2 pb-1 pt-2 backdrop-blur-xl md:hidden">
+    <nav className="safe-bottom fixed inset-x-0 bottom-0 z-[80] flex items-center justify-around border-t border-border/40 bg-background/95 px-2 pb-1 pt-2 backdrop-blur-xl md:hidden">
       {BOTTOM_NAV.map(({ to, icon, label }) => (
         <Link
           key={to}
