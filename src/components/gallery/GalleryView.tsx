@@ -21,6 +21,11 @@ type Photo = {
   image_url: string;
   thumbnail_url: string | null;
   tags: string[] | null;
+  description: string | null;
+  location: string | null;
+  date_taken: string | null;
+  camera: string | null;
+  lens: string | null;
 };
 
 type Props = {
@@ -87,7 +92,15 @@ export function GalleryView({ order, family, q = "", location }: Props) {
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search birds by name, species, order or family..."
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                navigate({
+                  to: "/gallery",
+                  search: searchInput ? { q: searchInput } : {},
+                });
+              }
+            }}
+            placeholder="Search by name, location, camera, lens, year (e.g. 2024)..."
             className="w-full rounded-sm border border-border bg-surface px-10 py-3 text-sm text-foreground placeholder:font-light placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-0 sm:px-12 sm:py-4"
           />
           {searchInput && (
