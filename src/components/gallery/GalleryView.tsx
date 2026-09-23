@@ -518,6 +518,11 @@ function PhotoCard({ photo, q }: { photo: Photo; q?: string }) {
           {photo.species_name}
         </p>
       </div>
+      {matchLabel && (
+        <p className="line-clamp-1 px-2 pb-2 text-[10px] font-light italic text-primary/80">
+          {matchLabel}
+        </p>
+      )}
     </Link>
   );
 }
