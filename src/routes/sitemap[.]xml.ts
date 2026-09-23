@@ -52,7 +52,29 @@ export const Route = createFileRoute("/sitemap.xml")({
           // DB unavailable — serve static sitemap only
         }
 
-        const allEntries = [...staticEntries, ...speciesEntries];
+        // Fetch published blog posts
+        let blogEntries: SitemapEntry[] = [];
+        try {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const { data: blogData } = await supabaseAdmin
+            .from("blog_posts")
+            .select("slug, created_at")
+            .eq("published", true)
+            .order("created_at", { ascending: false });
+
+          if (blogData) {
+            blogEntries = blogData.map((post: any) => ({
+              path: `/blog/${post.slug}`,
+              lastmod: post.created_at ? post.created_at.split("T")[0] : undefined,
+              changefreq: "monthly",
+              priority: "0.7",
+            }));
+          }
+        } catch {
+          // DB unavailable — skip blog entries
+        }
+
+        const allEntries = [...staticEntries, ...speciesEntries, ...blogEntries];
 
         const toUrl = (e: SitemapEntry) =>
           [
