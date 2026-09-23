@@ -349,7 +349,7 @@ function SpeciesPage() {
 
   return (
     <div
-      className="fixed inset-x-0 bottom-16 top-0 z-[60] md:inset-0"
+      className="fixed inset-x-0 bottom-[calc(3.65rem+env(safe-area-inset-bottom,0px))] top-0 z-[60] md:inset-0"
       style={{ backgroundColor: "#0a0a0a" }}
       onMouseMove={() => setChromeVisible(true)}
       onMouseLeave={() => setChromeVisible(false)}
