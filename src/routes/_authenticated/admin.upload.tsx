@@ -227,6 +227,8 @@ function UploadPage() {
           ...p,
           latitude: geo.lat.toFixed(6),
           longitude: geo.lon.toFixed(6),
+          region: p.region || geo.state || "",
+          country: p.country || geo.country || "",
         }));
         setLocationMapped(true);
       }

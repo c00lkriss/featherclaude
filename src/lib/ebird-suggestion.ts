@@ -172,22 +172,34 @@ export async function geteBirdLocationSuggestion(args: {
 
 /* ---------------- Nominatim geocoder ---------------- */
 
-export type GeocodeResult = { lat: number; lon: number; display_name: string } | null;
+export type GeocodeResult = {
+  lat: number;
+  lon: number;
+  display_name: string;
+  state: string | null;
+  country: string | null;
+  city: string | null;
+} | null;
 
 export async function geocodeWithNominatim(query: string): Promise<GeocodeResult> {
   if (!query.trim()) return null;
   try {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=1&q=${encodeURIComponent(query)}`;
     const res = await fetch(url, {
       headers: { Accept: "application/json" },
     });
     if (!res.ok) return null;
-    const arr = (await res.json()) as Array<{ lat: string; lon: string; display_name: string }>;
+    const arr = (await res.json()) as any[];
     if (!arr || arr.length === 0) return null;
+    const r = arr[0];
+    const addr = r.address ?? {};
     return {
-      lat: parseFloat(arr[0].lat),
-      lon: parseFloat(arr[0].lon),
-      display_name: arr[0].display_name,
+      lat: parseFloat(r.lat),
+      lon: parseFloat(r.lon),
+      display_name: r.display_name,
+      state: addr.state ?? addr.province ?? null,
+      country: addr.country ?? null,
+      city: addr.city ?? addr.town ?? addr.village ?? addr.suburb ?? null,
     };
   } catch (err) {
     console.warn("[nominatim] geocode failed:", err);
