@@ -802,16 +802,19 @@ function EditDrawer({
                 onAccept={async (loc) => {
                   let lat = loc.ebird_lat;
                   let lon = loc.ebird_long;
+                  let geoCountry: string | null = null;
                   if (lat == null && loc.location) {
                     const geo = await geocodeWithNominatim(loc.location);
                     if (geo) {
                       lat = geo.lat;
                       lon = geo.lon;
+                      geoCountry = geo.country;
                     }
                   }
                   setDraft((d) => ({
                     ...d,
                     location: loc.location,
+                    country: geoCountry ?? d.country,
                     latitude: lat != null ? String(lat) : d.latitude,
                     longitude: lon != null ? String(lon) : d.longitude,
                   }));
