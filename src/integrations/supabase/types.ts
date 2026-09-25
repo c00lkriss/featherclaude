@@ -62,6 +62,7 @@ export type Database = {
           ebird_long: number | null
           exotic: string | null
           id: string
+          is_new_lifer: boolean | null
           location: string | null
           location_id: string | null
           obs_count: string | null
@@ -81,6 +82,7 @@ export type Database = {
           ebird_long?: number | null
           exotic?: string | null
           id?: string
+          is_new_lifer?: boolean | null
           location?: string | null
           location_id?: string | null
           obs_count?: string | null
@@ -100,6 +102,7 @@ export type Database = {
           ebird_long?: number | null
           exotic?: string | null
           id?: string
+          is_new_lifer?: boolean | null
           location?: string | null
           location_id?: string | null
           obs_count?: string | null
@@ -115,6 +118,7 @@ export type Database = {
           countable_count: number | null
           filename: string | null
           id: string
+          new_lifer_count: number | null
           notes: string | null
           status: string | null
           total_count: number | null
@@ -124,6 +128,7 @@ export type Database = {
           countable_count?: number | null
           filename?: string | null
           id?: string
+          new_lifer_count?: number | null
           notes?: string | null
           status?: string | null
           total_count?: number | null
@@ -133,6 +138,7 @@ export type Database = {
           countable_count?: number | null
           filename?: string | null
           id?: string
+          new_lifer_count?: number | null
           notes?: string | null
           status?: string | null
           total_count?: number | null
