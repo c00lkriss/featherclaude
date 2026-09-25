@@ -206,6 +206,22 @@ function EbirdAdminPage() {
 
       setProgress({ done: 0, total: records.length });
 
+      // Capture previous countable species before replacing
+      const { data: prevData } = await supabase
+        .from("ebird_lifelist")
+        .select("scientific_name")
+        .eq("countable", 1);
+      const prevSpecies = new Set(
+        (prevData ?? []).map((r: any) => (r.scientific_name ?? "").toLowerCase()),
+      );
+      for (const r of records as any[]) {
+        r.is_new_lifer =
+          prevSpecies.size > 0 &&
+          r.countable === 1 &&
+          !prevSpecies.has((r.scientific_name ?? "").toLowerCase());
+      }
+      const newLifers = (records as any[]).filter((r) => r.is_new_lifer).length;
+
       // Full replace
       const { error: delErr } = await supabase.from("ebird_lifelist").delete().not("id", "is", null);
       if (delErr) throw delErr;
@@ -224,17 +240,20 @@ function EbirdAdminPage() {
         filename: file.name,
         total_count: records.length,
         countable_count: countable,
+        new_lifer_count: newLifers,
         status: "success",
         notes: null,
       });
       if (logErr) console.warn("[ebird] log insert failed:", logErr.message);
 
-      return { total: records.length, countable };
+      return { total: records.length, countable, newLifers };
     },
-    onSuccess: ({ total, countable }) => {
+    onSuccess: ({ total, countable, newLifers }) => {
       toast.success(
-        `✓ Imported ${total} records · ${countable} countable · ${total - countable} other`,
+        `✓ Imported ${total} records · ${countable} species` +
+          (newLifers > 0 ? ` · 🎉 ${newLifers} NEW LIFER${newLifers > 1 ? "S" : ""}!` : ""),
       );
+      qc.invalidateQueries({ queryKey: ["new-lifers"] });
       qc.invalidateQueries({ queryKey: ["ebird-upload-log"] });
       qc.invalidateQueries({ queryKey: ["map-stats"] });
       qc.invalidateQueries({ queryKey: ["wishlist-lifelist"] });

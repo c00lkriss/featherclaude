@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ExternalLink, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -92,6 +92,7 @@ function MapPage() {
     <div className="bg-background">
       <Header />
       <StatsBar />
+      <NewLifersSection />
       <MapView groups={groups} onSelect={setActiveLocation} />
       {activeLocation && (
         <LocationPanel
@@ -168,6 +169,90 @@ function useStats() {
       };
     },
   });
+}
+
+function NewLifersSection() {
+  const qc = useQueryClient();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { data: lifers } = useQuery({
+    queryKey: ["new-lifers"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("ebird_lifelist")
+        .select("id, common_name, scientific_name, date_observed, location, state_province")
+        .eq("is_new_lifer", true)
+        .eq("countable", 1)
+        .order("date_observed", { ascending: false })
+        .limit(20);
+      return data ?? [];
+    },
+  });
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data }) => {
+      const uid = data.session?.user.id;
+      if (!uid) return;
+      const { data: ok } = await supabase.rpc("has_role", { _user_id: uid, _role: "admin" });
+      setIsAdmin(!!ok);
+    });
+  }, []);
+
+  if (!lifers || lifers.length === 0) return null;
+
+  return (
+    <section className="mx-auto max-w-7xl px-6 py-10">
+      <div className="mb-6 flex items-center gap-4">
+        <div>
+          <p className="text-[10px] font-light uppercase tracking-[0.3em] text-primary">Latest Update</p>
+          <h2 className="font-display text-2xl font-semibold text-foreground">🎉 New Lifers</h2>
+          <p className="mt-1 text-sm font-light text-muted-foreground">
+            Species added since my last eBird update
+          </p>
+        </div>
+        <div className="ml-auto flex h-12 w-12 items-center justify-center rounded-full border-2 border-primary font-display text-lg font-bold text-primary">
+          {lifers.length}
+        </div>
+      </div>
+      <div className="flex gap-3 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden">
+        {lifers.map((l) => (
+          <div key={l.id} className="w-52 flex-shrink-0 rounded-sm border border-primary/30 bg-primary/5 p-4">
+            <p className="font-display text-sm font-semibold leading-tight text-foreground">{l.common_name}</p>
+            <p className="mt-0.5 text-[11px] italic text-muted-foreground">{l.scientific_name}</p>
+            {l.date_observed && (
+              <p className="mt-2 text-[10px] text-muted-foreground">
+                📅{" "}
+                {new Date(l.date_observed).toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                  timeZone: "UTC",
+                })}
+              </p>
+            )}
+            {l.location && <p className="mt-1 truncate text-[10px] text-muted-foreground">📍 {l.location}</p>}
+          </div>
+        ))}
+      </div>
+      {isAdmin && (
+        <div className="mt-4 flex flex-wrap items-center gap-4 text-xs font-light text-muted-foreground">
+          <span>
+            Have photos of these new lifers?{" "}
+            <a href="/admin/upload" className="font-medium text-primary hover:underline">
+              Upload them to the gallery →
+            </a>
+          </span>
+          <button
+            onClick={async () => {
+              await supabase.from("ebird_lifelist").update({ is_new_lifer: false }).eq("is_new_lifer", true);
+              qc.invalidateQueries({ queryKey: ["new-lifers"] });
+            }}
+            className="text-[10px] underline hover:text-foreground"
+          >
+            Mark all as reviewed
+          </button>
+        </div>
+      )}
+    </section>
+  );
 }
 
 function StatsBar() {
