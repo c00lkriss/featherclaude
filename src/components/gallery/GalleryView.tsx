@@ -140,6 +140,7 @@ function TaxonomySidebar({
       ]);
       const tree = new Map<string, { count: number; families: Map<string, number> }>();
       (photos ?? []).forEach((p) => {
+        if (!p.order_name || p.order_name === "Unknown") return;
         const o = tree.get(p.order_name) ?? { count: 0, families: new Map() };
         o.count += 1;
         o.families.set(p.family_name, (o.families.get(p.family_name) ?? 0) + 1);

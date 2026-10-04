@@ -407,23 +407,6 @@ function Hero() {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
             <span className="text-xs font-light tracking-widest">@coolkriss</span>
           </a>
-          <a
-            href="https://www.youtube.com/watch?v=5WxexOSekdM"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Watch latest video"
-            className="group relative flex h-10 w-16 items-center justify-center overflow-hidden rounded-sm border border-white/20 bg-black/40 backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:border-white/50 sm:h-14 sm:w-24"
-          >
-            <img
-              src="https://img.youtube.com/vi/5WxexOSekdM/mqdefault.jpg"
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
-              loading="lazy"
-            />
-            <span className="relative z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/95 text-black shadow-lg">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-            </span>
-          </a>
         </div>
         <div className="mt-8 flex flex-col items-center gap-3 animate-fade-in-slow sm:mt-12 sm:flex-row sm:gap-6">
           <Link
@@ -431,12 +414,6 @@ function Hero() {
             className="rounded-none border border-primary bg-primary/90 px-8 py-3 text-xs font-medium uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary"
           >
             Explore Gallery
-          </Link>
-          <Link
-            to="/about-birds"
-            className="text-xs font-medium uppercase tracking-widest text-foreground/80 transition-colors hover:text-primary"
-          >
-            Birds of India →
           </Link>
         </div>
 
@@ -560,6 +537,7 @@ function TaxonomyPreview() {
       ]);
       const grouped = new Map<string, string[]>();
       (photosData ?? []).forEach((p) => {
+        if (!p.order_name || p.order_name === "Unknown") return;
         const arr = grouped.get(p.order_name) ?? [];
         arr.push(p.image_url);
         grouped.set(p.order_name, arr);
@@ -570,7 +548,9 @@ function TaxonomyPreview() {
       // Start with the taxonomy_orders table, then add any orders that have
       // photos but aren't registered in taxonomy_orders.
       const seen = new Set<string>();
-      const base = (ordersData ?? []).map((o: TaxonomyOrder) => {
+      const base = (ordersData ?? [])
+        .filter((o: TaxonomyOrder) => o.order_name && o.order_name !== "Unknown")
+        .map((o: TaxonomyOrder) => {
         seen.add(o.order_name);
         const imgs = grouped.get(o.order_name);
         return {
