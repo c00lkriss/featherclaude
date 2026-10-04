@@ -561,13 +561,13 @@ function SpeciesPage() {
             WebkitBackdropFilter: "blur(10px)",
           }}
           className={cn(
-            "absolute inset-x-0 bottom-[4.25rem] z-10 max-h-[45vh] overflow-y-auto border-t border-foreground/10 px-4 py-3 transition-transform duration-300 ease-out sm:px-5 md:bottom-0 md:max-h-[30vh] md:px-12 md:py-10",
+            "absolute inset-x-0 bottom-[4.25rem] z-10 max-h-[45vh] overflow-hidden border-t border-foreground/10 px-4 py-3 transition-transform duration-300 ease-out md:bottom-0 md:max-h-[30vh] md:px-12 md:py-3",
             infoOpen ? "translate-y-0" : "translate-y-full",
           )}
         >
           <InfoPanel photo={current} />
 
-          <div className="mx-auto mt-6 hidden max-w-5xl md:block">
+          <div className="mx-auto mt-2 hidden max-w-5xl md:block">
             <ShareRow
               variant="overlay"
               path={`/species/${current.species_identifier}`}
