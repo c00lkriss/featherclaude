@@ -7,7 +7,7 @@ import { CheckCircle2, ImagePlus, Loader2, MapPin, Pencil, Save, Trash2, X } fro
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { sizedImage } from "@/lib/image-url";
-import { buildPhotoSlug, fileToDownscaledDataURL, formatShutter, slugify } from "@/lib/bird-constants";
+import { buildPhotoSlug, fileToDownscaledDataURL, formatShutter, slugify, PLUMAGE_STATES } from "@/lib/bird-constants";
 import { identifyBird } from "@/lib/identify-bird.functions";
 import {
   geteBirdLocationSuggestion,

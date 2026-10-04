@@ -21,7 +21,7 @@ import { readImageMeta } from "@/lib/image-meta";
 import { parseSpeciesFromFilename } from "@/lib/filename-species";
 import { fetchXenoCantoCall } from "@/lib/xeno-canto";
 import { identifyBird } from "@/lib/identify-bird.functions";
-import { fileToDownscaledDataURL } from "@/lib/bird-constants";
+import { fileToDownscaledDataURL, PLUMAGE_STATES } from "@/lib/bird-constants";
 import { hashFile } from "@/lib/file-hash";
 
 
