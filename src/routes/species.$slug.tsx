@@ -710,7 +710,7 @@ function InfoPanel({ photo }: { photo: Photo }) {
       {photo.location && (
         <p className="mt-1 flex items-center gap-1.5 text-xs font-light text-foreground/85 md:hidden">
           <MapPin className="h-3.5 w-3.5 text-primary" />
-          {photo.location}
+          {dedupeLocation(photo.location)}
         </p>
       )}
 
@@ -733,7 +733,7 @@ function InfoPanel({ photo }: { photo: Photo }) {
                 <span className="text-foreground/50">·</span>
                 <span className="flex items-center gap-1">
                   <MapPin className="h-3 w-3 text-primary" />
-                  {photo.location}
+                  {dedupeLocation(photo.location)}
                 </span>
               </>
             )}
