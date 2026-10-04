@@ -74,3 +74,13 @@ export async function fileToDownscaledDataURL(file: File, maxEdge = 1024, qualit
   ctx.drawImage(bmp, 0, 0, w, h);
   return canvas.toDataURL("image/jpeg", quality);
 }
+
+export const PLUMAGE_STATES = [
+  "Male – Breeding",
+  "Male – Non-breeding",
+  "Female",
+  "Juvenile",
+  "Immature",
+  "Eclipse",
+  "Unspecified",
+] as const;

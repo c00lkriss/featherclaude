@@ -82,6 +82,7 @@ function LandingPage() {
       />
       <Hero />
       <StatsStrip />
+      <SeasonalStrip />
       <PhotoStrip />
       <TaxonomyPreview />
       <YouTubeSection />
@@ -437,6 +438,108 @@ function Hero() {
 }
 
 /* ------------------------ PHOTO STRIP ------------------------ */
+
+type SeasonPhoto = { id: string; common_name: string | null; species_name: string; species_identifier: string; image_url: string };
+
+function SeasonalStrip() {
+  const currentMonth = new Date().getMonth() + 1;
+  const monthName = new Date().toLocaleString("en-US", { month: "long" });
+
+  const { data } = useQuery({
+    queryKey: ["seasonal", currentMonth],
+    staleTime: 1000 * 60 * 60,
+    queryFn: async () => {
+      const { data: rows } = await supabase
+        .from("ebird_lifelist")
+        .select("common_name, scientific_name, date_observed")
+        .eq("countable", 1)
+        .not("common_name", "is", null)
+        .not("date_observed", "is", null)
+        .limit(5000);
+      const seen = new Set<string>();
+      const unique = (rows ?? []).filter((r) => {
+        if (!r.scientific_name || !r.date_observed) return false;
+        if (Number(r.date_observed.slice(5, 7)) !== currentMonth) return false;
+        if (seen.has(r.scientific_name)) return false;
+        seen.add(r.scientific_name);
+        return true;
+      });
+      if (unique.length === 0) return null;
+      const sci = unique.map((r) => r.scientific_name as string);
+      const { data: photoRows } = await supabase
+        .from("photos")
+        .select("id, common_name, species_name, species_identifier, image_url")
+        .in("species_name", sci)
+        .order("created_at", { ascending: false });
+      const photoMap = new Map<string, SeasonPhoto>();
+      for (const p of (photoRows ?? []) as SeasonPhoto[]) if (!photoMap.has(p.species_name)) photoMap.set(p.species_name, p);
+      const photographed = unique
+        .filter((s) => photoMap.has(s.scientific_name!))
+        .slice(0, 12)
+        .map((s) => ({ ...s, photo: photoMap.get(s.scientific_name!)! }));
+      const wishlist = unique.filter((s) => !photoMap.has(s.scientific_name!)).slice(0, 6);
+      return { photographed, wishlist, total: unique.length };
+    },
+  });
+
+  if (!data || data.total === 0) return null;
+
+  return (
+    <section className="border-t border-border/30 bg-surface/40 px-4 py-8 sm:px-6 sm:py-10">
+      <div className="mx-auto max-w-[1800px]">
+        <div className="mb-6">
+          <p className="mb-1 text-[10px] font-light uppercase tracking-[0.3em]" style={{ color: "#c9a84c" }}>
+            🌿 In Season · {monthName}
+          </p>
+          <h2 className="font-display text-xl font-semibold text-foreground sm:text-2xl">Birds active this month</h2>
+          <p className="mt-1 text-xs font-light text-muted-foreground">
+            {data.total} species from my eBird records observed in {monthName} across the years
+          </p>
+        </div>
+        {data.photographed.length > 0 && (
+          <div className="flex gap-3 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden">
+            {data.photographed.map((s) => (
+              <Link
+                key={s.scientific_name}
+                to="/species/$slug"
+                params={{ slug: s.photo.species_identifier }}
+                className="group w-36 flex-shrink-0 sm:w-44"
+              >
+                <div className="relative overflow-hidden rounded-sm bg-background">
+                  <img
+                    src={sizedImage(s.photo.image_url, { width: 300, quality: 72 }) || s.photo.image_url}
+                    alt={s.common_name ?? ""}
+                    loading="lazy"
+                    decoding="async"
+                    className="aspect-[4/3] w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-primary" title="Photographed" />
+                </div>
+                <p className="mt-1.5 truncate text-[11px] font-medium text-foreground">{s.common_name}</p>
+                <p className="truncate text-[10px] italic text-muted-foreground">{s.scientific_name}</p>
+              </Link>
+            ))}
+          </div>
+        )}
+        {data.wishlist.length > 0 && (
+          <div className="mt-5 flex flex-wrap gap-2">
+            <p className="w-full text-[10px] font-light uppercase tracking-widest text-muted-foreground">
+              Also in season — not yet photographed:
+            </p>
+            {data.wishlist.map((s) => (
+              <span key={s.scientific_name} className="rounded-full border border-border/40 px-3 py-1 text-[11px] font-light text-muted-foreground">
+                {s.common_name}
+              </span>
+            ))}
+            <Link to="/map" className="rounded-full border border-border/40 px-3 py-1 text-[11px] font-light transition-colors hover:border-primary hover:text-primary" style={{ color: "#c9a84c" }}>
+              See full wishlist →
+            </Link>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
 
 function PhotoStrip() {
   const navigate = useNavigate();

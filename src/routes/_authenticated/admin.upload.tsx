@@ -21,7 +21,7 @@ import { readImageMeta } from "@/lib/image-meta";
 import { parseSpeciesFromFilename } from "@/lib/filename-species";
 import { fetchXenoCantoCall } from "@/lib/xeno-canto";
 import { identifyBird } from "@/lib/identify-bird.functions";
-import { fileToDownscaledDataURL } from "@/lib/bird-constants";
+import { fileToDownscaledDataURL, PLUMAGE_STATES } from "@/lib/bird-constants";
 import { hashFile } from "@/lib/file-hash";
 
 
@@ -94,6 +94,7 @@ type FormState = {
   tags: string;
   is_featured: boolean;
   iucn_status: string;
+  plumage_state: string;
   hero_story: string;
   hero_location: string;
 };
@@ -104,7 +105,7 @@ const EMPTY: FormState = {
   title: "", description: "", date_taken: "",
   camera: "", lens: "", iso: "", aperture: "", shutter_speed: "", focal_length: "",
   location: "", latitude: "", longitude: "", region: "", country: "",
-  tags: "", is_featured: false, iucn_status: "",
+  tags: "", is_featured: false, iucn_status: "", plumage_state: "",
   hero_story: "", hero_location: "",
 };
 
@@ -453,6 +454,7 @@ function UploadPage() {
         is_featured: form.is_featured,
         file_hash: savedFileHash,
         iucn_status: form.iucn_status || null,
+        plumage_state: form.plumage_state || null,
         hero_story: form.hero_story.trim() || null,
         hero_location: form.hero_location.trim() || null,
       }).select("id").single();
@@ -729,6 +731,16 @@ function UploadPage() {
             >
               <option value="">Select a status…</option>
               {IUCN_OPTIONS.map((s) => <option key={s}>{s}</option>)}
+            </select>
+          </Field>
+          <Field label="Plumage / Sex">
+            <select
+              value={form.plumage_state}
+              onChange={(e) => set("plumage_state", e.target.value)}
+              className={selectCls}
+            >
+              <option value="">— Not specified —</option>
+              {PLUMAGE_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </Field>
         </Section>

@@ -7,7 +7,7 @@ import { CheckCircle2, ImagePlus, Loader2, MapPin, Pencil, Save, Trash2, X } fro
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { sizedImage } from "@/lib/image-url";
-import { buildPhotoSlug, fileToDownscaledDataURL, formatShutter, slugify } from "@/lib/bird-constants";
+import { buildPhotoSlug, fileToDownscaledDataURL, formatShutter, slugify, PLUMAGE_STATES } from "@/lib/bird-constants";
 import { identifyBird } from "@/lib/identify-bird.functions";
 import {
   geteBirdLocationSuggestion,
@@ -55,6 +55,7 @@ type Item = {
   family_name?: string;
   order_name?: string;
   iucn_status?: string;
+  plumage_state?: string;
   confidence?: number;
   notes?: string;
   // EXIF
@@ -376,6 +377,7 @@ function BulkUploadPage() {
           tags: [],
            is_featured: canFeature,
            iucn_status: item.iucn_status || null,
+           plumage_state: item.plumage_state || null,
            file_hash: savedFileHash,
         }).select("id").single();
         if (insErr) throw insErr;
@@ -782,6 +784,12 @@ function EditDrawer({
           </Pair>
           <Pair label="IUCN status">
             <input value={draft.iucn_status ?? ""} onChange={(e) => set("iucn_status", e.target.value)} className={inp} />
+          </Pair>
+          <Pair label="Plumage / Sex">
+            <select value={draft.plumage_state ?? ""} onChange={(e) => set("plumage_state", e.target.value)} className={inp}>
+              <option value="">— Not specified —</option>
+              {PLUMAGE_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
           </Pair>
 
           <Pair label="Title">
