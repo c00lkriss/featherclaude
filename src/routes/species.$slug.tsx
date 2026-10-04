@@ -782,35 +782,33 @@ function InfoPanel({ photo }: { photo: Photo }) {
     : null;
 
   const tax = [photo.order_name, photo.family_name, photo.genus].filter(Boolean).join(" › ");
+  const wikiName = photo.common_name || photo.species_name;
 
   return (
     <div className="mx-auto max-w-5xl text-foreground" style={{ textShadow: TEXT_SHADOW }}>
-      <h2 className="font-display text-xl font-semibold leading-tight md:text-5xl">
+      <h2 className="font-display text-xl font-semibold leading-tight md:text-base">
         {photo.common_name || photo.species_name}
       </h2>
+
       <div className="mt-1 flex flex-wrap items-center gap-2">
-        <p className="font-body text-[0.8rem] font-light italic text-foreground/80 md:text-lg">
+        <p className="font-body text-[0.8rem] font-light italic text-foreground/80 md:text-sm">
           {photo.species_name}
         </p>
         {photo.iucn_status && (
-          <div className="md:hidden" style={{ textShadow: "none" }}>
+          <div style={{ textShadow: "none" }}>
             <IucnBadge status={photo.iucn_status} compact />
           </div>
         )}
       </div>
 
-      {photo.iucn_status && (
-        <div className="mt-5 hidden md:block" style={{ textShadow: "none" }}>
-          <IucnBadge status={photo.iucn_status} />
-        </div>
+      {/* Mobile: taxonomy + location stack, details collapse behind toggle */}
+      {tax && (
+        <p className="mt-2 text-[10px] font-light uppercase tracking-[0.2em] text-foreground/85 md:hidden">
+          {tax}
+        </p>
       )}
-
-      <p className="mt-2 text-[10px] font-light uppercase tracking-[0.2em] text-foreground/85 md:mt-6 md:text-xs md:tracking-[0.3em]">
-        {tax}
-      </p>
-
       {photo.location && (
-        <p className="mt-2 flex items-center gap-1.5 text-xs font-light text-foreground/85 md:hidden">
+        <p className="mt-1 flex items-center gap-1.5 text-xs font-light text-foreground/85 md:hidden">
           <MapPin className="h-3.5 w-3.5 text-primary" />
           {photo.location}
         </p>
@@ -826,57 +824,76 @@ function InfoPanel({ photo }: { photo: Photo }) {
       </button>
 
       <div className={cn(detailsOpen ? "block" : "hidden", "md:block")}>
-
-      {(photo.common_name || photo.species_name) && (
-        <a
-          href={getWikipediaUrl(photo.common_name || photo.species_name)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 inline-flex items-center gap-1 text-xs font-medium hover:underline"
-          style={{ color: "#c9a84c" }}
-        >
-          Wikipedia ↗
-        </a>
-      )}
-
-      {photo.description && (
-        <p className="mt-4 max-w-prose text-xs font-light leading-relaxed text-foreground/90 md:mt-5 md:text-sm">
-          {photo.description}
-        </p>
-      )}
-
-      <div className="my-5 h-px w-full bg-foreground/20 md:my-8" />
-
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-4 text-[0.75rem] md:grid-cols-6 md:gap-x-6 md:gap-y-5 md:text-sm">
-        {exif.map((row) => (
-          <div key={row.label} className="border-l-2 border-white/30 pl-3">
-            <dt className="text-[10px] font-light uppercase tracking-widest text-foreground/70">
-              {row.label}
-            </dt>
-            <dd className="mt-1 font-display text-xs text-foreground md:text-sm">
-              {row.value || "—"}
-            </dd>
-          </div>
-
-        ))}
-      </dl>
-
-      {(photo.location || date) && (
-        <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-light text-foreground/85">
-          {photo.location && (
-            <span className="flex items-center gap-2">
-              <MapPin className="h-3.5 w-3.5" style={{ color: "#c9a84c" }} />
-              {photo.location}
-              {photo.latitude != null && photo.longitude != null && (
-                <span className="text-foreground/60">
-                  ({photo.latitude.toFixed(3)}, {photo.longitude.toFixed(3)})
+        {/* Desktop: taxonomy · location on one line, Wikipedia right-aligned */}
+        <div className="mt-2 hidden flex-wrap items-center justify-between gap-x-4 gap-y-1 md:flex">
+          <p className="flex flex-wrap items-center gap-1.5 text-[11px] font-light uppercase tracking-[0.25em] text-foreground/85">
+            {tax && <span>{tax}</span>}
+            {photo.location && (
+              <>
+                <span className="text-foreground/50">·</span>
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-3 w-3 text-primary" />
+                  {photo.location}
                 </span>
-              )}
-            </span>
+              </>
+            )}
+          </p>
+          {wikiName && (
+            <a
+              href={getWikipediaUrl(wikiName)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs font-medium hover:underline"
+              style={{ color: "#c9a84c" }}
+            >
+              Wikipedia ↗
+            </a>
           )}
-          {date && <span className="uppercase tracking-widest">{date}</span>}
         </div>
-      )}
+
+        {wikiName && (
+          <a
+            href={getWikipediaUrl(wikiName)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-flex items-center gap-1 text-xs font-medium hover:underline md:hidden"
+            style={{ color: "#c9a84c" }}
+          >
+            Wikipedia ↗
+          </a>
+        )}
+
+        {photo.description && (
+          <p className="mt-2 max-w-prose text-xs font-light leading-relaxed text-foreground/90">
+            {photo.description}
+          </p>
+        )}
+
+        <div className="my-2 h-px w-full bg-foreground/20" />
+
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-3 md:grid-cols-6 md:gap-2">
+          {exif.map((row) => (
+            <div key={row.label} className="border-l-2 border-white/30 pl-2">
+              <dt className="text-[10px] font-light uppercase tracking-widest text-foreground/70 md:text-[9px]">
+                {row.label}
+              </dt>
+              <dd className="mt-0.5 font-display text-xs text-foreground md:text-[11px]">
+                {row.value || "—"}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        {date && (
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-light uppercase tracking-widest text-foreground/85">
+            <span>{date}</span>
+            {photo.latitude != null && photo.longitude != null && (
+              <span className="normal-case tracking-normal text-foreground/60">
+                ({photo.latitude.toFixed(3)}, {photo.longitude.toFixed(3)})
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
