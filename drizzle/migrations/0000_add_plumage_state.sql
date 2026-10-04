@@ -1,0 +1,2 @@
+ALTER TABLE public.photos ADD COLUMN IF NOT EXISTS plumage_state text;
+ALTER TABLE public.photos ADD CONSTRAINT photos_plumage_state_check CHECK (plumage_state IS NULL OR plumage_state IN ('Male – Breeding','Male – Non-breeding','Female','Juvenile','Immature','Eclipse','Unspecified'));

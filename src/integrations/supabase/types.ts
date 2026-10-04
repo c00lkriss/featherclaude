@@ -175,6 +175,7 @@ export type Database = {
           longitude: number | null
           missing_coordinates: boolean
           order_name: string
+          plumage_state: string | null
           shutter_speed: string | null
           species_identifier: string
           species_name: string
@@ -215,6 +216,7 @@ export type Database = {
           longitude?: number | null
           missing_coordinates?: boolean
           order_name: string
+          plumage_state?: string | null
           shutter_speed?: string | null
           species_identifier: string
           species_name: string
@@ -255,6 +257,7 @@ export type Database = {
           longitude?: number | null
           missing_coordinates?: boolean
           order_name?: string
+          plumage_state?: string | null
           shutter_speed?: string | null
           species_identifier?: string
           species_name?: string
