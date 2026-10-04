@@ -667,7 +667,7 @@ function dedupeLocation(loc: string): string {
   const parts = loc.split(",").map((s) => s.trim()).filter(Boolean);
   const out: string[] = [];
   for (const part of parts) {
-    if (out.length && out[out.length - 1].toLowerCase() === part.toLowerCase()) continue;
+    if (out.some((o) => o.toLowerCase() === part.toLowerCase())) continue;
     out.push(part);
   }
   return out.join(", ");
