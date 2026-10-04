@@ -408,6 +408,14 @@ function Hero() {
             <span className="text-xs font-light tracking-widest">@coolkriss</span>
           </a>
         </div>
+        <div className="mt-8 flex flex-col items-center gap-3 animate-fade-in-slow sm:mt-12 sm:flex-row sm:gap-6">
+          <Link
+            to="/gallery"
+            className="rounded-none border border-primary bg-primary/90 px-8 py-3 text-xs font-medium uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary"
+          >
+            Explore Gallery
+          </Link>
+        </div>
 
         {/* Slide indicators */}
         <div className="absolute bottom-10 left-1/2 flex -translate-x-1/2 gap-2">
