@@ -662,6 +662,17 @@ function IucnBadge({ status, compact = false }: { status: string; compact?: bool
 
 const TEXT_SHADOW = "0 1px 3px rgba(0,0,0,0.8)";
 
+// Collapse repeated trailing segments like "Telangana, India, Telangana, India" → "Telangana, India"
+function dedupeLocation(loc: string): string {
+  const parts = loc.split(",").map((s) => s.trim()).filter(Boolean);
+  const out: string[] = [];
+  for (const part of parts) {
+    if (out.length && out[out.length - 1].toLowerCase() === part.toLowerCase()) continue;
+    out.push(part);
+  }
+  return out.join(", ");
+}
+
 function InfoPanel({ photo }: { photo: Photo }) {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const exif: { label: string; value: string | null }[] = [
