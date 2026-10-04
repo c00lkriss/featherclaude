@@ -26,7 +26,17 @@ type Photo = {
   date_taken: string | null;
   camera: string | null;
   lens: string | null;
+  plumage_state: string | null;
 };
+
+const PLUMAGE_OPTIONS = [
+  "Male – Breeding",
+  "Male – Non-breeding",
+  "Female",
+  "Juvenile",
+  "Immature",
+  "Eclipse",
+];
 
 type Props = {
   order?: string;
@@ -38,6 +48,18 @@ type Props = {
 export function GalleryView({ order, family, q = "", location }: Props) {
   const navigate = useNavigate();
   const [searchInput, setSearchInput] = useState(q);
+  const [plumageFilter, setPlumageFilter] = useState("");
+  const { data: hasPlumage } = useQuery({
+    queryKey: ["has-plumage", { order, family, location }],
+    queryFn: async () => {
+      let req = supabase.from("photos").select("id", { count: "exact", head: true }).not("plumage_state", "is", null).neq("plumage_state", "Unspecified");
+      if (order) req = req.eq("order_name", order);
+      if (family) req = req.eq("family_name", family);
+      if (location) req = req.ilike("location", `%${location}%`);
+      const { count } = await req;
+      return (count ?? 0) > 0;
+    },
+  });
 
   useEffect(() => {
     setSearchInput(q);
@@ -114,7 +136,34 @@ export function GalleryView({ order, family, q = "", location }: Props) {
           )}
         </div>
 
-        <PhotoGrid order={order} family={family} q={q} location={location} />
+        {(hasPlumage || plumageFilter) && (
+          <div className="mb-4 flex flex-wrap gap-2">
+            {PLUMAGE_OPTIONS.map((opt) => (
+              <button
+                key={opt}
+                onClick={() => setPlumageFilter((prev) => (prev === opt ? "" : opt))}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-xs font-light transition-colors",
+                  plumageFilter === opt
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground",
+                )}
+              >
+                {opt}
+              </button>
+            ))}
+            {plumageFilter && (
+              <button
+                onClick={() => setPlumageFilter("")}
+                className="rounded-full border border-border px-3 py-1 text-xs font-light text-muted-foreground hover:text-foreground"
+              >
+                Clear ×
+              </button>
+            )}
+          </div>
+        )}
+
+        <PhotoGrid order={order} family={family} q={q} location={location} plumageFilter={plumageFilter} />
       </main>
     </div>
   );
@@ -335,16 +384,18 @@ function PhotoGrid({
   family,
   q,
   location,
+  plumageFilter,
 }: {
   order?: string;
   family?: string;
   q: string;
   location?: string;
+  plumageFilter?: string;
 }) {
   const searchTerm = q.trim().length >= 2 ? q.trim() : "";
 
   const query = useInfiniteQuery({
-    queryKey: ["photos", { order, family, searchTerm, location }],
+    queryKey: ["photos", { order, family, searchTerm, location, plumageFilter }],
     initialPageParam: 0,
     queryFn: async ({ pageParam }): Promise<{ rows: Photo[]; total: number | null }> => {
       const from = pageParam * PAGE_SIZE;
@@ -352,8 +403,8 @@ function PhotoGrid({
       let req = supabase
         .from("photos")
         .select(
-          "id, title, common_name, species_name, species_slug, species_identifier, order_name, family_name, image_url, thumbnail_url, tags, description, location, date_taken, camera, lens",
-          { count: searchTerm || location ? "exact" : undefined },
+          "id, title, common_name, species_name, species_slug, species_identifier, order_name, family_name, image_url, thumbnail_url, tags, description, location, date_taken, camera, lens, plumage_state",
+          { count: searchTerm || location || plumageFilter ? "exact" : undefined },
         )
         .order("created_at", { ascending: false })
         .range(from, to);
@@ -361,6 +412,7 @@ function PhotoGrid({
       if (order) req = req.eq("order_name", order);
       if (family) req = req.eq("family_name", family);
       if (location) req = req.ilike("location", `%${location}%`);
+      if (plumageFilter) req = req.eq("plumage_state", plumageFilter);
       if (searchTerm) {
         const safe = searchTerm.replace(/[%,()]/g, " ");
         const isYear = /^\d{4}$/.test(safe.trim());

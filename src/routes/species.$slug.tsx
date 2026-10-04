@@ -100,6 +100,7 @@ type Photo = {
   shutter_speed: string | null;
   focal_length: string | null;
   iucn_status: string | null;
+  plumage_state: string | null;
 };
 
 const IUCN_COLORS: Record<string, string> = {
@@ -172,7 +173,7 @@ function SpeciesPage() {
       const { data, error } = await supabase
         .from("photos")
         .select(
-          "id, title, description, common_name, species_name, species_slug, species_identifier, order_name, family_name, genus, image_url, thumbnail_url, location, latitude, longitude, date_taken, camera, lens, iso, aperture, shutter_speed, focal_length, iucn_status",
+          "id, title, description, common_name, species_name, species_slug, species_identifier, order_name, family_name, genus, image_url, thumbnail_url, location, latitude, longitude, date_taken, camera, lens, iso, aperture, shutter_speed, focal_length, iucn_status, plumage_state",
         )
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -709,6 +710,14 @@ function InfoPanel({ photo }: { photo: Photo }) {
           <div style={{ textShadow: "none" }}>
             <IucnBadge status={photo.iucn_status} compact />
           </div>
+        )}
+        {photo.plumage_state && photo.plumage_state !== "Unspecified" && (
+          <span
+            className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium"
+            style={{ borderColor: "rgba(201,168,76,0.5)", color: "#c9a84c", backgroundColor: "rgba(201,168,76,0.08)", textShadow: "none" }}
+          >
+            {photo.plumage_state}
+          </span>
         )}
       </div>
 

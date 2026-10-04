@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { BIRD_ORDERS, FAMILIES_BY_ORDER, IUCN_OPTIONS, MAX_FEATURED, slugify } from "@/lib/bird-constants";
+import { BIRD_ORDERS, FAMILIES_BY_ORDER, IUCN_OPTIONS, MAX_FEATURED, PLUMAGE_STATES, slugify } from "@/lib/bird-constants";
 import { LocationField } from "@/components/LocationField";
 import { geocodeWithNominatim } from "@/lib/ebird-suggestion";
 import { lookupTaxonomyByCommonName } from "@/lib/taxonomy-lookup";
@@ -45,6 +45,7 @@ type Form = {
   tags: string;
   is_featured: boolean;
   iucn_status: string;
+  plumage_state: string;
   hero_story: string;
   hero_location: string;
 };
@@ -96,6 +97,7 @@ function EditPage() {
       tags: (data.tags ?? []).join(", "),
       is_featured: !!data.is_featured,
       iucn_status: data.iucn_status ?? "",
+      plumage_state: data.plumage_state ?? "",
       hero_story: (data as { hero_story?: string | null }).hero_story ?? "",
       hero_location: (data as { hero_location?: string | null }).hero_location ?? "",
     });
@@ -200,6 +202,7 @@ function EditPage() {
           tags,
           is_featured: form.is_featured,
           iucn_status: form.iucn_status || null,
+          plumage_state: form.plumage_state || null,
           hero_story: form.hero_story.trim() || null,
           hero_location: form.hero_location.trim() || null,
         })
@@ -283,6 +286,12 @@ function EditPage() {
             <select value={form.iucn_status} onChange={(e) => set("iucn_status", e.target.value)} className={inputCls}>
               <option value="">Select…</option>
               {IUCN_OPTIONS.map((s) => <option key={s}>{s}</option>)}
+            </select>
+          </Field>
+          <Field label="Plumage / Sex">
+            <select value={form.plumage_state} onChange={(e) => set("plumage_state", e.target.value)} className={inputCls}>
+              <option value="">— Not specified —</option>
+              {PLUMAGE_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </Field>
         </Section>
