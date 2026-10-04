@@ -561,7 +561,7 @@ function SpeciesPage() {
             WebkitBackdropFilter: "blur(10px)",
           }}
           className={cn(
-            "absolute inset-x-0 bottom-[4.25rem] z-10 max-h-[28vh] overflow-y-auto border-t border-foreground/10 px-4 py-3 transition-transform duration-300 ease-out sm:px-5 md:bottom-0 md:max-h-[42vh] md:px-12 md:py-10",
+            "absolute inset-x-0 bottom-[4.25rem] z-10 max-h-[45vh] overflow-y-auto border-t border-foreground/10 px-4 py-3 transition-transform duration-300 ease-out sm:px-5 md:bottom-0 md:max-h-[30vh] md:px-12 md:py-10",
             infoOpen ? "translate-y-0" : "translate-y-full",
           )}
         >
