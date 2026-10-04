@@ -9,86 +9,42 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as AboutRouteImport } from './routes/about'
-import { Route as AboutBirdsRouteImport } from './routes/about-birds'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as BlogRouteImport } from './routes/blog'
-import { Route as GalleryRouteImport } from './routes/gallery'
-import { Route as MapRouteImport } from './routes/map'
-import { Route as McpRouteImport } from './routes/mcp'
-import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
-import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
-import { Route as BlogIndexRouteImport } from './routes/blog.index'
-import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as McpRouteImport } from './routes/mcp'
+import { Route as MapRouteImport } from './routes/map'
+import { Route as GalleryRouteImport } from './routes/gallery'
+import { Route as BlogRouteImport } from './routes/blog'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AboutBirdsRouteImport } from './routes/about-birds'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as GalleryIndexRouteImport } from './routes/gallery.index'
-import { Route as GalleryOrderRouteImport } from './routes/gallery.$order'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as SpeciesSlugRouteImport } from './routes/species.$slug'
-import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
-import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
-import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
-import { Route as AuthenticatedAdminBulkUploadRouteImport } from './routes/_authenticated/admin.bulk-upload'
-import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authenticated/admin.dashboard'
-import { Route as AuthenticatedAdminEbirdRouteImport } from './routes/_authenticated/admin.ebird'
-import { Route as AuthenticatedAdminIncompleteRouteImport } from './routes/_authenticated/admin.incomplete'
-import { Route as AuthenticatedAdminManageRouteImport } from './routes/_authenticated/admin.manage'
-import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
-import { Route as AuthenticatedAdminUploadRouteImport } from './routes/_authenticated/admin.upload'
-import { Route as BlogTagTagRouteImport } from './routes/blog.tag.$tag'
+import { Route as GalleryOrderRouteImport } from './routes/gallery.$order'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as GalleryOrderFamilyRouteImport } from './routes/gallery.$order.$family'
+import { Route as BlogTagTagRouteImport } from './routes/blog.tag.$tag'
+import { Route as AuthenticatedAdminUploadRouteImport } from './routes/_authenticated/admin.upload'
+import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
+import { Route as AuthenticatedAdminManageRouteImport } from './routes/_authenticated/admin.manage'
+import { Route as AuthenticatedAdminIncompleteRouteImport } from './routes/_authenticated/admin.incomplete'
+import { Route as AuthenticatedAdminEbirdRouteImport } from './routes/_authenticated/admin.ebird'
+import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authenticated/admin.dashboard'
+import { Route as AuthenticatedAdminBulkUploadRouteImport } from './routes/_authenticated/admin.bulk-upload'
+import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as AuthenticatedAdminEditIdRouteImport } from './routes/_authenticated/admin.edit.$id'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AboutBirdsRoute = AboutBirdsRouteImport.update({
-  id: '/about-birds',
-  path: '/about-birds',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BlogRoute = BlogRouteImport.update({
-  id: '/blog',
-  path: '/blog',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GalleryRoute = GalleryRouteImport.update({
-  id: '/gallery',
-  path: '/gallery',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MapRoute = MapRouteImport.update({
-  id: '/map',
-  path: '/map',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
@@ -96,91 +52,106 @@ const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   path: '/robots.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Char91DotmcpChar93ListToolsRoute =
-  Char91DotmcpChar93ListToolsRouteImport.update({
-    id: '/.mcp/list-tools',
-    path: '/.mcp/list-tools',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const Char91DotwellKnownChar93OauthProtectedResourceRoute =
-  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const BlogIndexRoute = BlogIndexRouteImport.update({
+const MapRoute = MapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GalleryRoute = GalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutBirdsRoute = AboutBirdsRouteImport.update({
+  id: '/about-birds',
+  path: '/about-birds',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => BlogRoute,
-} as any)
-const BlogSlugRoute = BlogSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => BlogRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
 const GalleryIndexRoute = GalleryIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => GalleryRoute,
 } as any)
-const GalleryOrderRoute = GalleryOrderRouteImport.update({
-  id: '/$order',
-  path: '/$order',
-  getParentRoute: () => GalleryRoute,
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BlogRoute,
 } as any)
 const SpeciesSlugRoute = SpeciesSlugRouteImport.update({
   id: '/species/$slug',
   path: '/species/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
-  id: '/.lovable/oauth/consent',
-  path: '/.lovable/oauth/consent',
-  getParentRoute: () => rootRouteImport,
+const GalleryOrderRoute = GalleryOrderRouteImport.update({
+  id: '/$order',
+  path: '/$order',
+  getParentRoute: () => GalleryRoute,
 } as any)
-const Char91DotmcpChar93InvokeToolToolRoute =
-  Char91DotmcpChar93InvokeToolToolRouteImport.update({
-    id: '/.mcp/invoke-tool/$tool',
-    path: '/.mcp/invoke-tool/$tool',
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => BlogRoute,
+} as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
-const AuthenticatedAdminBlogRoute = AuthenticatedAdminBlogRouteImport.update({
-  id: '/admin/blog',
-  path: '/admin/blog',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const GalleryOrderFamilyRoute = GalleryOrderFamilyRouteImport.update({
+  id: '/$family',
+  path: '/$family',
+  getParentRoute: () => GalleryOrderRoute,
 } as any)
-const AuthenticatedAdminBulkUploadRoute =
-  AuthenticatedAdminBulkUploadRouteImport.update({
-    id: '/admin/bulk-upload',
-    path: '/admin/bulk-upload',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedAdminDashboardRoute =
-  AuthenticatedAdminDashboardRouteImport.update({
-    id: '/admin/dashboard',
-    path: '/admin/dashboard',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedAdminEbirdRoute = AuthenticatedAdminEbirdRouteImport.update({
-  id: '/admin/ebird',
-  path: '/admin/ebird',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const BlogTagTagRoute = BlogTagTagRouteImport.update({
+  id: '/tag/$tag',
+  path: '/tag/$tag',
+  getParentRoute: () => BlogRoute,
 } as any)
-const AuthenticatedAdminIncompleteRoute =
-  AuthenticatedAdminIncompleteRouteImport.update({
-    id: '/admin/incomplete',
-    path: '/admin/incomplete',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedAdminManageRoute =
-  AuthenticatedAdminManageRouteImport.update({
-    id: '/admin/manage',
-    path: '/admin/manage',
+const AuthenticatedAdminUploadRoute =
+  AuthenticatedAdminUploadRouteImport.update({
+    id: '/admin/upload',
+    path: '/admin/upload',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminSettingsRoute =
@@ -189,21 +160,50 @@ const AuthenticatedAdminSettingsRoute =
     path: '/admin/settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedAdminUploadRoute =
-  AuthenticatedAdminUploadRouteImport.update({
-    id: '/admin/upload',
-    path: '/admin/upload',
+const AuthenticatedAdminManageRoute =
+  AuthenticatedAdminManageRouteImport.update({
+    id: '/admin/manage',
+    path: '/admin/manage',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const BlogTagTagRoute = BlogTagTagRouteImport.update({
-  id: '/tag/$tag',
-  path: '/tag/$tag',
-  getParentRoute: () => BlogRoute,
+const AuthenticatedAdminIncompleteRoute =
+  AuthenticatedAdminIncompleteRouteImport.update({
+    id: '/admin/incomplete',
+    path: '/admin/incomplete',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminEbirdRoute = AuthenticatedAdminEbirdRouteImport.update({
+  id: '/admin/ebird',
+  path: '/admin/ebird',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const GalleryOrderFamilyRoute = GalleryOrderFamilyRouteImport.update({
-  id: '/$family',
-  path: '/$family',
-  getParentRoute: () => GalleryOrderRoute,
+const AuthenticatedAdminDashboardRoute =
+  AuthenticatedAdminDashboardRouteImport.update({
+    id: '/admin/dashboard',
+    path: '/admin/dashboard',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminBulkUploadRoute =
+  AuthenticatedAdminBulkUploadRouteImport.update({
+    id: '/admin/bulk-upload',
+    path: '/admin/bulk-upload',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminBlogRoute = AuthenticatedAdminBlogRouteImport.update({
+  id: '/admin/blog',
+  path: '/admin/blog',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminEditIdRoute =
   AuthenticatedAdminEditIdRouteImport.update({
@@ -434,74 +434,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/about-birds': {
-      id: '/about-birds'
-      path: '/about-birds'
-      fullPath: '/about-birds'
-      preLoaderRoute: typeof AboutBirdsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/blog': {
-      id: '/blog'
-      path: '/blog'
-      fullPath: '/blog'
-      preLoaderRoute: typeof BlogRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gallery': {
-      id: '/gallery'
-      path: '/gallery'
-      fullPath: '/gallery'
-      preLoaderRoute: typeof GalleryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/map': {
-      id: '/map'
-      path: '/map'
-      fullPath: '/map'
-      preLoaderRoute: typeof MapRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/robots.txt': {
@@ -511,11 +448,116 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RobotsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/map': {
+      id: '/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof MapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gallery': {
+      id: '/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about-birds': {
+      id: '/about-birds'
+      path: '/about-birds'
+      fullPath: '/about-birds'
+      preLoaderRoute: typeof AboutBirdsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gallery/': {
+      id: '/gallery/'
+      path: '/'
+      fullPath: '/gallery/'
+      preLoaderRoute: typeof GalleryIndexRouteImport
+      parentRoute: typeof GalleryRoute
+    }
+    '/blog/': {
+      id: '/blog/'
+      path: '/'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof BlogRoute
+    }
+    '/species/$slug': {
+      id: '/species/$slug'
+      path: '/species/$slug'
+      fullPath: '/species/$slug'
+      preLoaderRoute: typeof SpeciesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gallery/$order': {
+      id: '/gallery/$order'
+      path: '/$order'
+      fullPath: '/gallery/$order'
+      preLoaderRoute: typeof GalleryOrderRouteImport
+      parentRoute: typeof GalleryRoute
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof BlogRoute
+    }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.mcp/list-tools': {
@@ -525,102 +567,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
-      parentRoute: typeof rootRouteImport
+    '/gallery/$order/$family': {
+      id: '/gallery/$order/$family'
+      path: '/$family'
+      fullPath: '/gallery/$order/$family'
+      preLoaderRoute: typeof GalleryOrderFamilyRouteImport
+      parentRoute: typeof GalleryOrderRoute
     }
-    '/blog/': {
-      id: '/blog/'
-      path: '/'
-      fullPath: '/blog/'
-      preLoaderRoute: typeof BlogIndexRouteImport
+    '/blog/tag/$tag': {
+      id: '/blog/tag/$tag'
+      path: '/tag/$tag'
+      fullPath: '/blog/tag/$tag'
+      preLoaderRoute: typeof BlogTagTagRouteImport
       parentRoute: typeof BlogRoute
     }
-    '/blog/$slug': {
-      id: '/blog/$slug'
-      path: '/$slug'
-      fullPath: '/blog/$slug'
-      preLoaderRoute: typeof BlogSlugRouteImport
-      parentRoute: typeof BlogRoute
-    }
-    '/gallery/': {
-      id: '/gallery/'
-      path: '/'
-      fullPath: '/gallery/'
-      preLoaderRoute: typeof GalleryIndexRouteImport
-      parentRoute: typeof GalleryRoute
-    }
-    '/gallery/$order': {
-      id: '/gallery/$order'
-      path: '/$order'
-      fullPath: '/gallery/$order'
-      preLoaderRoute: typeof GalleryOrderRouteImport
-      parentRoute: typeof GalleryRoute
-    }
-    '/species/$slug': {
-      id: '/species/$slug'
-      path: '/species/$slug'
-      fullPath: '/species/$slug'
-      preLoaderRoute: typeof SpeciesSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.lovable/oauth/consent': {
-      id: '/.lovable/oauth/consent'
-      path: '/.lovable/oauth/consent'
-      fullPath: '/.lovable/oauth/consent'
-      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.mcp/invoke-tool/$tool': {
-      id: '/.mcp/invoke-tool/$tool'
-      path: '/.mcp/invoke-tool/$tool'
-      fullPath: '/.mcp/invoke-tool/$tool'
-      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/admin/blog': {
-      id: '/_authenticated/admin/blog'
-      path: '/admin/blog'
-      fullPath: '/admin/blog'
-      preLoaderRoute: typeof AuthenticatedAdminBlogRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/admin/bulk-upload': {
-      id: '/_authenticated/admin/bulk-upload'
-      path: '/admin/bulk-upload'
-      fullPath: '/admin/bulk-upload'
-      preLoaderRoute: typeof AuthenticatedAdminBulkUploadRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/admin/dashboard': {
-      id: '/_authenticated/admin/dashboard'
-      path: '/admin/dashboard'
-      fullPath: '/admin/dashboard'
-      preLoaderRoute: typeof AuthenticatedAdminDashboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/admin/ebird': {
-      id: '/_authenticated/admin/ebird'
-      path: '/admin/ebird'
-      fullPath: '/admin/ebird'
-      preLoaderRoute: typeof AuthenticatedAdminEbirdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/admin/incomplete': {
-      id: '/_authenticated/admin/incomplete'
-      path: '/admin/incomplete'
-      fullPath: '/admin/incomplete'
-      preLoaderRoute: typeof AuthenticatedAdminIncompleteRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/admin/manage': {
-      id: '/_authenticated/admin/manage'
-      path: '/admin/manage'
-      fullPath: '/admin/manage'
-      preLoaderRoute: typeof AuthenticatedAdminManageRouteImport
+    '/_authenticated/admin/upload': {
+      id: '/_authenticated/admin/upload'
+      path: '/admin/upload'
+      fullPath: '/admin/upload'
+      preLoaderRoute: typeof AuthenticatedAdminUploadRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/settings': {
@@ -630,26 +595,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/admin/upload': {
-      id: '/_authenticated/admin/upload'
-      path: '/admin/upload'
-      fullPath: '/admin/upload'
-      preLoaderRoute: typeof AuthenticatedAdminUploadRouteImport
+    '/_authenticated/admin/manage': {
+      id: '/_authenticated/admin/manage'
+      path: '/admin/manage'
+      fullPath: '/admin/manage'
+      preLoaderRoute: typeof AuthenticatedAdminManageRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/blog/tag/$tag': {
-      id: '/blog/tag/$tag'
-      path: '/tag/$tag'
-      fullPath: '/blog/tag/$tag'
-      preLoaderRoute: typeof BlogTagTagRouteImport
-      parentRoute: typeof BlogRoute
+    '/_authenticated/admin/incomplete': {
+      id: '/_authenticated/admin/incomplete'
+      path: '/admin/incomplete'
+      fullPath: '/admin/incomplete'
+      preLoaderRoute: typeof AuthenticatedAdminIncompleteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/gallery/$order/$family': {
-      id: '/gallery/$order/$family'
-      path: '/$family'
-      fullPath: '/gallery/$order/$family'
-      preLoaderRoute: typeof GalleryOrderFamilyRouteImport
-      parentRoute: typeof GalleryOrderRoute
+    '/_authenticated/admin/ebird': {
+      id: '/_authenticated/admin/ebird'
+      path: '/admin/ebird'
+      fullPath: '/admin/ebird'
+      preLoaderRoute: typeof AuthenticatedAdminEbirdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/dashboard': {
+      id: '/_authenticated/admin/dashboard'
+      path: '/admin/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AuthenticatedAdminDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/bulk-upload': {
+      id: '/_authenticated/admin/bulk-upload'
+      path: '/admin/bulk-upload'
+      fullPath: '/admin/bulk-upload'
+      preLoaderRoute: typeof AuthenticatedAdminBulkUploadRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/blog': {
+      id: '/_authenticated/admin/blog'
+      path: '/admin/blog'
+      fullPath: '/admin/blog'
+      preLoaderRoute: typeof AuthenticatedAdminBlogRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/edit/$id': {
       id: '/_authenticated/admin/edit/$id'
